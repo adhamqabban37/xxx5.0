@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
+import { hash } from "../../../../lib/bcryptjs";
 import { z } from "zod";
 import { logger } from "../../../../lib/logger";
 import { validateRequest, createErrorResponse, createSuccessResponse } from "@/lib/validation";
+
+export const runtime = "nodejs";
 
 const prisma = new PrismaClient();
 
@@ -43,8 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    const passwordHash = await hash(password, 12);
 
     // Create user
     const user = await prisma.user.create({

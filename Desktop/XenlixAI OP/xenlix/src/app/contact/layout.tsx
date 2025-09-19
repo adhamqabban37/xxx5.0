@@ -1,21 +1,21 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contact XenlixAI — Book Demo / Get in Touch',
-  description: 'Ready to transform your advertising with AI? Book a personalized demo or get in touch with our team. Free consultation and custom demos available.',
-  keywords: 'contact XenlixAI, book demo, AI advertising, consultation, support, get in touch',
+  title: 'Contact XenlixAI | Get Expert Help with AEO & AI Marketing',
+  description: 'Get expert help with Answer Engine Optimization (AEO), AI search visibility, and AI marketing automation. Book a free consultation with our AEO specialists.',
+  keywords: 'contact XenlixAI, AEO consultation, AI marketing help, answer engine optimization support, AI search optimization contact, book AEO demo',
   openGraph: {
-    title: 'Contact XenlixAI — Book Demo / Get in Touch',
-    description: 'Ready to transform your advertising with AI? Book a personalized demo or get in touch with our team.',
+    title: 'Contact XenlixAI | Get Expert Help with AEO & AI Marketing',
+    description: 'Get expert help with Answer Engine Optimization (AEO), AI search visibility, and AI marketing automation. Book a free consultation with our AEO specialists.',
     type: 'website',
-    url: 'https://yourdomain.com/contact',
+    url: '/contact',
     siteName: 'XenlixAI',
     images: [
       {
-        url: 'https://yourdomain.com/og-contact.jpg',
+        url: '/og-contact.jpg',
         width: 1200,
         height: 630,
-        alt: 'Contact XenlixAI',
+        alt: 'Contact XenlixAI - AEO & AI Marketing Experts',
       },
     ],
   },

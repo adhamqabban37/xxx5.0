@@ -5,9 +5,21 @@ import { Resend } from 'resend';
 import { generateAdminNotificationEmail, generateAutoReplyEmail } from '@/components/emails/contact-emails';
 import { validateRequest, createErrorResponse, createSuccessResponse } from '@/lib/validation';
 
+// Prevent execution during build time
+export const runtime = 'nodejs';
+
 // Initialize clients
 const prisma = new PrismaClient();
-const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Initialize Resend only if API key is available
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('RESEND_API_KEY not configured - email functionality disabled');
+    return null;
+  }
+  return new Resend(apiKey);
+}
 
 // Validation schema
 const contactSchema = z.object({
@@ -46,41 +58,49 @@ export async function POST(request: NextRequest) {
 
     // Send notification email to admin
     try {
-      const adminEmailHtml = generateAdminNotificationEmail({
-        name,
-        email,
-        company,
-        message,
-        leadId: lead.id,
-        submittedAt: new Date().toLocaleString()
-      });
+      const resend = getResendClient();
+      if (resend) {
+        const adminEmailHtml = generateAdminNotificationEmail({
+          name,
+          email,
+          company,
+          message,
+          leadId: lead.id,
+          submittedAt: new Date().toLocaleString()
+        });
 
-      await resend.emails.send({
-        from: 'noreply@xenlix.ai',
-        to: [process.env.ADMIN_EMAIL || 'admin@xenlix.ai'],
-        subject: `New Lead: ${name} from ${company}`,
-        html: adminEmailHtml,
-      });
+        await resend.emails.send({
+          from: 'noreply@xenlix.ai',
+          to: [process.env.ADMIN_EMAIL || 'admin@xenlix.ai'],
+          subject: `New Lead: ${name} from ${company}`,
+          html: adminEmailHtml,
+        });
+      }
     } catch (emailError) {
       // Continue processing even if email fails
+      console.error('Admin email error:', emailError);
     }
 
     // Send auto-reply to the user
     try {
-      const autoReplyHtml = generateAutoReplyEmail({
-        name,
-        email,
-        company,
-        message
-      });
+      const resend = getResendClient();
+      if (resend) {
+        const autoReplyHtml = generateAutoReplyEmail({
+          name,
+          email,
+          company,
+          message
+        });
 
-      await resend.emails.send({
-        from: 'noreply@xenlix.ai',
-        to: [email],
-        subject: 'Thank you for contacting XenlixAI',
-        html: autoReplyHtml,
-      });
+        await resend.emails.send({
+          from: 'noreply@xenlix.ai',
+          to: [email],
+          subject: 'Thank you for contacting XenlixAI',
+          html: autoReplyHtml,
+        });
+      }
     } catch (autoReplyError) {
+      console.error('Auto-reply email error:', autoReplyError);
       // Continue processing even if auto-reply fails
     }
 

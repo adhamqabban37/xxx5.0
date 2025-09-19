@@ -4,13 +4,28 @@ import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
 import { createErrorResponse, createSuccessResponse } from '@/lib/validation';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+// Prevent execution during build time
+export const runtime = 'nodejs';
+
+function getStripeClient() {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    console.warn('STRIPE_SECRET_KEY not configured - webhook functionality disabled');
+    return null;
+  }
+  return new Stripe(secretKey, {
+    apiVersion: '2025-08-27.basil',
+  });
+}
 
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
+  const stripe = getStripeClient();
+  if (!stripe) {
+    return createErrorResponse('Stripe not configured', 500);
+  }
+
   const body = await req.text();
   const headersList = await headers();
   const signature = headersList.get('stripe-signature');
@@ -19,13 +34,18 @@ export async function POST(req: NextRequest) {
     return createErrorResponse('No signature', 400);
   }
 
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    return createErrorResponse('Webhook secret not configured', 500);
+  }
+
   let event: Stripe.Event;
 
   try {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      webhookSecret
     );
   } catch (err) {
     console.error('Webhook signature verification failed:', err);

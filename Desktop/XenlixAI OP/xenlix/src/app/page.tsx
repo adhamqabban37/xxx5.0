@@ -4,6 +4,7 @@ import Testimonials from "./(components)/Testimonials";
 import LogoRow from "./(components)/LogoRow";
 import JsonLd from "./(components)/JsonLd";
 import WebsiteBuilderButton from "../components/WebsiteBuilderButton";
+import Hero3D from "../components/Hero3D";
 import { orgAggregateRatingJsonLd, calculateAggregateRating } from "./(lib)/schema";
 
 // Testimonials data for schema calculation
@@ -13,9 +14,33 @@ const testimonials = [
 ];
 
 export const metadata: Metadata = {
-  title: "XenlixAI | AI-Powered SEO Automation & Optimization Platform",
-  description: "Dominate search engines with AI-powered SEO automation. Get found in Google, ChatGPT, Gemini, and AI search engines. Professional SEO optimization for small businesses.",
-  keywords: "AI SEO automation, SEO optimization, ChatGPT SEO, AI search optimization, local SEO, technical SEO, keyword research automation",
+  title: "XenlixAI | Get Found in ChatGPT & AI Search Engines - Free AEO Audit",
+  description: "Free AEO (Answer Engine Optimization) audit reveals why your website isn't appearing in ChatGPT, Claude, Perplexity & AI search engines. Get your AI visibility score + actionable fixes in 60 seconds.",
+  keywords: "AEO audit, answer engine optimization, ChatGPT SEO, AI search optimization, free website audit, AI visibility, get found in AI search",
+  openGraph: {
+    title: "XenlixAI | Get Found in ChatGPT & AI Search Engines - Free AEO Audit",
+    description: "Free AEO (Answer Engine Optimization) audit reveals why your website isn't appearing in ChatGPT, Claude, Perplexity & AI search engines. Get your AI visibility score + actionable fixes in 60 seconds.",
+    type: "website",
+    url: "/",
+    siteName: "XenlixAI",
+    images: [
+      {
+        url: "/og-homepage.jpg",
+        width: 1200,
+        height: 630,
+        alt: "XenlixAI - Answer Engine Optimization for AI Search Visibility"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "XenlixAI | Get Found in ChatGPT & AI Search Engines - Free AEO Audit",
+    description: "Free AEO (Answer Engine Optimization) audit reveals why your website isn't appearing in ChatGPT, Claude, Perplexity & AI search engines. Get your AI visibility score + actionable fixes in 60 seconds.",
+    images: ["/twitter-homepage.jpg"]
+  },
+  alternates: {
+    canonical: "/"
+  }
 };
 
 export default function Home() {
@@ -83,89 +108,83 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-            Dominate Search with AI-Powered SEO
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Professional SEO automation that gets you found in Google, ChatGPT, Gemini, and all AI search engines. Boost your rankings and drive more organic traffic.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/plans"
-              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-4 px-8 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 text-lg"
-            >
-              Start SEO Automation
-            </Link>
-            <Link
-              href="/contact"
-              className="border border-purple-400 text-purple-400 font-bold py-4 px-8 rounded-lg hover:bg-purple-400 hover:text-white transition-all duration-200 text-lg"
-            >
-              Get SEO Audit
-            </Link>
-          </div>
-          <p className="text-gray-400 mt-4">Free SEO audit • 14-day trial • No credit card required</p>
-        </div>
-      </section>
+      {/* 3D Hero Section */}
+      <Hero3D />
 
       {/* Features Section */}
       <section id="features" className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-white text-center mb-16">
-            Complete SEO Automation Platform
+          <h2 className="text-4xl font-bold text-white text-center mb-4">
+            What Our Free Scan Reveals
           </h2>
+          <p className="text-xl text-gray-300 text-center mb-16">
+            Most businesses are shocked by what they discover in their first scan
+          </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 text-center">
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="bg-red-900/30 backdrop-blur-sm border border-red-600 rounded-xl p-8 text-center">
+              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"/>
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-white mb-4">AI SEO Automation</h3>
+              <h3 className="text-xl font-bold text-white mb-4">Missing from AI Engines</h3>
               <p className="text-gray-300">
-                Automated keyword research, technical SEO fixes, and schema markup to rank higher in search engines.
+                <span className="text-red-400 font-bold">87% of websites</span> aren't optimized for ChatGPT, Claude, or Perplexity. Your competitors are already ahead.
               </p>
             </div>
             
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 text-center">
-              <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="bg-orange-900/30 backdrop-blur-sm border border-orange-600 rounded-xl p-8 text-center">
+              <div className="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/>
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-white mb-4">Local SEO Domination</h3>
+              <h3 className="text-xl font-bold text-white mb-4">Technical SEO Errors</h3>
               <p className="text-gray-300">
-                Optimize for local search, Google My Business, and location-based AI search queries.
+                <span className="text-orange-400 font-bold">Page speed issues, broken links, missing meta tags</span> are killing your Google rankings right now.
               </p>
             </div>
             
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 text-center">
+            <div className="bg-yellow-900/30 backdrop-blur-sm border border-yellow-600 rounded-xl p-8 text-center">
+              <div className="w-16 h-16 bg-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-4">Local SEO Gaps</h3>
+              <p className="text-gray-300">
+                <span className="text-yellow-400 font-bold">Local customers can't find you</span> because your Google My Business and local citations are incomplete.
+              </p>
+            </div>
+            
+            <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-600 rounded-xl p-8 text-center">
               <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                   <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-white mb-4">AI Search Optimization</h3>
+              <h3 className="text-xl font-bold text-white mb-4">Content Problems</h3>
               <p className="text-gray-300">
-                Get found in ChatGPT, Gemini, Copilot, and other AI search engines with answer-engine optimization.
+                <span className="text-purple-400 font-bold">Thin content and missing keywords</span> mean you're invisible for searches your customers are making.
               </p>
             </div>
-            
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 text-center">
-              <div className="w-16 h-16 bg-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-4">SEO Analytics</h3>
-              <p className="text-gray-300">
-                Real-time insights on rankings, traffic, and SEO performance with actionable recommendations.
-              </p>
-            </div>
+          </div>
+          
+          {/* Problem/Solution CTA */}
+          <div className="mt-16 bg-gradient-to-r from-red-600/20 to-blue-600/20 border border-red-500 rounded-xl p-8 text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Don't Let These Issues Cost You More Customers
+            </h3>
+            <p className="text-gray-300 mb-6">
+              Every day you wait, competitors are stealing potential customers who can't find you online.
+            </p>
+            <Link
+              href="/aeo"
+              className="bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold py-4 px-8 rounded-lg hover:from-red-700 hover:to-orange-700 transition-all duration-200 inline-block text-lg shadow-xl"
+            >
+              Find My Website's Weak Points →
+            </Link>
           </div>
           
           {/* Website Builder CTA */}
@@ -244,17 +263,32 @@ export default function Home() {
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Dominate Search Results?
+            Stop Losing Customers to Hidden Website Problems
           </h2>
           <p className="text-xl text-gray-300 mb-8">
-            Join thousands of businesses using AI-powered SEO to increase their organic traffic and rankings.
+            Every day you wait, competitors are capturing customers who can't find you online. Our free scan reveals exactly what's costing you business.
           </p>
-          <Link
-            href="/plans"
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-4 px-8 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 inline-block text-lg"
-          >
-            Start SEO Automation
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/aeo"
+              className="bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold py-4 px-8 rounded-lg hover:from-red-700 hover:to-orange-700 transition-all duration-200 inline-block text-lg shadow-xl"
+            >
+              🚨 Find My Website Problems
+            </Link>
+            <Link
+              href="/case-studies"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-8 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 inline-block text-lg"
+            >
+              See Success Stories
+            </Link>
+          </div>
+          
+          {/* Risk-free guarantee */}
+          <div className="mt-8 p-4 bg-green-900/20 border border-green-600 rounded-lg inline-block">
+            <p className="text-green-400 font-semibold">
+              ✅ Free scan reveals problems in under 60 seconds
+            </p>
+          </div>
         </div>
       </section>
     </div>

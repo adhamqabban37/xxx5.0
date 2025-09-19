@@ -28,7 +28,13 @@ const priceMap = {
 };
 
 const checkoutSchema = z.object({
-  planId: z.enum(['basic', 'pro', 'growth'])
+  planId: z.enum(['basic', 'pro', 'growth']),
+  customerInfo: z.object({
+    email: z.string().email().optional(),
+    name: z.string().optional(),
+    company: z.string().optional(),
+    phone: z.string().optional()
+  }).optional()
 });
 
 export async function POST(req: NextRequest) {
@@ -46,12 +52,13 @@ export async function POST(req: NextRequest) {
       return createErrorResponse('Unauthorized', 401);
     }
 
-    const { planId } = result.data;
+    const { planId, customerInfo } = result.data;
     
     logger.logCheckout('checkout_started', '', {
       planId,
       billingMode: process.env.BILLING_MODE || 'sandbox',
-      request: logger.extractRequestContext(req)
+      request: logger.extractRequestContext(req),
+      hasCustomerInfo: !!customerInfo
     });
 
     const user = await prisma.user.findUnique({
@@ -81,10 +88,18 @@ export async function POST(req: NextRequest) {
     // Create or get Stripe customer
     let customerId: string;
     try {
-      const customer = await stripe.customers.create({
+      const customerData: any = {
         email: session.user.email,
         metadata: { userId: user.id }
-      });
+      };
+
+      // Add customer info if provided
+      if (customerInfo) {
+        if (customerInfo.name) customerData.name = customerInfo.name;
+        if (customerInfo.phone) customerData.phone = customerInfo.phone;
+      }
+
+      const customer = await stripe.customers.create(customerData);
       customerId = customer.id;
     } catch (stripeError) {
       logger.logCheckout('checkout_stripe_customer_error', '', { error: stripeError });

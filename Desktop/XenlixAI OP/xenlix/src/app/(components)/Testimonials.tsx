@@ -26,42 +26,42 @@ const testimonials: Testimonial[] = [
     "author": "Luis R., Owner",
     "company": "Shine Auto Detailing",
     "rating": 5,
-    "logo": "https://via.placeholder.com/48x48/f3f4f6/6b7280?text=SA"
+    "logo": "/placeholders/generic-48.svg"
   },
   {
     "quote": "From nowhere to top 3 in ChatGPT/Perplexity for core terms.",
     "author": "Dr. Nguyen",
     "company": "Lakeview Dental",
     "rating": 5,
-    "logo": "https://via.placeholder.com/48x48/f3f4f6/6b7280?text=LD"
+    "logo": "/placeholders/generic-48.svg"
   },
   {
     "quote": "-38% blended CAC after PMax + AEO in 30 days.",
     "author": "Maya S., CMO",
     "company": "NutriCo",
     "rating": 5,
-    "logo": "https://via.placeholder.com/48x48/f3f4f6/6b7280?text=NC"
+    "logo": "/placeholders/generic-48.svg"
   },
   {
     "quote": "First month: 2x qualified leads, zero ad spend increase.",
     "author": "James Parker, VP Marketing",
     "company": "TechFlow Solutions",
     "rating": 5,
-    "logo": "https://via.placeholder.com/48x48/f3f4f6/6b7280?text=TF"
+    "logo": "/placeholders/generic-48.svg"
   },
   {
     "quote": "80% of our leads now come from AI search mentions.",
     "author": "Maria Gonzalez, Founder",
     "company": "LocalFresh Markets",
     "rating": 5,
-    "logo": "https://via.placeholder.com/48x48/f3f4f6/6b7280?text=LF"
+    "logo": "/placeholders/generic-48.svg"
   },
   {
     "quote": "ROI hit 340% after 6 weeks. Best investment we've made.",
     "author": "Tom Wilson, CEO",
     "company": "Apex Consulting",
     "rating": 5,
-    "logo": "https://via.placeholder.com/48x48/f3f4f6/6b7280?text=AC"
+    "logo": "/placeholders/generic-48.svg"
   }
 ];
 

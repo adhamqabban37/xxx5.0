@@ -28,6 +28,8 @@ model User {
   guidances     Guidance[]
   adDrafts      AdDraft[]
   seoJsonLds    SeoJsonLd[]
+  aeoAudits     AeoAudit[]
+  seoAudits     SeoAudit[]
 }
 
 model Guidance {
@@ -76,4 +78,30 @@ model SeoJsonLd {
   url       String
   blocks    Json     // JsonLdBlocks payload
   createdAt DateTime @default(now())
+}
+
+model AeoAudit {
+  id          String   @id @default(cuid())
+  userId      String?  // Made optional for anonymous scans
+  user        User?    @relation(fields: [userId], references: [id])
+  websiteUrl  String
+  businessInfo Json    // Business name, description, industry, etc.
+  auditResults Json    // AI audit scorecard, FAQ suggestions, entity readiness
+  faqJsonLd   Json?    // Generated FAQ JSON-LD schema
+  status      String   @default("completed") // completed, processing, failed
+  createdAt   DateTime @default(now())
+}
+
+model SeoAudit {
+  id            String   @id @default(cuid())
+  userId        String?  // Made optional for anonymous scans
+  user          User?    @relation(fields: [userId], references: [id])
+  websiteUrl    String
+  aeoAuditId    String?  // Link to original AEO audit if came from upsell
+  auditResults  Json     // Traditional SEO analysis results
+  recommendations Json   // SEO improvement suggestions
+  keywordData   Json?    // Keyword opportunities
+  technicalIssues Json?  // Technical SEO problems
+  status        String   @default("completed")
+  createdAt     DateTime @default(now())
 }

@@ -4,7 +4,7 @@ import { authOptions } from "../auth/[...nextauth]/route";
 import { LocalSEOGenerator } from "@/lib/local-seo-generator";
 import { SchemaGenerator } from "@/lib/schema-generator";
 import { BusinessProfileParser } from "@/lib/business-profile-parser";
-import { generateSEORecommendations } from "@/lib/seo-engine";
+// import { generateSEORecommendations } from "@/lib/seo-engine";
 import {
   CityData,
   BusinessLocation,
@@ -16,6 +16,9 @@ import {
 } from "@/types/local-seo";
 import { z } from "zod";
 import { validateRequest, createErrorResponse, createSuccessResponse } from "@/lib/validation";
+
+// Prevent execution during build time
+export const runtime = 'nodejs';
 
 // Request validation schemas
 const CityPageGenerationSchema = z.object({
@@ -289,7 +292,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         employeeCount: businessProfile.attributes.employeeCount?.toString()
       } : undefined
     };
-    const seoRecommendations = generateSEORecommendations(transformedProfile);
+    // const seoRecommendations = generateSEORecommendations(transformedProfile);
 
     // Generate schema markup using existing system
     const schemaGenerator = new SchemaGenerator({

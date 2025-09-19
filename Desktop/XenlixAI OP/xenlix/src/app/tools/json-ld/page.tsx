@@ -5,9 +5,13 @@ import { Metadata } from "next";
 import JsonLdGenerator from "./_components/JsonLdGenerator";
 
 export const metadata: Metadata = {
-  title: "JSON-LD Generator - XenlixAI",
-  description: "Generate structured data for your business website",
-  robots: "noindex, nofollow", // No indexing for tools pages
+  title: "JSON-LD Generator Tool | Create Structured Data for AEO - XenlixAI",
+  description: "Advanced JSON-LD structured data generator for Answer Engine Optimization. Create schema markup to help AI search engines understand and recommend your business.",
+  keywords: "JSON-LD generator, AEO structured data, AI search schema, answer engine optimization markup, ChatGPT schema",
+  robots: "noindex, nofollow", // Private tool for authenticated users
+  alternates: {
+    canonical: "/tools/json-ld"
+  }
 };
 
 export default async function JsonLdPage() {

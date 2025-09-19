@@ -16,12 +16,12 @@ interface LogoRowProps {
 }
 
 const defaultLogos: Logo[] = [
-  { name: "Shine Auto Detailing", src: "https://via.placeholder.com/120x40/f3f4f6/6b7280?text=Shine+Auto", width: 120, height: 40 },
-  { name: "Lakeview Dental", src: "https://via.placeholder.com/140x40/f3f4f6/6b7280?text=Lakeview+Dental", width: 140, height: 40 },
-  { name: "NutriCo", src: "https://via.placeholder.com/100x40/f3f4f6/6b7280?text=NutriCo", width: 100, height: 40 },
-  { name: "TechFlow Solutions", src: "https://via.placeholder.com/160x40/f3f4f6/6b7280?text=TechFlow", width: 160, height: 40 },
-  { name: "LocalFresh Markets", src: "https://via.placeholder.com/150x40/f3f4f6/6b7280?text=LocalFresh", width: 150, height: 40 },
-  { name: "Apex Consulting", src: "https://via.placeholder.com/130x40/f3f4f6/6b7280?text=Apex", width: 130, height: 40 },
+  { name: "Shine Auto Detailing", src: "/placeholders/shine-auto.svg", width: 120, height: 40 },
+  { name: "Lakeview Dental", src: "/placeholders/lakeview-dental.svg", width: 140, height: 40 },
+  { name: "NutriCo", src: "/placeholders/nutricorp.svg", width: 100, height: 40 },
+  { name: "TechFlow Solutions", src: "/placeholders/techflow.svg", width: 160, height: 40 },
+  { name: "LocalFresh Markets", src: "/placeholders/localfresh.svg", width: 150, height: 40 },
+  { name: "Apex Consulting", src: "/placeholders/apex.svg", width: 130, height: 40 },
 ];
 
 export default function LogoRow({ 

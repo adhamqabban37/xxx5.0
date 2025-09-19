@@ -1,8 +1,15 @@
 import NextAuth, { NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
-import * as bcrypt from "bcrypt";
+import { hash, compare } from "../../../../lib/bcryptjs";
 import "../../../../types/auth";
+
+export const runtime = "nodejs";
+
+// Validate required environment variables
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error("NEXTAUTH_SECRET environment variable is required");
+}
 
 const prisma = new PrismaClient();
 
@@ -30,7 +37,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Verify password
-          const isPasswordValid = await bcrypt.compare(
+          const isPasswordValid = await compare(
             credentials.password,
             user.passwordHash
           );
@@ -46,6 +53,8 @@ export const authOptions: NextAuthOptions = {
             name: user.email, // Use email as name since User model doesn't have name field
           };
         } catch (error) {
+          // Log error but don't expose details to client
+          console.error("Auth error:", error instanceof Error ? error.message : "Unknown error");
           return null;
         }
       }
