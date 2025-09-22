@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, startTransition } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -9,6 +10,20 @@ export default function Hero3D() {
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
+  const [websiteUrl, setWebsiteUrl] = useState('');
+  const router = useRouter();
+
+  // Fast URL normalization function
+  const normalize = (u: string): string => {
+    let v = u.trim();
+    if (!/^https?:\/\//i.test(v)) v = "https://" + v;
+    return v;
+  };
+
+  // Prefetch the summary page for instant navigation
+  useEffect(() => {
+    router.prefetch("/aeo/summary");
+  }, [router]);
 
   const mouseXSpring = useSpring(x);
   const mouseYSpring = useSpring(y);
@@ -36,6 +51,16 @@ export default function Hero3D() {
   const handleMouseLeave = () => {
     x.set(0);
     y.set(0);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!websiteUrl.trim()) return;
+
+    const normalizedUrl = normalize(websiteUrl);
+    startTransition(() => {
+      router.push(`/aeo/summary?url=${encodeURIComponent(normalizedUrl)}`);
+    });
   };
 
   // Check for reduced motion preference
@@ -108,6 +133,18 @@ export default function Hero3D() {
             </div>
           </motion.div>
 
+          {/* SEO Coming Soon Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="mb-4 flex justify-center"
+          >
+            <div className="bg-gray-500/20 backdrop-blur-sm border border-gray-400/30 rounded-full px-4 py-2 text-sm text-gray-300">
+              SEO — Coming Soon
+            </div>
+          </motion.div>
+
           {/* Headlines */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -118,11 +155,14 @@ export default function Hero3D() {
               transform: "translateZ(10px)",
             }}
           >
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-              Get Found in AI Search
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-4">
+              Dominate AI Answer Engines
             </h1>
+            <p className="text-lg md:text-xl text-blue-300 mb-6 font-medium">
+              Answer Engine Optimization (AEO) for ChatGPT, Claude, Perplexity, and Google AI
+            </p>
             <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              <span className="text-blue-400 font-semibold">Free AEO Audit</span> reveals why your website isn't showing up in ChatGPT, Claude, Perplexity and AI search engines.
+              <span className="text-blue-400 font-semibold">Free AEO Preview</span> reveals how AI engines see your business and unlocks your optimization roadmap.
             </p>
           </motion.div>
 
@@ -148,7 +188,7 @@ export default function Hero3D() {
             </p>
           </motion.div>
 
-          {/* CTAs */}
+          {/* AEO Scan Form */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -157,20 +197,40 @@ export default function Hero3D() {
               transformStyle: "preserve-3d",
               transform: "translateZ(15px)",
             }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
+            className="max-w-2xl mx-auto"
           >
-            <Link
-              href="/aeo-scan"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-8 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 text-lg shadow-xl hover:shadow-2xl hover:scale-105"
-            >
-              🤖 Run Free AI Audit
-            </Link>
-            <Link
-              href="/plans"
-              className="border border-blue-400 text-blue-400 font-bold py-4 px-8 rounded-lg hover:bg-blue-400 hover:text-white transition-all duration-200 text-lg hover:scale-105"
-            >
-              View Pricing
-            </Link>
+            <form action="/aeo/summary" method="GET" onSubmit={handleSubmit} noValidate className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <input
+                  type="url"
+                  name="url"
+                  placeholder="Enter Your Website URL (e.g. yourbusiness.com)"
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  required
+                  className="flex-1 px-6 py-4 text-lg rounded-lg border-2 border-blue-400/30 bg-white/10 backdrop-blur-sm text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/50 transition-all duration-200"
+                  suppressHydrationWarning={true}
+                />
+                <button
+                  type="submit"
+                  disabled={!websiteUrl.trim()}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-8 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 text-lg shadow-xl hover:shadow-2xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 min-w-[200px] flex items-center justify-center"
+                  suppressHydrationWarning={true}
+                >
+                  🤖 Run AEO Preview
+                </button>
+              </div>
+            </form>
+            
+            {/* Secondary CTA */}
+            <div className="mt-6 text-center">
+              <Link
+                href="/plans"
+                className="text-blue-400 hover:text-blue-300 transition-colors duration-200 text-lg font-medium underline underline-offset-4"
+              >
+                Get Full AEO Report
+              </Link>
+            </div>
           </motion.div>
 
           {/* Social Proof */}
@@ -183,7 +243,7 @@ export default function Hero3D() {
             }}
           >
             <p className="text-gray-400 mt-4">
-              ✅ Free AEO scan • ✅ Reveals weak points • ✅ No credit card required • ✅ Takes 60 seconds
+              ✅ Instant AEO analysis • ✅ Reveals optimization opportunities • ✅ No credit card required • ✅ Takes 60 seconds
             </p>
             
             <div className="mt-8 flex items-center justify-center gap-8 text-gray-400">

@@ -5,6 +5,8 @@ import JsonLd from "../(components)/JsonLd";
 import { serviceJsonLd, localBusinessJsonLd } from "../(lib)/schema";
 import { metadata } from "./metadata";
 import Link from "next/link";
+import { NAPDisplay } from "../../components/NAPDisplay";
+import { Footer } from "../../components/Footer";
 
 export { metadata };
 
@@ -216,6 +218,36 @@ export default function DallasPage() {
         </div>
       </section>
 
+      {/* Local Dallas Business Contact */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Located in the Heart of Dallas
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              We understand the Dallas market because we're part of it. Local expertise meets AI innovation.
+            </p>
+          </div>
+          
+          {/* Dallas-specific NAP Display */}
+          <div className="max-w-4xl mx-auto">
+            <NAPDisplay 
+              variant="full"
+              data={{
+                name: "XenlixAI Dallas",
+                streetAddress: "Contact for Dallas Address",
+                city: "Dallas",
+                state: "TX",
+                postalCode: "TBD",
+                phone: "+1-TBD-TBD-TBDD",
+                email: "dallas@xenlixai.com"
+              }} 
+            />
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -240,6 +272,9 @@ export default function DallasPage() {
           </Link>
         </div>
       </section>
+
+      {/* Site Footer with NAP Information */}
+      <Footer />
     </div>
   );
 }

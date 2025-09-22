@@ -25,6 +25,7 @@ export default function WebsiteBuilderButton({ websiteBuilderUrl }: WebsiteBuild
         <button 
           className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-8 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-lg cursor-pointer"
           onClick={handleClick}
+          suppressHydrationWarning={true}
         >
           Launch Website Builder
         </button>

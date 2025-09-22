@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { getBusinessProfileFromUrl } from "@/lib/business-profile-extractor";
 
 export const runtime = "nodejs";
 
@@ -42,10 +43,10 @@ async function performAEOAudit(formData: AEOScanRequest) {
 
   if (!howToContentPresent) {
     weakPoints.push({
-      category: 'How-To Content',
+      category: 'Problem: Customers Can\'t Find Your Expertise',
       severity: 'medium',
-      description: 'No step-by-step instructional content detected for AI engines',
-      impact: 'Medium - Missing instructional content opportunities'
+      description: 'Your website lacks step-by-step guides that AI engines recommend to users seeking solutions.',
+      impact: 'Why it matters: When customers ask AI "how to solve X," your competitors with instructional content get recommended instead of you—losing you qualified leads who are actively seeking help.'
     });
   } else {
     strengths.push('How-To content detected');
@@ -73,10 +74,10 @@ async function performAEOAudit(formData: AEOScanRequest) {
 
   // Always add some improvement opportunities
   weakPoints.push({
-    category: 'AI Content Optimization',
+    category: 'Problem: AI Doesn\'t Understand Your Value',
     severity: 'medium',
-    description: 'Content not optimized for conversational AI responses',
-    impact: 'Medium - Missing AI search visibility'
+    description: 'Your content isn\'t written in the conversational style that AI engines prefer when answering customer questions.',
+    impact: 'Why it matters: When customers ask AI for business recommendations, unclear messaging means you get overlooked for competitors who communicate more directly—resulting in lost opportunities worth thousands in potential revenue.'
   });
 
   return {
@@ -100,9 +101,9 @@ export async function POST(request: NextRequest) {
     
     const { websiteUrl, businessName, businessDescription, industry } = body;
 
-    if (!websiteUrl || !businessName) {
+    if (!websiteUrl) {
       return NextResponse.json(
-        { error: "Website URL and business name are required" },
+        { error: "Website URL is required" },
         { status: 400 }
       );
     }
@@ -117,27 +118,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Perform AEO audit
-    const auditResults = await performAEOAudit(body);
+    // Step 1: Extract business profile information from the website
+    console.log(`🔍 Extracting business profile for: ${websiteUrl}`);
+    const businessProfile = await getBusinessProfileFromUrl(websiteUrl);
+    
+    // Use extracted data as fallbacks for missing form data
+    const finalBusinessData = {
+      name: businessName || businessProfile.businessName || 'Unknown Business',
+      description: businessDescription || `Business website: ${websiteUrl}`,
+      industry: industry || 'Not specified',
+      address: businessProfile.address,
+      phone: businessProfile.phone,
+      email: businessProfile.email,
+      website: businessProfile.website || websiteUrl,
+      hours: businessProfile.hours,
+      googleReviewCount: businessProfile.googleReviewCount,
+      googleRating: businessProfile.googleRating,
+      logoUrl: businessProfile.logoUrl,
+      socialProfiles: businessProfile.socialProfiles
+    };
 
-    // Store audit in database
-    const aeoAudit = await prisma.aeoAudit.create({
+    // Step 2: Perform AEO audit with enriched business data
+    const auditResults = await performAEOAudit({
+      websiteUrl,
+      businessName: finalBusinessData.name,
+      businessDescription: finalBusinessData.description,
+      industry: finalBusinessData.industry
+    });
+
+    // Step 3: Store audit in database with complete business profile
+    // Workaround: Prisma type expects user relation in create input variant. Since user is optional, use unchecked create shape via type assertion.
+    // In future: determine userId from session and include explicitly.
+    const aeoAudit = await (prisma.aeoAudit as any).create({
       data: {
-        // userId is now optional - omit for anonymous scans
         websiteUrl,
-        businessInfo: {
-          name: businessName,
-          description: businessDescription,
-          industry
-        },
+        businessInfo: finalBusinessData,
         auditResults,
         status: 'completed'
       }
     });
 
+    // Step 4: Return results with business profile
     return NextResponse.json({ 
       success: true, 
       auditId: aeoAudit.id,
+      businessProfile: finalBusinessData,
       previewResults: {
         overallScore: auditResults.overallScore,
         weakPointsCount: auditResults.weakPoints.length,

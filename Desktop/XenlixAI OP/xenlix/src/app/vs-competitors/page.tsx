@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "XenlixAI vs Jasper vs SurferSEO | AI Marketing Platform Comparison",
+  title: "XenlixAI vs Competitors | AI Marketing Compare | XenlixAI",
   description: "Compare XenlixAI vs Jasper AI vs SurferSEO vs Writesonic. See features, pricing, and which AI marketing platform is best for your business needs.",
   keywords: "XenlixAI vs Jasper, AI marketing comparison, SurferSEO alternative, best AI marketing platform",
 };

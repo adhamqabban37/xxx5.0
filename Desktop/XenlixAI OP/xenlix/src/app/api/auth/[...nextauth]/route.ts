@@ -1,5 +1,6 @@
 import NextAuth, { NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import { PrismaClient } from "@prisma/client";
 import { hash, compare } from "../../../../lib/bcryptjs";
 import "../../../../types/auth";
@@ -13,8 +14,29 @@ if (!process.env.NEXTAUTH_SECRET) {
 
 const prisma = new PrismaClient();
 
+// Check if Google OAuth credentials are properly configured
+const hasValidGoogleCredentials = 
+  process.env.GOOGLE_CLIENT_ID && 
+  process.env.GOOGLE_CLIENT_SECRET &&
+  !process.env.GOOGLE_CLIENT_ID.includes('your-google-client-id') &&
+  !process.env.GOOGLE_CLIENT_SECRET.includes('your-google-client-secret');
+
 export const authOptions: NextAuthOptions = {
   providers: [
+    // Only include GoogleProvider if credentials are properly configured
+    ...(hasValidGoogleCredentials ? [
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        authorization: {
+          params: {
+            scope: 'openid email profile https://www.googleapis.com/auth/webmasters.readonly',
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      })
+    ] : []),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -67,15 +89,27 @@ export const authOptions: NextAuthOptions = {
     signIn: "/signin",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
       }
+      
+      // Store Google OAuth tokens for GSC API access
+      if (account && account.provider === 'google') {
+        token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
+        token.expiresAt = account.expires_at;
+      }
+      
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
+        // Include OAuth tokens in session for GSC API calls
+        session.accessToken = token.accessToken as string;
+        session.refreshToken = token.refreshToken as string;
+        session.expiresAt = token.expiresAt as number;
       }
       return session;
     },

@@ -3,8 +3,8 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "AI SEO Automation | Automated SEO Optimization | XenlixAI",
-  description: "AI-powered SEO automation for small business. Automated keyword research, schema markup, technical SEO fixes, and content optimization. Get found in search engines with AI.",
-  keywords: "AI SEO automation, automated SEO optimization, AI keyword research, schema markup automation, technical SEO",
+  description: "Automate your SEO with AI: keyword research, schema markup, technical fixes & content optimization. Get found in Google & AI search engines.",
+  keywords: "AI SEO automation, automated SEO, AI keyword research, schema markup automation, technical SEO automation",
 };
 
 export default function AISeOAutomationPage() {
@@ -139,8 +139,11 @@ export default function AISeOAutomationPage() {
                 </svg>
               </div>
               <h3 className="text-xl font-bold text-white mb-4">Schema Markup Automation</h3>
-              <p className="text-gray-300">
+              <p className="text-gray-300 mb-3">
                 Automatically implements JSON-LD structured data for rich snippets, FAQ pages, products, and local business information.
+              </p>
+              <p className="text-gray-300">
+                Try our <Link href="/tools/json-ld" className="text-purple-400 hover:text-purple-300 underline">JSON-LD schema generator tool</Link> to see the power of structured data in action.
               </p>
             </div>
             
@@ -212,8 +215,11 @@ export default function AISeOAutomationPage() {
             
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
               <h3 className="text-xl font-bold text-white mb-4">Can AI SEO really replace manual SEO work?</h3>
-              <p className="text-gray-300">
+              <p className="text-gray-300 mb-3">
                 For most small businesses, yes! AI handles 80% of SEO tasks faster and more accurately than manual work. It excels at technical SEO, keyword research, content optimization, and continuous monitoring - freeing you to focus on business growth instead of technical details.
+              </p>
+              <p className="text-gray-300">
+                <Link href="/calculators/pricing" className="text-cyan-400 hover:text-cyan-300 underline">Calculate your potential SEO savings</Link> to see how much time and money AI automation can save your business.
               </p>
             </div>
             

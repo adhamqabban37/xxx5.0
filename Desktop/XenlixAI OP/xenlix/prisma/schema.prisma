@@ -105,3 +105,91 @@ model SeoAudit {
   status        String   @default("completed")
   createdAt     DateTime @default(now())
 }
+
+model AuthoritySnapshot {
+  id          String   @id @default(cuid())
+  domain      String
+  oprDecimal  Float
+  oprInteger  Int
+  globalRank  Int?
+  source      String   @default("openpagerank")
+  fetchedAt   DateTime @default(now())
+  
+  @@index([domain, fetchedAt])
+}
+
+model PSISnapshot {
+  id             String   @id @default(cuid())
+  url            String
+  timestamp      DateTime @default(now())
+  performance    Float
+  accessibility  Float
+  bestPractices  Float
+  seo            Float
+  fcp            Float    // First Contentful Paint
+  lcp            Float    // Largest Contentful Paint
+  cls            Float    // Cumulative Layout Shift
+  fid            Float    // First Input Delay
+  ttfb           Float    // Time to First Byte
+  rawData        String   // JSON stringified raw PSI data
+  
+  @@index([url, timestamp])
+}
+
+model OPRSnapshot {
+  id               String   @id @default(cuid())
+  url              String
+  timestamp        DateTime @default(now())
+  totalClicks      Int
+  totalImpressions Int
+  averageCTR       Float
+  averagePosition  Float
+  topQueries       String   // JSON stringified array of top queries
+  rawData          String   // JSON stringified raw OPR data
+  
+  @@index([url, timestamp])
+}
+
+model SchemaSnapshot {
+  id             String   @id @default(cuid())
+  url            String
+  timestamp      DateTime @default(now())
+  schemasFound   Int
+  validSchemas   Int
+  invalidSchemas Int
+  schemas        String   // JSON stringified array of schema validation results
+  rawData        String   // JSON stringified raw schema data
+  
+  @@index([url, timestamp])
+}
+
+model AlertThreshold {
+  id          String   @id @default(cuid())
+  url         String
+  metricType  String   // 'psi_performance', 'opr_clicks', 'schema_errors', etc.
+  operator    String   // 'lt', 'gt', 'eq', 'lte', 'gte'
+  threshold   Float
+  enabled     Boolean  @default(true)
+  lastTriggered DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([url, metricType])
+}
+
+model AlertEvent {
+  id           String   @id @default(cuid())
+  thresholdId  String
+  threshold    AlertThreshold @relation(fields: [thresholdId], references: [id])
+  url          String
+  metricType   String
+  currentValue Float
+  thresholdValue Float
+  severity     String   // 'low', 'medium', 'high', 'critical'
+  sent         Boolean  @default(false)
+  sentAt       DateTime?
+  createdAt    DateTime @default(now())
+  
+  @@index([url, createdAt])
+  @@index([sent, createdAt])
+}

@@ -1,110 +1,167 @@
 import { MetadataRoute } from 'next'
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://xenlix.ai'
+// Import our canonical normalization
+import { normalizeCanonicalUrl } from '@/components/CanonicalNormalization'
+
+// Get city database for dynamic routes
+import { getCityDatabase } from '@/lib/sitemap-generator'
+
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://xenlix.ai'
+const MAX_URLS_PER_SITEMAP = 50000
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const allUrls: MetadataRoute.Sitemap = []
   
-  return [
+  // Core pages with canonical URLs
+  const corePages = [
     {
-      url: baseUrl,
+      url: normalizeCanonicalUrl('/', null),
       lastModified: new Date(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'daily' as const,
       priority: 1,
     },
     {
-      url: `${baseUrl}/plans`,
+      url: normalizeCanonicalUrl('/signup', null),
       lastModified: new Date(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/dallas`,
+      url: normalizeCanonicalUrl('/contact', null),
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'monthly' as const,
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/case-studies`,
+      url: normalizeCanonicalUrl('/plans', null),
       lastModified: new Date(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
+    },
+    {
+      url: normalizeCanonicalUrl('/vs-competitors', null),
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    },
+    {
+      url: normalizeCanonicalUrl('/case-studies', null),
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/case-studies/auto-detailing-dallas`,
+      url: normalizeCanonicalUrl('/seo-analyzer', null),
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
+    },
+    {
+      url: normalizeCanonicalUrl('/schema-generator', null),
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/case-studies/dental-practice-growth`,
+      url: normalizeCanonicalUrl('/ai-seo-automation', null),
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    },
+    {
+      url: normalizeCanonicalUrl('/ai-website-builder', null),
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/case-studies/saas-lead-generation`,
+      url: normalizeCanonicalUrl('/tools/json-ld', null),
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    },
+    {
+      url: normalizeCanonicalUrl('/calculators/pricing', null),
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/case-studies/restaurant-optimization`,
+      url: normalizeCanonicalUrl('/calculators/roi', null),
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly' as const,
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/case-studies/consulting-firm-growth`,
+      url: normalizeCanonicalUrl('/aeo-scan', null),
       lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
     },
     {
-      url: `${baseUrl}/calculators/roi`,
+      url: normalizeCanonicalUrl('/ads', null),
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    },
+    {
+      url: normalizeCanonicalUrl('/business/import', null),
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
       priority: 0.6,
     },
+    // Special Dallas page
     {
-      url: `${baseUrl}/ai`,
+      url: normalizeCanonicalUrl('/dallas', null),
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
     },
-    {
-      url: `${baseUrl}/ai-seo-automation`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/ai-website-builder`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/ads`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/vs-competitors`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/guidance`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.4,
-    }
   ]
+
+  allUrls.push(...corePages)
+
+  // Dynamic city pages
+  try {
+    const cityDatabase = await getCityDatabase()
+    const cityUrls = Object.keys(cityDatabase).map(citySlug => ({
+      url: normalizeCanonicalUrl(`/${citySlug}`, null),
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }))
+    
+    allUrls.push(...cityUrls)
+  } catch (error) {
+    console.warn('Failed to load city database for sitemap:', error)
+  }
+
+  // Case study pages
+  try {
+    const caseStudyPages = [
+      'auto-detailing-dallas',
+      'consulting-firm-lead-generation', 
+      'dental-practice-ai-optimization',
+      'restaurant-chain-expansion',
+      'saas-blended-cac-reduction'
+    ]
+    
+    const caseStudyUrls = caseStudyPages.map(slug => ({
+      url: normalizeCanonicalUrl(`/case-studies/${slug}`, null),
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    }))
+    
+    allUrls.push(...caseStudyUrls)
+  } catch (error) {
+    console.warn('Failed to generate case study URLs for sitemap:', error)
+  }
+
+  // Limit to MAX_URLS_PER_SITEMAP
+  const limitedUrls = allUrls.slice(0, MAX_URLS_PER_SITEMAP)
+  
+  console.log(`Generated sitemap with ${limitedUrls.length} URLs (limit: ${MAX_URLS_PER_SITEMAP})`)
+  
+  return limitedUrls
 }

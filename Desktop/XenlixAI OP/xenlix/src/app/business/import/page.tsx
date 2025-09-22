@@ -3,7 +3,7 @@ import BusinessProfileImporter from "../../(components)/BusinessProfileImporter"
 import { NormalizedBusinessProfile } from "@/lib/business-profile-parser";
 
 export const metadata: Metadata = {
-  title: "Business Profile Import | XenlixAI",
+  title: "Import Business Data | AI Profile Optimizer | XenlixAI",
   description: "Import and normalize your business profile from Google My Business, Yelp, Facebook, or custom JSON format for AI optimization.",
 };
 

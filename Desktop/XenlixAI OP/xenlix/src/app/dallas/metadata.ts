@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
-const title = 'AI SEO & Ads for Dallas Businesses | Answer Engine Optimization';
-const description = 'Get found in ChatGPT, Gemini, and Copilot with Answer Engine Optimization (AEO) + high-intent ads. Dominate Dallas search results and AI assistant responses. 14-day results guarantee.';
+const title = 'Dallas AI Marketing | Local SEO & AEO | XenlixAI';
+const description = 'Dallas AI marketing that gets you found in ChatGPT & Google. Local SEO + high-intent ads with 14-day results guarantee. Book your audit today!';
 const canonicalUrl = '/dallas';
 const imageUrl = '/img/dallas-hero.jpg';
 
@@ -42,8 +42,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: imageUrl,
-        width: 1920,
-        height: 1080,
+        width: 1200,
+        height: 630,
         alt: 'Dallas business district skyline representing AI SEO and digital marketing services',
       },
     ],

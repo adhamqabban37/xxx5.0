@@ -5,8 +5,8 @@ import { Metadata } from "next";
 import JsonLdGenerator from "./_components/JsonLdGenerator";
 
 export const metadata: Metadata = {
-  title: "JSON-LD Generator Tool | Create Structured Data for AEO - XenlixAI",
-  description: "Advanced JSON-LD structured data generator for Answer Engine Optimization. Create schema markup to help AI search engines understand and recommend your business.",
+  title: "JSON-LD Generator | Free Schema Tool | XenlixAI",
+  description: "Generate JSON-LD schema markup instantly for AI search optimization. Help ChatGPT understand your business with proper structured data. Free tool!",
   keywords: "JSON-LD generator, AEO structured data, AI search schema, answer engine optimization markup, ChatGPT schema",
   robots: "noindex, nofollow", // Private tool for authenticated users
   alternates: {

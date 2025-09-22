@@ -11,25 +11,24 @@ interface CaseStudyImageProps {
 
 export default function CaseStudyImage({ src, alt, fallbackTitle, fallbackCity }: CaseStudyImageProps) {
   return (
-    <Image
-      src={src}
-      alt={alt}
-      fill
-      className="object-cover"
-      onError={(e) => {
-        const target = e.target as HTMLImageElement;
-        const parent = target.parentElement;
-        if (parent) {
-          parent.innerHTML = `
-            <div class="w-full h-full flex items-center justify-center bg-white/10">
-              <div class="text-center text-white">
-                <h3 class="text-xl font-bold mb-2">${fallbackTitle}</h3>
-                <p class="text-sm opacity-75">${fallbackCity}</p>
-              </div>
-            </div>
-          `;
-        }
-      }}
-    />
+      <Image
+        src={src}
+        alt={alt || `${fallbackTitle} in ${fallbackCity}`}
+        width={1200}
+        height={600}
+        sizes="(max-width: 600px) 100vw, 1200px"
+        className="object-cover object-center rounded-xl"
+        quality={70}
+        priority
+        loading="eager"
+        style={{ maxWidth: '100%', height: 'auto' }}
+        unoptimized={false}
+        placeholder="blur"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+          target.nextElementSibling?.classList.remove('hidden');
+        }}
+      />
   );
 }

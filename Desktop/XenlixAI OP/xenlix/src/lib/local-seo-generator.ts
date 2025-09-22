@@ -592,13 +592,13 @@ export class LocalSEOGenerator {
   private generateCallToActions() {
     return {
       primary: {
-        text: 'Get Your Free Estimate Today',
-        url: '/contact',
+        text: 'Get Your Local SEO Plan',
+        url: '/plans?utm_source=city&utm_campaign=local',
         type: 'quote' as const
       },
       secondary: {
-        text: 'Call Now for Immediate Service',
-        url: `tel:${this.businessProfile.phone || '+1234567890'}`,
+        text: 'Calculate Your Marketing ROI',
+        url: '/calculators/pricing?utm_source=city',
         type: 'contact' as const
       }
     };

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/fetcher';
 import { useFetcherToast } from '@/hooks/useFetcherToast';
+import { NAPDisplay } from '@/components/NAPDisplay';
+import { Footer } from '@/components/Footer';
 
 interface FormData {
   name: string;
@@ -405,22 +407,17 @@ export default function ContactPage() {
         {/* Additional Contact Info */}
         <div className="mt-16 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Other Ways to Reach Us</h2>
-            <p className="text-gray-600">Choose the method that works best for you</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Business Information</h2>
+            <p className="text-gray-600">Contact us through any of these verified channels</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Email</h3>
-              <p className="text-gray-600 mb-2">hello@xenlix.ai</p>
-              <p className="text-sm text-gray-500">We respond within 24 hours</p>
-            </div>
-            
+          {/* NAP Display - Full Version */}
+          <div className="max-w-4xl mx-auto">
+            <NAPDisplay variant="full" />
+          </div>
+          
+          {/* Additional Contact Methods */}
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -442,9 +439,23 @@ export default function ContactPage() {
               <p className="text-gray-600 mb-2">Self-service resources</p>
               <p className="text-sm text-gray-500">Guides, tutorials & FAQs</p>
             </div>
+            
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Response Time</h3>
+              <p className="text-gray-600 mb-2">Within 24 hours</p>
+              <p className="text-sm text-gray-500">Email & form responses</p>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Site Footer with NAP Information */}
+      <Footer />
     </div>
   );
 }

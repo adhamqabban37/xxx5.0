@@ -72,8 +72,13 @@ export default function SEOAuditPage() {
         throw new Error(result.error || 'Failed to perform SEO audit');
       }
 
-      // Redirect to results page
-      router.push(`/seo/results?id=${result.auditId}`);
+      // Store results in session for immediate access
+      if (result.auditData) {
+        sessionStorage.setItem(`seoAnalysisResult_${result.auditId}`, JSON.stringify(result.auditData));
+      }
+
+      // Redirect to results page with clean URL
+      router.push(`/seo/results/${result.auditId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

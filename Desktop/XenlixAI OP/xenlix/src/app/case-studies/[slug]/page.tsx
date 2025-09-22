@@ -238,16 +238,33 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   return {
     title: `${study.title} | Case Study`,
     description: study.summary,
+    keywords: `${study.industry} case study, ${study.city} ${study.industry}, AEO case study, AI marketing results, ${study.industry} marketing success`,
     alternates: {
-      canonical: `/case-studies/${study.slug}`,
+      canonical: `https://www.xenlixai.com/case-studies/${study.slug}`,
     },
     openGraph: {
-      title: study.title,
+      title: `${study.title} | Case Study`,
       description: study.summary,
-      images: [study.heroImage],
       type: "article",
+      url: `https://www.xenlixai.com/case-studies/${study.slug}`,
+      siteName: "XenlixAI",
       publishedTime: study.date,
+      images: [
+        {
+          url: `https://www.xenlixai.com${study.heroImage}`,
+          width: 1200,
+          height: 630,
+          alt: study.title
+        }
+      ]
     },
+    twitter: {
+      card: "summary_large_image",
+      title: `${study.title} | Case Study`,
+      description: study.summary,
+      creator: "@XenlixAI",
+      images: [`https://www.xenlixai.com${study.heroImage}`]
+    }
   };
 }
 

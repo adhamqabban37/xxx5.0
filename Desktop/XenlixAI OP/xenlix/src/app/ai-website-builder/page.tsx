@@ -3,7 +3,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "AI Website Builder | One-Click Business Websites | XenlixAI",
-  description: "Build professional business websites in minutes with AI. One-click website builder with mobile optimization, SEO-ready templates, and custom branding. No coding required.",
+  description: "Build professional websites in minutes with AI. One-click builder includes mobile optimization, SEO templates & custom branding. No coding needed!",
   keywords: "AI website builder, one-click website builder, business website creator, mobile optimization, SEO templates",
 };
 
@@ -126,8 +126,11 @@ export default function AIWebsiteBuilderPage() {
                 </svg>
               </div>
               <h3 className="text-xl font-bold text-white mb-4">SEO-Ready Templates</h3>
-              <p className="text-gray-300">
+              <p className="text-gray-300 mb-3">
                 Built-in SEO optimization with meta tags, schema markup, fast loading, and search engine friendly structure.
+              </p>
+              <p className="text-gray-300">
+                Generate professional <Link href="/tools/json-ld" className="text-green-400 hover:text-green-300 underline">schema markup</Link> and see our <Link href="/plans" className="text-green-400 hover:text-green-300 underline">pricing plans</Link> for complete website automation.
               </p>
             </div>
             

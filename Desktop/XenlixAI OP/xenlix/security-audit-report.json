@@ -1,0 +1,71 @@
+{
+  "timestamp": "2025-09-21T22:47:33.470Z",
+  "summary": {
+    "passed": 0,
+    "failed": 6,
+    "warnings": 2,
+    "securityScore": 0,
+    "isSecure": false
+  },
+  "httpsEnforcement": [],
+  "securityHeaders": [],
+  "mixedContent": [
+    "src\\app\\aeo\\page.tsx:26 - if (!url.startsWith('http://') && !url.startsWith('https://')) {",
+    "src\\app\\api\\analyze-content\\route.ts:813 - message: 'Please enter a valid website URL starting with http:// or https://',",
+    "src\\components\\CanonicalNormalization.tsx:63 - if (forceHttps && canonicalUrl.startsWith('http://')) {",
+    "src\\components\\CanonicalNormalization.tsx:64 - canonicalUrl = canonicalUrl.replace('http://', 'https://');"
+  ],
+  "safeBrowsing": [],
+  "errors": [
+    {
+      "category": "Mixed Content",
+      "message": "HTTP reference found: src\\app\\aeo\\page.tsx:26 - if (!url.startsWith('http://') && !url.startsWith('https://')) {",
+      "details": null,
+      "timestamp": "2025-09-21T22:47:32.988Z"
+    },
+    {
+      "category": "Mixed Content",
+      "message": "HTTP reference found: src\\app\\api\\analyze-content\\route.ts:813 - message: 'Please enter a valid website URL starting with http:// or https://',",
+      "details": null,
+      "timestamp": "2025-09-21T22:47:33.029Z"
+    },
+    {
+      "category": "Mixed Content",
+      "message": "HTTP reference found: src\\components\\CanonicalNormalization.tsx:63 - if (forceHttps && canonicalUrl.startsWith('http://')) {",
+      "details": null,
+      "timestamp": "2025-09-21T22:47:33.103Z"
+    },
+    {
+      "category": "Mixed Content",
+      "message": "HTTP reference found: src\\components\\CanonicalNormalization.tsx:64 - canonicalUrl = canonicalUrl.replace('http://', 'https://');",
+      "details": null,
+      "timestamp": "2025-09-21T22:47:33.103Z"
+    },
+    {
+      "category": "Mixed Content",
+      "message": "Found 4 mixed content issues",
+      "details": null,
+      "timestamp": "2025-09-21T22:47:33.178Z"
+    },
+    {
+      "category": "Security Headers",
+      "message": "Could not check headers: getaddrinfo ENOTFOUND xenlix.ai",
+      "details": null,
+      "timestamp": "2025-09-21T22:47:33.457Z"
+    }
+  ],
+  "warnings": [
+    {
+      "category": "HTTPS",
+      "message": "Could not test production redirect: getaddrinfo ENOTFOUND xenlix.ai",
+      "details": null,
+      "timestamp": "2025-09-21T22:47:33.308Z"
+    },
+    {
+      "category": "Safe Browsing",
+      "message": "Google Safe Browsing API key not configured. Set GOOGLE_SAFE_BROWSING_API_KEY environment variable.",
+      "details": null,
+      "timestamp": "2025-09-21T22:47:33.458Z"
+    }
+  ]
+}

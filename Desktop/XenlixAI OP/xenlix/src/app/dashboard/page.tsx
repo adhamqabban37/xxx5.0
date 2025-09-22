@@ -13,12 +13,16 @@ import {
   Users, 
   Calendar,
   Download,
-  Copy,
   Code,
   Search,
   Globe,
   Zap
 } from 'lucide-react';
+import GSCDashboard from '@/components/GSCDashboard';
+import { DashboardCardWithSparkline, MiniSparkline } from '@/components/Sparkline';
+import { DashboardMetrics } from './_components/DashboardMetrics';
+import { CopyButton } from './_components/CopyButton';
+import SEOGuidanceSection from './_components/SEOGuidanceSection';
 
 export const metadata: Metadata = {
   title: "Dashboard | XenlixAI - AI Marketing & AEO Analytics",
@@ -47,17 +51,28 @@ export default async function DashboardPage() {
     weeklyProgress: [
       { date: '2024-01-01', score: 45 },
       { date: '2024-01-08', score: 52 },
-      { date: '2024-01-15', score: 58 }
+      { date: '2024-01-15', score: 58 },
+      { date: '2024-01-22', score: 58 },
     ],
     traffic: {
-      current: 3250,
-      previous: 2100,
-      change: 54.8
+      current: 12543,
+      previous: 10234,
+      change: 22.6,
+      sparklineData: [8500, 9200, 9800, 10100, 10600, 11200, 11800, 12100, 12300, 12543],
+      trend: 'up' as const,
     },
     rankings: {
-      top10: 23,
-      top50: 67,
-      totalTracked: 150
+      top10: 47,
+      previous: 42,
+      totalTracked: 150,
+      sparklineData: [38, 40, 41, 39, 42, 45, 44, 46, 47, 47],
+      trend: 'up' as const,
+    },
+    performance: {
+      score: 73,
+      previous: 69,
+      sparklineData: [65, 66, 68, 67, 69, 71, 70, 72, 73, 73],
+      trend: 'up' as const,
     },
     competitorAnalysis: [
       { competitor: 'competitor1.com', score: 72, gap: 14 },
@@ -148,10 +163,6 @@ export default async function DashboardPage() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900">
       <nav className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
@@ -186,51 +197,9 @@ export default async function DashboardPage() {
         </div>
 
         {/* Performance Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-400">Overall Score</h3>
-              <div className={`text-2xl font-bold ${getScoreColor(premiumAuditData.overallScore)}`}>
-                {premiumAuditData.overallScore}/100
-              </div>
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-2">
-              <div 
-                className="bg-gradient-to-r from-red-500 to-yellow-500 h-2 rounded-full"
-                style={{ width: `${premiumAuditData.overallScore}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-400">Monthly Traffic</h3>
-              <TrendingUp className="w-5 h-5 text-green-400" />
-            </div>
-            <div className="text-2xl font-bold text-white">{premiumAuditData.traffic.current.toLocaleString()}</div>
-            <div className="text-sm text-green-400">+{premiumAuditData.traffic.change}% vs last month</div>
-          </div>
-
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-400">Top 10 Rankings</h3>
-              <Search className="w-5 h-5 text-blue-400" />
-            </div>
-            <div className="text-2xl font-bold text-white">{premiumAuditData.rankings.top10}</div>
-            <div className="text-sm text-gray-400">of {premiumAuditData.rankings.totalTracked} keywords</div>
-          </div>
-
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-400">Next Scan</h3>
-              <Calendar className="w-5 h-5 text-purple-400" />
-            </div>
-            <div className="text-lg font-bold text-white">
-              {new Date(premiumAuditData.nextScan).toLocaleDateString()}
-            </div>
-            <div className="text-sm text-gray-400">Auto-scheduled</div>
-          </div>
-        </div>
+        <DashboardMetrics 
+          premiumAuditData={premiumAuditData}
+        />
 
         {/* Priority Quick Fixes */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 mb-8">
@@ -264,13 +233,7 @@ export default async function DashboardPage() {
                     <div className="bg-slate-900 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-400">Copy & Paste This Code:</span>
-                        <button
-                          onClick={() => copyToClipboard(fix.code)}
-                          className="flex items-center space-x-1 text-blue-400 hover:text-blue-300"
-                        >
-                          <Copy className="w-4 h-4" />
-                          <span className="text-sm">Copy</span>
-                        </button>
+                        <CopyButton code={fix.code} />
                       </div>
                       <pre className="text-sm text-green-400 overflow-x-auto">
                         <code>{fix.code}</code>
@@ -361,6 +324,30 @@ export default async function DashboardPage() {
                 )}
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Google Search Console Dashboard */}
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 mb-8">
+          <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+            <Globe className="w-6 h-6 mr-3 text-cyan-400" />
+            Google Search Console Analytics
+          </h2>
+          <Suspense fallback={
+            <div className="text-gray-400 p-4">Loading Search Console data...</div>
+          }>
+            <GSCDashboard />
+          </Suspense>
+        </div>
+
+        {/* SEO Optimization Guide */}
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white mb-2">📈 SEO & AEO Optimization Guide</h2>
+            <p className="text-gray-300">AI-powered recommendations to improve your search engine and answer engine visibility</p>
+          </div>
+          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
+            <SEOGuidanceSection />
           </div>
         </div>
 

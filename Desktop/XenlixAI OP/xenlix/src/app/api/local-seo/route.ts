@@ -335,11 +335,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const schemaMarkup = schemaGenerator.generateSchemas(businessProfileForSchema);
 
+    // Temporary placeholder recommendations until real engine added
+    const seoRecommendations = [
+      'Add city-specific FAQ schema',
+      'Improve internal linking between city pages',
+      'Ensure NAP consistency across all directory listings'
+    ];
+
     return createSuccessResponse({
       data: generationResult.data,
       seoRecommendations,
       schemaMarkup,
-      generationTime: Date.now() - Date.now() // This would be calculated properly
+      generationTime: 0
     });
 
   } catch (error) {

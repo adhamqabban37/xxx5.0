@@ -1,398 +1,623 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { AlertTriangle, CheckCircle, XCircle, TrendingDown, DollarSign, Clock, Users } from 'lucide-react';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAEOAnalytics } from '@/lib/analytics';
+import BusinessInfoHeader from '@/components/BusinessInfoHeader';
+import AINarrativeSummary from '@/components/AINarrativeSummary';
+import { OverallScoreDisplay, DetailedScoreBreakdown, AIEngineScores } from '@/components/ScoreVisualization';
+import { 
+  Brain, 
+  TrendingUp, 
+  Target, 
+  Globe, 
+  FileText, 
+  Users, 
+  MessageSquare,
+  AlertCircle,
+  CheckCircle,
+  Download,
+  ArrowLeft,
+  ExternalLink
+} from 'lucide-react';
 
-interface WeakPointCategory {
-  score: number;
-  status: 'good' | 'warning' | 'critical';
-  criticalIssues: string[];
-  impact: string;
-}
-
-interface AuditResults {
-  overallScore: number;
-  scanType: string;
-  weakPointsDetected: boolean;
-  criticalIssuesCount: number;
-  aeoCategories: {
-    answerEngineReadiness: WeakPointCategory;
-    entityOptimization: WeakPointCategory;
-    contentForAI: WeakPointCategory;
+interface ContentAnalysisResult {
+  url: string;
+  title: string;
+  metaDescription: string;
+  contentLength: number;
+  wordCount: number;
+  readabilityScore: number;
+  sentimentScore: number;
+  aeoOptimization: {
+    questionIntentScore: number;
+    answerReadinessScore: number;
+    conversationalToneScore: number;
+    overallAeoScore: number;
   };
-  seoCategories: {
-    technicalSEO: WeakPointCategory;
-    contentSEO: WeakPointCategory;
-    localSEO: WeakPointCategory;
+  keywordDensity: { [key: string]: number };
+  entities: {
+    people: string[];
+    places: string[];
+    organizations: string[];
   };
-  estimatedTrafficLoss: {
-    monthlyVisitorsMissed: number;
-    potentialRevenueLoss: string;
-    competitorAdvantage: string;
+  headingStructure: {
+    h1: string[];
+    h2: string[];
+    h3: string[];
   };
-  quickWins: string[];
-  upgradeValue: {
-    timeToSeeResults: string;
-    projectedTrafficIncrease: string;
-    aiVisibilityBoost: string;
-    competitiveCatchUp: string;
+  technicalSeo: {
+    hasMetaDescription: boolean;
+    metaDescriptionLength: number;
+    titleLength: number;
+    hasAltTags: number;
+    totalImages: number;
+    internalLinks: number;
+    externalLinks: number;
   };
-}
-
-interface AuditData {
-  auditId: string;
-  results: AuditResults;
+  aiEngineOptimization: {
+    googleAI: {
+      score: number;
+      recommendations: string[];
+    };
+    openAI: {
+      score: number;
+      recommendations: string[];
+    };
+    anthropic: {
+      score: number;
+      recommendations: string[];
+    };
+    perplexity: {
+      score: number;
+      recommendations: string[];
+    };
+  };
+  businessAddress?: {
+    address?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    phone?: string;
+    postalCode?: string;
+  };
 }
 
 export default function AEOResultsPage() {
-  const [auditData, setAuditData] = useState<AuditData | null>(null);
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Loading your AEO analysis...</p>
+        </div>
+      </div>
+    }>
+      <AEOResultsContent />
+    </Suspense>
+  );
+}
+
+function AEOResultsContent() {
+  const [analysisData, setAnalysisData] = useState<ContentAnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState(false);
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const auditId = searchParams.get('id');
+  const { trackResultsView, trackUpsellClick, trackAnalyzeAnotherClick, trackDownloadReport } = useAEOAnalytics();
 
   useEffect(() => {
-    // Simulate fetching audit data
-    const simulateAuditData = () => {
-      const mockData: AuditData = {
-        auditId: auditId || 'mock-audit-id',
-        results: {
-          overallScore: 58,
-          scanType: 'free',
-          weakPointsDetected: true,
-          criticalIssuesCount: 6,
-          aeoCategories: {
-            answerEngineReadiness: {
-              score: 42,
-              status: 'critical',
-              criticalIssues: [
-                "No FAQ schema markup found",
-                "Missing structured data for AI engines",
-                "Content not optimized for AI answers"
-              ],
-              impact: "Your business won't appear in ChatGPT, Claude, or Perplexity results"
-            },
-            entityOptimization: {
-              score: 55,
-              status: 'warning',
-              criticalIssues: [
-                "Business entity not defined in knowledge graphs",
-                "Missing organization schema",
-                "No local business markup"
-              ],
-              impact: "AI engines can't understand what your business does"
-            },
-            contentForAI: {
-              score: 48,
-              status: 'critical',
-              criticalIssues: [
-                "Content not in Q&A format",
-                "Missing conversational keywords",
-                "No how-to or step-by-step content"
-              ],
-              impact: "AI won't recommend your business as a solution"
-            }
-          },
-          seoCategories: {
-            technicalSEO: {
-              score: 35,
-              status: 'critical',
-              criticalIssues: [
-                "Page load speed too slow (4.2s)",
-                "Missing meta descriptions on 12 pages",
-                "No XML sitemap detected"
-              ],
-              impact: "Google ranks you lower than competitors"
-            },
-            contentSEO: {
-              score: 52,
-              status: 'warning',
-              criticalIssues: [
-                "Thin content on main service pages",
-                "Missing target keywords in titles",
-                "No internal linking strategy"
-              ],
-              impact: "You're missing high-value keyword opportunities"
-            },
-            localSEO: {
-              score: 45,
-              status: 'critical',
-              criticalIssues: [
-                "Google My Business incomplete",
-                "Inconsistent NAP data across web",
-                "Only 3 customer reviews"
-              ],
-              impact: "Local customers can't find you"
-            }
-          },
-          estimatedTrafficLoss: {
-            monthlyVisitorsMissed: 1250,
-            potentialRevenueLoss: "$4,500",
-            competitorAdvantage: "65% ahead"
-          },
-          quickWins: [
-            "Auto-generate FAQ schema markup",
-            "Create AI-optimized content templates",
-            "Fix critical page speed issues",
-            "Generate complete sitemap",
-            "Optimize Google My Business profile"
-          ],
-          upgradeValue: {
-            timeToSeeResults: "2-4 weeks",
-            projectedTrafficIncrease: "150%",
-            aiVisibilityBoost: "10x more likely to appear in AI answers",
-            competitiveCatchUp: "Outrank competitors in 90 days"
-          }
-        }
-      };
-
-      setAuditData(mockData);
-      setLoading(false);
-    };
-
-    setTimeout(simulateAuditData, 2000); // Simulate scan time
-  }, [auditId]);
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'good':
-        return <CheckCircle className="h-6 w-6 text-green-500" />;
-      case 'warning':
-        return <AlertTriangle className="h-6 w-6 text-yellow-500" />;
-      case 'critical':
-        return <XCircle className="h-6 w-6 text-red-500" />;
-      default:
-        return <XCircle className="h-6 w-6 text-red-500" />;
+    // Check if user has paid access
+    const paymentSuccess = searchParams.get('payment_success') === 'true';
+    const accessToken = sessionStorage.getItem('aeo_access_token');
+    const sessionAccess = sessionStorage.getItem('aeo_full_access') === 'true';
+    
+    // Grant access if:
+    // 1. Coming from successful payment (payment_success=true in URL)
+    // 2. Has valid access token in session
+    // 3. Has session access flag set
+    const userHasAccess = paymentSuccess || accessToken || sessionAccess;
+    
+    if (!userHasAccess) {
+      // No access - redirect to summary page
+      console.log('No access to full results, redirecting to summary');
+      router.push('/aeo/summary');
+      return;
     }
+
+    // Set access flag in session for future visits during this session
+    if (paymentSuccess) {
+      sessionStorage.setItem('aeo_full_access', 'true');
+    }
+    
+    setHasAccess(true);
+
+    // Get analysis results from sessionStorage
+    const storedResults = sessionStorage.getItem('aeoAnalysisResult');
+    if (storedResults) {
+      try {
+        const data = JSON.parse(storedResults);
+        setAnalysisData(data);
+        
+        // Track results view
+        trackResultsView(data.url);
+      } catch (error) {
+        console.error('Failed to parse analysis results:', error);
+        // If no analysis data but has access, redirect to home to start new scan
+        router.push('/');
+      }
+    } else {
+      // If no analysis data but has access, redirect to home to start new scan
+      router.push('/');
+    }
+    setLoading(false);
+  }, [router, searchParams, trackResultsView]);
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600 bg-green-100';
+    if (score >= 60) return 'text-yellow-600 bg-yellow-100';
+    if (score >= 40) return 'text-orange-600 bg-orange-100';
+    return 'text-red-600 bg-red-100';
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'good':
-        return 'border-green-200 bg-green-50';
-      case 'warning':
-        return 'border-yellow-200 bg-yellow-50';
-      case 'critical':
-        return 'border-red-200 bg-red-50';
-      default:
-        return 'border-red-200 bg-red-50';
-    }
+  const getScoreBadge = (score: number) => {
+    if (score >= 80) return 'Excellent';
+    if (score >= 60) return 'Good';
+    if (score >= 40) return 'Fair';
+    return 'Needs Work';
   };
 
-  if (loading) {
+  if (loading || !hasAccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <h2 className="text-2xl font-semibold text-gray-700 mb-2">Scanning Your Website...</h2>
-              <p className="text-gray-500">Checking for AEO & SEO weak points</p>
-              <div className="mt-4 text-sm text-gray-400">
-                <p>✓ Analyzing AI readiness</p>
-                <p>✓ Checking technical SEO</p>
-                <p>✓ Evaluating content optimization</p>
-              </div>
-            </div>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">
+            {loading ? 'Loading your AEO analysis...' : 'Verifying access...'}
+          </p>
         </div>
       </div>
     );
   }
 
-  if (!auditData) {
+  if (!analysisData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg mt-8 p-6 text-center">
-            <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">Scan Failed</h2>
-            <p className="text-gray-500">Unable to complete the website scan.</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Analysis Not Found</h1>
+          <p className="text-gray-600 mb-6">We couldn't find your analysis results. Please try running the audit again.</p>
+          <button
+            onClick={() => router.push('/aeo')}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+            suppressHydrationWarning={true}
+          >
+            Run New Audit
+          </button>
         </div>
       </div>
     );
   }
+
+  const { aeoOptimization, aiEngineOptimization, technicalSeo, entities, keywordDensity } = analysisData;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Website Scan Complete
-          </h1>
-          <p className="text-gray-600 text-lg">
-            We found areas where your site is losing visibility
-          </p>
-        </div>
-
-        {/* Overall Score & Alert */}
-        <div className="bg-white rounded-lg shadow-lg border-2 border-red-200 mb-8">
-          <div className="bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-t-lg p-6 text-center">
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <AlertTriangle className="h-8 w-8" />
-              <h2 className="text-2xl font-bold">Critical Issues Detected</h2>
-            </div>
-            <p className="text-red-100">
-              Your website has {auditData.results.criticalIssuesCount} critical issues affecting visibility
-            </p>
-          </div>
-          <div className="p-6">
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-red-600 mb-1">{auditData.results.overallScore}/100</div>
-                <p className="text-gray-600">Overall Score</p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-red-600 mb-1">{auditData.results.estimatedTrafficLoss.monthlyVisitorsMissed}</div>
-                <p className="text-gray-600">Monthly Visitors Lost</p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-red-600 mb-1">{auditData.results.estimatedTrafficLoss.potentialRevenueLoss}</div>
-                <p className="text-gray-600">Potential Revenue Loss</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Key Message */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg p-8 mb-8 text-center">
-          <h3 className="text-2xl font-bold mb-4">
-            Fix These Issues to Rank Higher and Appear in AI Answers
-          </h3>
-          <p className="text-blue-100 text-lg mb-6">
-            Your competitors are {auditData.results.estimatedTrafficLoss.competitorAdvantage} because they've fixed these same issues. 
-            Don't let them steal your customers.
-          </p>
-          <div className="grid md:grid-cols-3 gap-4 text-center">
-            <div>
-              <TrendingDown className="h-8 w-8 mx-auto mb-2" />
-              <p className="font-semibold">Missing from AI Results</p>
-            </div>
-            <div>
-              <Users className="h-8 w-8 mx-auto mb-2" />
-              <p className="font-semibold">Customers Can't Find You</p>
-            </div>
-            <div>
-              <DollarSign className="h-8 w-8 mx-auto mb-2" />
-              <p className="font-semibold">Revenue Going to Competitors</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Scorecard Grid */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          {/* AEO Categories */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">AI Search Engine Issues</h3>
-            {Object.entries(auditData.results.aeoCategories).map(([key, category]) => (
-              <div key={key} className={`bg-white rounded-lg border-2 p-4 ${getStatusColor(category.status)}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-gray-900 capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                  </h4>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(category.status)}
-                    <span className="font-bold">{category.score}/100</span>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-700 mb-2 font-medium">{category.impact}</p>
-                <ul className="text-xs text-gray-600 space-y-1">
-                  {category.criticalIssues.slice(0, 2).map((issue, idx) => (
-                    <li key={idx}>• {issue}</li>
-                  ))}
-                  {category.criticalIssues.length > 2 && (
-                    <li className="text-blue-600 font-medium">+ {category.criticalIssues.length - 2} more issues</li>
-                  )}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          {/* SEO Categories */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Traditional SEO Issues</h3>
-            {Object.entries(auditData.results.seoCategories).map(([key, category]) => (
-              <div key={key} className={`bg-white rounded-lg border-2 p-4 ${getStatusColor(category.status)}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-gray-900 capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                  </h4>
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(category.status)}
-                    <span className="font-bold">{category.score}/100</span>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-700 mb-2 font-medium">{category.impact}</p>
-                <ul className="text-xs text-gray-600 space-y-1">
-                  {category.criticalIssues.slice(0, 2).map((issue, idx) => (
-                    <li key={idx}>• {issue}</li>
-                  ))}
-                  {category.criticalIssues.length > 2 && (
-                    <li className="text-blue-600 font-medium">+ {category.criticalIssues.length - 2} more issues</li>
-                  )}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Quick Wins Preview */}
-        <div className="bg-white rounded-lg shadow-lg border border-gray-200 mb-8 p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Wins Available (Premium)</h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            {auditData.results.quickWins.map((win, idx) => (
-              <div key={idx} className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-gray-700">{win}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Upgrade CTA */}
-        <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg shadow-xl p-8 text-center">
-          <h3 className="text-3xl font-bold mb-4">Get Full Reports & Fix These Issues</h3>
-          <p className="text-green-100 text-lg mb-6">
-            Unlock detailed SEO + AEO reports, auto-generated fixes, and ongoing tracking
-          </p>
+        <div className="mb-8">
+          <button
+            onClick={() => router.push('/aeo')}
+            className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
+            suppressHydrationWarning={true}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to AEO Audit
+          </button>
           
-          <div className="grid md:grid-cols-4 gap-4 mb-8">
-            <div className="text-center">
-              <Clock className="h-8 w-8 mx-auto mb-2" />
-              <p className="font-semibold">{auditData.results.upgradeValue.timeToSeeResults}</p>
-              <p className="text-sm text-green-100">To See Results</p>
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">AEO Analysis Results</h1>
+                <p className="text-blue-600 font-medium mb-3">See how AI engines see your business.</p>
+                <div className="flex items-center text-gray-600 mb-2">
+                  <Globe className="h-4 w-4 mr-2" />
+                  <a 
+                    href={analysisData.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-blue-600 flex items-center"
+                  >
+                    {analysisData.url}
+                    <ExternalLink className="h-3 w-3 ml-1" />
+                  </a>
+                </div>
+                <h2 className="text-xl text-gray-800">{analysisData.title}</h2>
+                {analysisData.metaDescription && (
+                  <p className="text-gray-600 mt-2">{analysisData.metaDescription}</p>
+                )}
+              </div>
+              <div className="text-right">
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getScoreColor(aeoOptimization.overallAeoScore)}`}>
+                  <Target className="h-4 w-4 mr-1" />
+                  Overall AEO Score: {Math.round(aeoOptimization.overallAeoScore)}%
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <TrendingDown className="h-8 w-8 mx-auto mb-2 rotate-180" />
-              <p className="font-semibold">{auditData.results.upgradeValue.projectedTrafficIncrease}</p>
-              <p className="text-sm text-green-100">Traffic Increase</p>
-            </div>
-            <div className="text-center">
-              <Users className="h-8 w-8 mx-auto mb-2" />
-              <p className="font-semibold">10x More</p>
-              <p className="text-sm text-green-100">AI Visibility</p>
-            </div>
-            <div className="text-center">
-              <DollarSign className="h-8 w-8 mx-auto mb-2" />
-              <p className="font-semibold">90 Days</p>
-              <p className="text-sm text-green-100">To Outrank Competitors</p>
+          </div>
+        </div>
+
+        {/* Business Information with Map */}
+        {analysisData.businessAddress && (
+          <div className="mb-8">
+            <BusinessInfoHeader 
+              businessAddress={analysisData.businessAddress}
+              businessData={{
+                name: analysisData.title,
+                website: analysisData.url
+              }}
+              url={analysisData.url}
+            />
+          </div>
+        )}
+
+        {/* AI Narrative Summary */}
+        <div className="mb-8">
+          <AINarrativeSummary 
+            scores={{
+              questionIntentScore: aeoOptimization.questionIntentScore,
+              answerReadinessScore: aeoOptimization.answerReadinessScore,
+              conversationalToneScore: aeoOptimization.conversationalToneScore,
+              overallAeoScore: aeoOptimization.overallAeoScore,
+              readabilityScore: analysisData.readabilityScore,
+              sentimentScore: analysisData.sentimentScore
+            }}
+            businessName={analysisData.title}
+          />
+        </div>
+
+        {/* Enhanced Score Visualization */}
+        <div className="mb-8">
+          <OverallScoreDisplay score={aeoOptimization.overallAeoScore} />
+        </div>
+
+        <div className="mb-8">
+          <DetailedScoreBreakdown 
+            scores={{
+              questionIntentScore: aeoOptimization.questionIntentScore,
+              answerReadinessScore: aeoOptimization.answerReadinessScore,
+              conversationalToneScore: aeoOptimization.conversationalToneScore,
+              technicalScore: (technicalSeo.hasMetaDescription ? 20 : 0) + 
+                             (technicalSeo.titleLength > 30 && technicalSeo.titleLength < 60 ? 20 : 0) + 
+                             (technicalSeo.hasAltTags / Math.max(technicalSeo.totalImages, 1) * 30) + 
+                             (technicalSeo.internalLinks > 3 ? 15 : technicalSeo.internalLinks * 5) + 
+                             (technicalSeo.externalLinks > 1 ? 15 : technicalSeo.externalLinks * 7),
+              readabilityScore: analysisData.readabilityScore,
+              aiEngineScores: {
+                googleAI: aiEngineOptimization.googleAI.score,
+                openAI: aiEngineOptimization.openAI.score,
+                anthropic: aiEngineOptimization.anthropic.score,
+                perplexity: aiEngineOptimization.perplexity.score
+              }
+            }}
+          />
+        </div>
+
+        <div className="mb-8">
+          <AIEngineScores 
+            scores={{
+              googleAI: aiEngineOptimization.googleAI.score,
+              openAI: aiEngineOptimization.openAI.score,
+              anthropic: aiEngineOptimization.anthropic.score,
+              perplexity: aiEngineOptimization.perplexity.score
+            }}
+          />
+        </div>
+
+        {/* AI Engine Optimization */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Brain className="h-6 w-6 mr-2 text-blue-600" />
+            AI Engine Optimization Scores
+          </h2>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Object.entries(aiEngineOptimization).map(([engine, data]) => (
+              <div key={engine} className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold capitalize">
+                    {engine === 'googleAI' ? 'Google AI' : 
+                     engine === 'openAI' ? 'OpenAI' : 
+                     engine === 'anthropic' ? 'Anthropic' :
+                     'Perplexity'}
+                  </h3>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${getScoreColor(data.score)}`}>
+                    {Math.round(data.score)}%
+                  </span>
+                </div>
+                
+                <div className="space-y-2">
+                  {data.recommendations.slice(0, 2).map((rec, index) => (
+                    <p key={index} className="text-xs text-gray-600 flex items-start">
+                      <AlertCircle className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+                      {rec}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Content Analysis */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          {/* Technical SEO */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <TrendingUp className="h-5 w-5 mr-2 text-green-600" />
+              Technical SEO
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span>Meta Description</span>
+                <span className={`px-2 py-1 rounded text-xs ${technicalSeo.hasMetaDescription ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  {technicalSeo.hasMetaDescription ? 'Present' : 'Missing'}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span>Title Length</span>
+                <span className={`px-2 py-1 rounded text-xs ${technicalSeo.titleLength >= 30 && technicalSeo.titleLength <= 60 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                  {technicalSeo.titleLength} chars
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span>Images with Alt Text</span>
+                <span className="text-gray-700">
+                  {technicalSeo.hasAltTags}/{technicalSeo.totalImages}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span>Internal Links</span>
+                <span className="text-gray-700">{technicalSeo.internalLinks}</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span>External Links</span>
+                <span className="text-gray-700">{technicalSeo.externalLinks}</span>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <button 
-              className="bg-white text-green-600 font-bold py-4 px-12 rounded-lg text-xl hover:bg-green-50 transition-all duration-200 shadow-lg"
-              onClick={() => window.location.href = '/checkout?plan=premium'}
-            >
-              Fix All Issues - $97/month
-            </button>
-            <p className="text-green-100 text-sm">
-              14-day money-back guarantee • Cancel anytime • Full access to all tools
+          {/* Content Stats */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <FileText className="h-5 w-5 mr-2 text-blue-600" />
+              Content Analysis
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span>Word Count</span>
+                <span className="text-gray-700">{analysisData.wordCount.toLocaleString()}</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span>Content Length</span>
+                <span className="text-gray-700">{analysisData.contentLength.toLocaleString()} chars</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span>Heading Structure</span>
+                <span className="text-gray-700">
+                  H1: {analysisData.headingStructure.h1.length}, 
+                  H2: {analysisData.headingStructure.h2.length}, 
+                  H3: {analysisData.headingStructure.h3.length}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span>Sentiment Score</span>
+                <span className={`px-2 py-1 rounded text-xs ${getScoreColor(analysisData.sentimentScore)}`}>
+                  {Math.round(analysisData.sentimentScore)}%
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Entities & Keywords */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Entities */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Detected Entities</h3>
+            
+            <div className="space-y-4">
+              {entities.people.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">People</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {entities.people.slice(0, 5).map((person, index) => (
+                      <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+                        {person}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {entities.places.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Places</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {entities.places.slice(0, 5).map((place, index) => (
+                      <span key={index} className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
+                        {place}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {entities.organizations.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Organizations</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {entities.organizations.slice(0, 5).map((org, index) => (
+                      <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm">
+                        {org}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Top Keywords */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Keyword Density</h3>
+            
+            <div className="space-y-3">
+              {Object.entries(keywordDensity).slice(0, 8).map(([keyword, density]) => (
+                <div key={keyword} className="flex justify-between items-center">
+                  <span className="text-gray-700 capitalize">{keyword}</span>
+                  <span className="text-sm text-gray-600">{density.toFixed(2)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="mt-8 text-center space-x-4">
+          <button
+            onClick={() => {
+              trackAnalyzeAnotherClick();
+              router.push('/');
+            }}
+            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-medium"
+            suppressHydrationWarning={true}
+          >
+            Analyze Another Site
+          </button>
+          
+          <button
+            onClick={() => {
+              // Track download event
+              trackDownloadReport(analysisData.url);
+              
+              // Create a simple text report
+              const report = `AEO Analysis Report for ${analysisData.url}
+
+Overall AEO Score: ${Math.round(aeoOptimization.overallAeoScore)}%
+
+Question Intent: ${Math.round(aeoOptimization.questionIntentScore)}%
+Answer Readiness: ${Math.round(aeoOptimization.answerReadinessScore)}%
+Conversational Tone: ${Math.round(aeoOptimization.conversationalToneScore)}%
+
+AI Engine Scores:
+- Google AI: ${aiEngineOptimization.googleAI.score}%
+- OpenAI: ${aiEngineOptimization.openAI.score}%
+- Anthropic: ${aiEngineOptimization.anthropic.score}%
+- Perplexity: ${aiEngineOptimization.perplexity.score}%
+
+Content Stats:
+- Word Count: ${analysisData.wordCount.toLocaleString()}
+- Readability Score: ${Math.round(analysisData.readabilityScore)}%
+- Sentiment Score: ${Math.round(analysisData.sentimentScore)}%`;
+
+              const blob = new Blob([report], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `aeo-analysis-${new Date().toISOString().split('T')[0]}.txt`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }}
+            className="bg-gray-600 text-white px-8 py-3 rounded-lg hover:bg-gray-700 transition font-medium inline-flex items-center"
+            suppressHydrationWarning={true}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download Report
+          </button>
+        </div>
+
+        {/* Upsell Section */}
+        <div className="mt-16 bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500 rounded-xl p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Need Help Fixing These Issues?
+            </h2>
+            <p className="text-gray-300 text-lg max-w-3xl mx-auto">
+              Our AEO analysis revealed opportunities to improve your AI search visibility. Let our experts help you implement these optimizations and build a website that gets found.
             </p>
-            <p className="text-green-200 text-xs">
-              ⚡ Limited time: First month 50% off for early adopters
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6 text-center">
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Globe className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">New Website Design</h3>
+              <p className="text-gray-300 text-sm">
+                Get a custom website built from scratch with AEO optimization built-in from day one.
+              </p>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6 text-center">
+              <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Target className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">AEO Optimization</h3>
+              <p className="text-gray-300 text-sm">
+                Let us optimize your existing website for AI search engines and improve your scores.
+              </p>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6 text-center">
+              <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Brain className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">AI Marketing Strategy</h3>
+              <p className="text-gray-300 text-sm">
+                Complete AI search marketing package with ongoing optimization and monitoring.
+              </p>
+            </div>
+          </div>
+          
+          <div className="text-center space-y-4">
+            <div className="space-x-4">
+              <button
+                onClick={() => {
+                  trackUpsellClick('website_builder', analysisData.url);
+                  router.push('/ai-website-builder');
+                }}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-8 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 text-lg shadow-xl"
+                suppressHydrationWarning={true}
+              >
+                Get New Website Built
+              </button>
+              
+              <button
+                onClick={() => {
+                  trackUpsellClick('consultation', analysisData.url);
+                  router.push('/contact');
+                }}
+                className="border border-purple-400 text-purple-400 font-bold py-4 px-8 rounded-lg hover:bg-purple-400 hover:text-white transition-all duration-200 text-lg"
+                suppressHydrationWarning={true}
+              >
+                Discuss My Results
+              </button>
+            </div>
+            
+            <p className="text-gray-400 text-sm">
+              ✅ Free consultation • ✅ Custom strategy • ✅ No commitment required
             </p>
           </div>
         </div>

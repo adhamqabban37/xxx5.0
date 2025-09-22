@@ -3,7 +3,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "XenlixAI Pricing Plans | AI Marketing Automation Pricing",
-  description: "Choose the perfect AI marketing automation plan for your business. Basic ($29), Pro ($79), and Growth ($199) plans with AI website builder, SEO automation, and ad creation.",
+  description: "Choose your AI marketing plan: Basic ($29), Pro ($79), or Growth ($199). Get AI websites, SEO automation & ad creation. 14-day free trial!",
   keywords: "AI marketing pricing, XenlixAI plans, AI automation cost, AI website builder pricing",
 };
 
@@ -110,11 +110,21 @@ export default function PlansPage() {
         }}
       />
       <div className="max-w-7xl mx-auto">
+        {/* Breadcrumb Navigation */}
+        <nav className="text-sm text-gray-400 mb-8">
+          <Link href="/" className="hover:text-white transition-colors">Home</Link>
+          <span className="mx-2">/</span>
+          <span className="text-white">Pricing Plans</span>
+        </nav>
+
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-white mb-6">Choose Your Plan</h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-4">
             Scale your business visibility in the AI era with our Answer Engine Optimization and AI advertising solutions
+          </p>
+          <p className="text-lg text-gray-300 max-w-xl mx-auto">
+            Not sure which plan is right for you? <Link href="/calculators/pricing" className="text-cyan-400 hover:text-cyan-300 underline">Calculate your ROI</Link> to find the perfect fit.
           </p>
         </div>
 

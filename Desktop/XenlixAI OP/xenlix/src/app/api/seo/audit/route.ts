@@ -59,13 +59,13 @@ export async function POST(request: NextRequest) {
     // Simulate SEO audit analysis (replace with real SEO service)
     const auditResults = await performSEOAudit(websiteUrl, businessInfo);
 
-    // Save to database
+    // Save to database (SeoAudit model does not have businessInfo field)
     const seoAudit = await prisma.seoAudit.create({
       data: {
         userId: user.id,
         websiteUrl,
-        businessInfo,
         auditResults,
+        recommendations: auditResults.recommendations || {},
         status: "completed"
       }
     });

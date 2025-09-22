@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, Shield, Clock, TrendingUp, Users, DollarSign, AlertTriangle, X } from 'lucide-react';
 
 interface PlanFeature {
@@ -23,7 +23,64 @@ interface Plan {
 
 const plans: Plan[] = [
   {
+    id: 'basic',
+    name: 'Complete AEO Report',
+    price: '$47',
+    interval: 'one-time',
+    description: 'Get your complete AEO analysis with step-by-step implementation guide',
+    popular: false,
+    cta: 'Unlock Full Report',
+    features: [
+      { feature: 'Complete AEO Analysis Report', included: true },
+      { feature: 'Step-by-Step Implementation Guide', included: true },
+      { feature: 'JSON-LD Schema Code', included: true },
+      { feature: 'AI Engine Optimization Tips', included: true },
+      { feature: '14-Day Email Support', included: true },
+      { feature: 'Downloadable PDF Report', included: true },
+      { feature: 'Priority Action Roadmap', included: true },
+      { feature: 'Instant Access', included: true },
+    ]
+  },
+  {
     id: 'premium',
+    name: 'Premium AEO Analysis',
+    price: '$97',
+    interval: 'one-time',
+    description: 'Complete AEO analysis plus competitor insights and ongoing support',
+    popular: true,
+    cta: 'Get Premium Analysis',
+    features: [
+      { feature: 'Everything in Complete Report', included: true },
+      { feature: 'Detailed Competitor Analysis', included: true },
+      { feature: 'Content Optimization Templates', included: true },
+      { feature: '30-Day Email Support', included: true },
+      { feature: 'Monthly Re-scan (3 months)', included: true },
+      { feature: 'Custom JSON-LD Templates', included: true },
+      { feature: 'Advanced AI Engine Strategies', included: true },
+      { feature: 'Priority Customer Support', included: true },
+    ]
+  },
+  {
+    id: 'free',
+    name: 'Free Trial',
+    price: '$0',
+    interval: '7 days',
+    description: 'Test all features with a 7-day free trial - no credit card required',
+    popular: false,
+    cta: 'Start Free Trial',
+    features: [
+      { feature: 'Full AEO Audit & Implementation', included: true },
+      { feature: 'Local SEO Optimization', included: true },
+      { feature: 'Schema Markup Generation', included: true },
+      { feature: 'City Page Generation', included: true },
+      { feature: 'Competitor Analysis', included: true },
+      { feature: 'Weekly Reporting', included: true },
+      { feature: 'Email Support', included: true },
+      { feature: 'No Credit Card Required', included: true },
+    ]
+  },
+  {
+    id: 'premium-monthly',
     name: 'Premium SEO + AEO',
     price: '$97',
     originalPrice: '$197',
@@ -64,9 +121,11 @@ const plans: Plan[] = [
 
 export default function CheckoutContent() {
   const searchParams = useSearchParams();
-  const selectedPlanId = searchParams.get('plan') || 'premium';
-  const [selectedPlan, setSelectedPlan] = useState(selectedPlanId);
+  const [selectedPlan, setSelectedPlan] = useState('free'); // Always start with default
+  const [analysisUrl, setAnalysisUrl] = useState(''); // Store analysis URL in state
+  const [isHydrated, setIsHydrated] = useState(false);
   const [showGuarantee, setShowGuarantee] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     name: '',
@@ -74,6 +133,24 @@ export default function CheckoutContent() {
     phone: '',
     website: ''
   });
+  
+  // Handle hydration and URL params after mount
+  useEffect(() => {
+    const selectedPlanId = searchParams.get('plan') || 'free';
+    const urlParam = searchParams.get('url') || '';
+    
+    setSelectedPlan(selectedPlanId);
+    setAnalysisUrl(urlParam);
+    setIsHydrated(true);
+    
+    // Update form data with URL if provided
+    if (urlParam) {
+      setFormData(prev => ({
+        ...prev,
+        website: urlParam
+      }));
+    }
+  }, [searchParams]);
 
   const currentPlan = plans.find(plan => plan.id === selectedPlan) || plans[0];
 
@@ -86,9 +163,35 @@ export default function CheckoutContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
     try {
-      const response = await fetch('/api/stripe/checkout', {
+      // Check if this is for AEO analysis purchase
+      if (analysisUrl && (selectedPlan === 'basic' || selectedPlan === 'premium')) {
+        // For AEO analysis purchases, simulate payment success and redirect to results
+        // In production, this would integrate with Stripe/PayPal
+        
+        // Simulate payment processing delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Set access token and redirect to results with payment success flag
+        sessionStorage.setItem('aeo_access_token', `aeo_${Date.now()}_${Math.random()}`);
+        sessionStorage.setItem('aeo_full_access', 'true');
+        
+        // Track the purchase (you could add this to analytics)
+        console.log('AEO Analysis purchased:', {
+          plan: selectedPlan,
+          url: analysisUrl,
+          customer: formData
+        });
+        
+        // Redirect to full results with payment success flag
+        window.location.href = `/aeo/results?payment_success=true&plan=${selectedPlan}`;
+        return;
+      }
+
+      // Original checkout flow for other plans
+      const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -103,12 +206,26 @@ export default function CheckoutContent() {
         const { url } = await response.json();
         window.location.href = url;
       } else {
-        console.error('Failed to create checkout session');
+        const errorData = await response.json();
+        console.error('Failed to create checkout session:', errorData);
+        alert(`Failed to create checkout session: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error:', error);
+      alert('An error occurred while processing your purchase. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Prevent hydration mismatch by waiting for client-side mount
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
@@ -167,16 +284,31 @@ export default function CheckoutContent() {
                     </div>
                   )}
                   
+                  {plan.id === 'free' && (
+                    <div className="absolute -top-4 right-8">
+                      <span className="bg-gradient-to-r from-green-400 to-emerald-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                        FREE
+                      </span>
+                    </div>
+                  )}
+                  
                   <div className="flex items-start justify-between mb-6">
                     <div>
                       <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
                       <p className="text-white/70 mb-4">{plan.description}</p>
                       <div className="flex items-baseline space-x-2">
-                        <span className="text-4xl font-bold text-white">{plan.price}</span>
+                        <span className={`text-4xl font-bold ${
+                          plan.id === 'free' 
+                            ? 'text-green-400' 
+                            : 'text-white'
+                        }`}>{plan.price}</span>
                         {plan.originalPrice && (
                           <span className="text-xl text-white/50 line-through">{plan.originalPrice}</span>
                         )}
                         <span className="text-white/70">/{plan.interval}</span>
+                        {plan.id === 'free' && (
+                          <span className="text-green-400 text-sm font-semibold ml-2">7-Day Trial</span>
+                        )}
                       </div>
                     </div>
                     <div className={`w-6 h-6 rounded-full border-2 ${
@@ -338,9 +470,21 @@ export default function CheckoutContent() {
 
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-4 px-6 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-lg"
+                  disabled={isLoading}
+                  className={`w-full font-semibold py-4 px-6 rounded-lg transition-all duration-200 text-lg ${
+                    isLoading 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
+                  } text-white`}
                 >
-                  {currentPlan.cta} - {currentPlan.price}/{currentPlan.interval}
+                  {isLoading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Processing...
+                    </div>
+                  ) : (
+                    `${currentPlan.cta} - ${currentPlan.price}/${currentPlan.interval}`
+                  )}
                 </button>
               </form>
             </div>

@@ -206,7 +206,15 @@ async function performAEOAudit(websiteUrl: string, businessInfo: any) {
       projectedTrafficIncrease: `${Math.floor(Math.random() * 100) + 80}%`,
       aiVisibilityBoost: "10x more likely to appear in AI answers",
       competitiveCatchUp: "Outrank competitors in 90 days"
-    }
+    },
+    // Provide suggested questions used for FAQ JSON-LD generation
+    suggestedQuestions: [
+      'What services does the business offer?',
+      'How does the business help its customers?',
+      'What makes this business different?',
+      'How can I get started?',
+      'What pricing or packages are available?'
+    ]
   };
 
   return mockResults;
@@ -214,7 +222,18 @@ async function performAEOAudit(websiteUrl: string, businessInfo: any) {
 
 // Generate FAQ JSON-LD schema
 function generateFAQJsonLD(businessInfo: any, auditResults: any) {
-  const faqItems = auditResults.suggestedQuestions.map((question: string, index: number) => {
+  const fallbackQuestions = [
+    'What services do you offer?',
+    'How do you help customers?',
+    'What makes your business different?',
+    'How can I get started?',
+    'Do you have pricing or packages?'
+  ];
+  const questions: string[] = Array.isArray(auditResults?.suggestedQuestions) && auditResults.suggestedQuestions.length > 0
+    ? auditResults.suggestedQuestions
+    : fallbackQuestions;
+
+  const faqItems = questions.map((question: string, index: number) => {
     let answer = "";
     
     switch(index) {

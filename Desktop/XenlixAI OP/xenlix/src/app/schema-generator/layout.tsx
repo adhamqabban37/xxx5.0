@@ -8,10 +8,11 @@ export const metadata: Metadata = {
     title: "Schema Generator | Free JSON-LD Structured Data Generator - XenlixAI",
     description: "Generate structured data (JSON-LD schema markup) for your business to improve SEO and AI search visibility. Free schema generator for local business, FAQ, product, and organization markup.",
     type: "website",
-    url: "/schema-generator",
+    url: "https://www.xenlixai.com/schema-generator",
+    siteName: "XenlixAI",
     images: [
       {
-        url: "/og-schema-generator.jpg",
+        url: "https://www.xenlixai.com/og-schema-generator.jpg",
         width: 1200,
         height: 630,
         alt: "Schema Generator Tool - XenlixAI"
@@ -22,10 +23,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Schema Generator | Free JSON-LD Structured Data Generator - XenlixAI",
     description: "Generate structured data (JSON-LD schema markup) for your business to improve SEO and AI search visibility. Free schema generator for local business, FAQ, product, and organization markup.",
-    images: ["/twitter-schema-generator.jpg"]
+    creator: "@XenlixAI",
+    images: ["https://www.xenlixai.com/og-schema-generator.jpg"]
   },
   alternates: {
-    canonical: "/schema-generator"
+    canonical: "https://www.xenlixai.com/schema-generator"
   }
 };
 

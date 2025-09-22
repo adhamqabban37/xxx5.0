@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON-LD Schema Generator - XenlixAI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .output-section {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #495057;
+        }
+
+        .output-section .section-title {
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+            background: white;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .schema-selector {
+            margin-bottom: 30px;
+        }
+
+        .schema-selector select {
+            font-size: 16px;
+            font-weight: 500;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .schema-selector select option {
+            background: white;
+            color: #333;
+        }
+
+        .dynamic-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .dynamic-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            padding: 8px 12px;
+            font-size: 12px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .output-textarea {
+            width: 100%;
+            height: 400px;
+            background: #2d2d2d;
+            color: #f8f8f2;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        .output-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-schema {
+            display: none;
+        }
+
+        .form-schema.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 500;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>JSON-LD Schema Generator</h1>
+            <p>Create structured data for better SEO and rich snippets</p>
+        </div>
+
+        <div class="main-content">
+            <div class="form-section">
+                <h2 class="section-title">Schema Configuration</h2>
+                
+                <div class="schema-selector">
+                    <label for="schemaType">Select Schema Type:</label>
+                    <select id="schemaType" onchange="switchSchema()">
+                        <option value="">Choose a schema type...</option>
+                        <option value="faq">FAQ Page</option>
+                        <option value="local">Local Business</option>
+                        <option value="howto">How-To Guide</option>
+                        <option value="product">Product</option>
+                        <option value="person">Person</option>
+                        <option value="article">Article</option>
+                    </select>
+                </div>
+
+                <!-- FAQ Schema Form -->
+                <div id="faq-form" class="form-schema">
+                    <div class="dynamic-section">
+                        <h3>FAQ Questions & Answers</h3>
+                        <div id="faq-items"></div>
+                        <button type="button" class="btn btn-primary" onclick="addFAQItem()">
+                            + Add Question
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Local Business Schema Form -->
+                <div id="local-form" class="form-schema">
+                    <div class="form-group">
+                        <label for="businessName">Business Name *</label>
+                        <input type="text" id="businessName" oninput="generateSchema()" placeholder="Your Business Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="businessType">Business Type *</label>
+                        <input type="text" id="businessType" oninput="generateSchema()" placeholder="e.g., Restaurant, Law Firm, Hospital">
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="businessPhone">Phone Number</label>
+                            <input type="tel" id="businessPhone" oninput="generateSchema()" placeholder="+1-555-123-4567">
+                        </div>
+                        <div class="form-group">
+                            <label for="businessWebsite">Website URL</label>
+                            <input type="url" id="businessWebsite" oninput="generateSchema()" placeholder="https://yourbusiness.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="streetAddress">Street Address</label>
+                        <input type="text" id="streetAddress" oninput="generateSchema()" placeholder="123 Main Street">
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" oninput="generateSchema()" placeholder="New York">
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State/Province</label>
+                            <input type="text" id="state" oninput="generateSchema()" placeholder="NY">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="zipCode">ZIP/Postal Code</label>
+                            <input type="text" id="zipCode" oninput="generateSchema()" placeholder="10001">
+                        </div>
+                        <div class="form-group">
+                            <label for="country">Country</label>
+                            <input type="text" id="country" oninput="generateSchema()" placeholder="United States">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How-To Schema Form -->
+                <div id="howto-form" class="form-schema">
+                    <div class="form-group">
+                        <label for="howtoTitle">How-To Title *</label>
+                        <input type="text" id="howtoTitle" oninput="generateSchema()" placeholder="How to Create a Website">
+                    </div>
+                    <div class="dynamic-section">
+                        <h3>Steps</h3>
+                        <div id="howto-steps"></div>
+                        <button type="button" class="btn btn-primary" onclick="addHowToStep()">
+                            + Add Step
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Schema Form -->
+                <div id="product-form" class="form-schema">
+                    <div class="form-group">
+                        <label for="productName">Product Name *</label>
+                        <input type="text" id="productName" oninput="generateSchema()" placeholder="iPhone 15 Pro">
+                    </div>
+                    <div class="form-group">
+                        <label for="brandName">Brand Name</label>
+                        <input type="text" id="brandName" oninput="generateSchema()" placeholder="Apple">
+                    </div>
+                    <div class="form-group">
+                        <label for="productDescription">Product Description</label>
+                        <textarea id="productDescription" oninput="generateSchema()" placeholder="Detailed description of your product..."></textarea>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="productSKU">SKU</label>
+                            <input type="text" id="productSKU" oninput="generateSchema()" placeholder="IPH15P-128-BLK">
+                        </div>
+                        <div class="form-group">
+                            <label for="productPrice">Price</label>
+                            <input type="number" id="productPrice" step="0.01" oninput="generateSchema()" placeholder="999.99">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="currency">Currency</label>
+                        <select id="currency" onchange="generateSchema()">
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="CAD">CAD</option>
+                            <option value="AUD">AUD</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Person Schema Form -->
+                <div id="person-form" class="form-schema">
+                    <div class="form-group">
+                        <label for="personName">Full Name *</label>
+                        <input type="text" id="personName" oninput="generateSchema()" placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="jobTitle">Job Title</label>
+                        <input type="text" id="jobTitle" oninput="generateSchema()" placeholder="Chief Executive Officer">
+                    </div>
+                    <div class="form-group">
+                        <label for="worksFor">Works For (Company)</label>
+                        <input type="text" id="worksFor" oninput="generateSchema()" placeholder="XenlixAI">
+                    </div>
+                    <div class="form-group">
+                        <label for="profileURL">Profile URL</label>
+                        <input type="url" id="profileURL" oninput="generateSchema()" placeholder="https://linkedin.com/in/johndoe">
+                    </div>
+                </div>
+
+                <!-- Article Schema Form -->
+                <div id="article-form" class="form-schema">
+                    <div class="form-group">
+                        <label for="articleHeadline">Headline *</label>
+                        <input type="text" id="articleHeadline" oninput="generateSchema()" placeholder="10 Tips for Better SEO">
+                    </div>
+                    <div class="form-group">
+                        <label for="articleAuthor">Author Name</label>
+                        <input type="text" id="articleAuthor" oninput="generateSchema()" placeholder="Jane Smith">
+                    </div>
+                    <div class="form-group">
+                        <label for="articlePublisher">Publisher</label>
+                        <input type="text" id="articlePublisher" oninput="generateSchema()" placeholder="XenlixAI Blog">
+                    </div>
+                    <div class="form-group">
+                        <label for="datePublished">Date Published</label>
+                        <input type="date" id="datePublished" onchange="generateSchema()">
+                    </div>
+                </div>
+
+                <div class="output-actions">
+                    <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                        Clear Form
+                    </button>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <h2 class="section-title">Generated JSON-LD Code</h2>
+                <textarea id="schemaOutput" class="output-textarea" readonly placeholder="Select a schema type and fill in the form to generate JSON-LD code..."></textarea>
+                <div class="output-actions">
+                    <button type="button" class="btn btn-success" onclick="copyToClipboard()">
+                        📋 Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification">
+        Code copied to clipboard!
+    </div>
+
+    <script>
+        let faqCount = 0;
+        let stepCount = 0;
+
+        function switchSchema() {
+            const schemaType = document.getElementById('schemaType').value;
+            const forms = document.querySelectorAll('.form-schema');
+            
+            // Hide all forms
+            forms.forEach(form => form.classList.remove('active'));
+            
+            // Show selected form
+            if (schemaType) {
+                const targetForm = document.getElementById(schemaType + '-form');
+                if (targetForm) {
+                    targetForm.classList.add('active');
+                }
+            }
+            
+            // Clear output if no schema selected
+            if (!schemaType) {
+                document.getElementById('schemaOutput').value = '';
+            } else {
+                generateSchema();
+            }
+        }
+
+        function addFAQItem() {
+            faqCount++;
+            const container = document.getElementById('faq-items');
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.id = 'faq-item-' + faqCount;
+            item.innerHTML = `
+                <button type="button" class="btn btn-danger" onclick="removeFAQItem(${faqCount})">×</button>
+                <div class="form-group">
+                    <label>Question ${faqCount}</label>
+                    <input type="text" id="faq-question-${faqCount}" oninput="generateSchema()" placeholder="What is your question?">
+                </div>
+                <div class="form-group">
+                    <label>Answer ${faqCount}</label>
+                    <textarea id="faq-answer-${faqCount}" oninput="generateSchema()" placeholder="Provide a detailed answer..."></textarea>
+                </div>
+            `;
+            container.appendChild(item);
+            generateSchema();
+        }
+
+        function removeFAQItem(id) {
+            const item = document.getElementById('faq-item-' + id);
+            if (item) {
+                item.remove();
+                generateSchema();
+            }
+        }
+
+        function addHowToStep() {
+            stepCount++;
+            const container = document.getElementById('howto-steps');
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.id = 'step-item-' + stepCount;
+            item.innerHTML = `
+                <button type="button" class="btn btn-danger" onclick="removeHowToStep(${stepCount})">×</button>
+                <div class="form-group">
+                    <label>Step ${stepCount}</label>
+                    <textarea id="howto-step-${stepCount}" oninput="generateSchema()" placeholder="Describe this step in detail..."></textarea>
+                </div>
+            `;
+            container.appendChild(item);
+            generateSchema();
+        }
+
+        function removeHowToStep(id) {
+            const item = document.getElementById('step-item-' + id);
+            if (item) {
+                item.remove();
+                generateSchema();
+            }
+        }
+
+        function generateSchema() {
+            const schemaType = document.getElementById('schemaType').value;
+            let schema = {};
+
+            switch (schemaType) {
+                case 'faq':
+                    schema = generateFAQSchema();
+                    break;
+                case 'local':
+                    schema = generateLocalBusinessSchema();
+                    break;
+                case 'howto':
+                    schema = generateHowToSchema();
+                    break;
+                case 'product':
+                    schema = generateProductSchema();
+                    break;
+                case 'person':
+                    schema = generatePersonSchema();
+                    break;
+                case 'article':
+                    schema = generateArticleSchema();
+                    break;
+                default:
+                    document.getElementById('schemaOutput').value = '';
+                    return;
+            }
+
+            const output = `<script type="application/ld+json">
+${JSON.stringify(schema, null, 2)}
+</script>`;
+            
+            document.getElementById('schemaOutput').value = output;
+        }
+
+        function generateFAQSchema() {
+            const questions = [];
+            const faqItems = document.querySelectorAll('[id^="faq-question-"]');
+            
+            faqItems.forEach((questionInput) => {
+                const id = questionInput.id.split('-')[2];
+                const question = questionInput.value.trim();
+                const answerInput = document.getElementById('faq-answer-' + id);
+                const answer = answerInput ? answerInput.value.trim() : '';
+                
+                if (question && answer) {
+                    questions.push({
+                        "@type": "Question",
+                        "name": question,
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": answer
+                        }
+                    });
+                }
+            });
+
+            return {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": questions
+            };
+        }
+
+        function generateLocalBusinessSchema() {
+            const businessName = document.getElementById('businessName').value.trim();
+            const businessType = document.getElementById('businessType').value.trim();
+            const phone = document.getElementById('businessPhone').value.trim();
+            const website = document.getElementById('businessWebsite').value.trim();
+            const street = document.getElementById('streetAddress').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const zip = document.getElementById('zipCode').value.trim();
+            const country = document.getElementById('country').value.trim();
+
+            const schema = {
+                "@context": "https://schema.org",
+                "@type": businessType || "LocalBusiness"
+            };
+
+            if (businessName) schema.name = businessName;
+            if (phone) schema.telephone = phone;
+            if (website) schema.url = website;
+
+            if (street || city || state || zip || country) {
+                schema.address = {
+                    "@type": "PostalAddress"
+                };
+                if (street) schema.address.streetAddress = street;
+                if (city) schema.address.addressLocality = city;
+                if (state) schema.address.addressRegion = state;
+                if (zip) schema.address.postalCode = zip;
+                if (country) schema.address.addressCountry = country;
+            }
+
+            return schema;
+        }
+
+        function generateHowToSchema() {
+            const title = document.getElementById('howtoTitle').value.trim();
+            const steps = [];
+            const stepInputs = document.querySelectorAll('[id^="howto-step-"]');
+            
+            stepInputs.forEach((stepInput, index) => {
+                const stepText = stepInput.value.trim();
+                if (stepText) {
+                    steps.push({
+                        "@type": "HowToStep",
+                        "name": `Step ${index + 1}`,
+                        "text": stepText
+                    });
+                }
+            });
+
+            return {
+                "@context": "https://schema.org",
+                "@type": "HowTo",
+                "name": title || "How-To Guide",
+                "step": steps
+            };
+        }
+
+        function generateProductSchema() {
+            const name = document.getElementById('productName').value.trim();
+            const brand = document.getElementById('brandName').value.trim();
+            const description = document.getElementById('productDescription').value.trim();
+            const sku = document.getElementById('productSKU').value.trim();
+            const price = document.getElementById('productPrice').value.trim();
+            const currency = document.getElementById('currency').value;
+
+            const schema = {
+                "@context": "https://schema.org",
+                "@type": "Product"
+            };
+
+            if (name) schema.name = name;
+            if (brand) schema.brand = { "@type": "Brand", "name": brand };
+            if (description) schema.description = description;
+            if (sku) schema.sku = sku;
+
+            if (price) {
+                schema.offers = {
+                    "@type": "Offer",
+                    "price": price,
+                    "priceCurrency": currency
+                };
+            }
+
+            return schema;
+        }
+
+        function generatePersonSchema() {
+            const name = document.getElementById('personName').value.trim();
+            const jobTitle = document.getElementById('jobTitle').value.trim();
+            const worksFor = document.getElementById('worksFor').value.trim();
+            const profileURL = document.getElementById('profileURL').value.trim();
+
+            const schema = {
+                "@context": "https://schema.org",
+                "@type": "Person"
+            };
+
+            if (name) schema.name = name;
+            if (jobTitle) schema.jobTitle = jobTitle;
+            if (worksFor) schema.worksFor = { "@type": "Organization", "name": worksFor };
+            if (profileURL) schema.sameAs = [profileURL];
+
+            return schema;
+        }
+
+        function generateArticleSchema() {
+            const headline = document.getElementById('articleHeadline').value.trim();
+            const author = document.getElementById('articleAuthor').value.trim();
+            const publisher = document.getElementById('articlePublisher').value.trim();
+            const datePublished = document.getElementById('datePublished').value;
+
+            const schema = {
+                "@context": "https://schema.org",
+                "@type": "Article"
+            };
+
+            if (headline) schema.headline = headline;
+            if (author) schema.author = { "@type": "Person", "name": author };
+            if (publisher) schema.publisher = { "@type": "Organization", "name": publisher };
+            if (datePublished) schema.datePublished = datePublished;
+
+            return schema;
+        }
+
+        function copyToClipboard() {
+            const output = document.getElementById('schemaOutput');
+            output.select();
+            output.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                showNotification();
+            } catch (err) {
+                // Fallback for modern browsers
+                navigator.clipboard.writeText(output.value).then(() => {
+                    showNotification();
+                }).catch(() => {
+                    alert('Failed to copy to clipboard. Please select the text and copy manually.');
+                });
+            }
+        }
+
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function clearForm() {
+            const schemaType = document.getElementById('schemaType').value;
+            
+            switch (schemaType) {
+                case 'faq':
+                    document.getElementById('faq-items').innerHTML = '';
+                    faqCount = 0;
+                    break;
+                case 'local':
+                    document.getElementById('businessName').value = '';
+                    document.getElementById('businessType').value = '';
+                    document.getElementById('businessPhone').value = '';
+                    document.getElementById('businessWebsite').value = '';
+                    document.getElementById('streetAddress').value = '';
+                    document.getElementById('city').value = '';
+                    document.getElementById('state').value = '';
+                    document.getElementById('zipCode').value = '';
+                    document.getElementById('country').value = '';
+                    break;
+                case 'howto':
+                    document.getElementById('howtoTitle').value = '';
+                    document.getElementById('howto-steps').innerHTML = '';
+                    stepCount = 0;
+                    break;
+                case 'product':
+                    document.getElementById('productName').value = '';
+                    document.getElementById('brandName').value = '';
+                    document.getElementById('productDescription').value = '';
+                    document.getElementById('productSKU').value = '';
+                    document.getElementById('productPrice').value = '';
+                    document.getElementById('currency').value = 'USD';
+                    break;
+                case 'person':
+                    document.getElementById('personName').value = '';
+                    document.getElementById('jobTitle').value = '';
+                    document.getElementById('worksFor').value = '';
+                    document.getElementById('profileURL').value = '';
+                    break;
+                case 'article':
+                    document.getElementById('articleHeadline').value = '';
+                    document.getElementById('articleAuthor').value = '';
+                    document.getElementById('articlePublisher').value = '';
+                    document.getElementById('datePublished').value = '';
+                    break;
+            }
+            
+            generateSchema();
+        }
+
+        // Initialize with first FAQ item for demo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up initial state
+            document.getElementById('schemaOutput').value = '';
+        });
+    </script>
+</body>
+</html>

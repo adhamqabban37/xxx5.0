@@ -317,6 +317,28 @@ export default function PricingCalculatorPage() {
         </div>
       )}
 
+      {/* Ready to Start CTA */}
+      <div className="mt-8 p-6 border border-primary/20 bg-primary/5 rounded-lg text-center">
+        <h3 className="text-lg font-semibold mb-2">Ready to Get Started?</h3>
+        <p className="text-muted-foreground mb-4">
+          Found your perfect plan? Start your AI marketing transformation today.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link 
+            href="/plans" 
+            className="inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition-colors"
+          >
+            View All Plans
+          </Link>
+          <Link 
+            href="/tools/json-ld" 
+            className="inline-flex items-center justify-center px-6 py-2 border border-primary text-sm font-medium rounded-md text-primary hover:bg-primary/10 transition-colors"
+          >
+            Try Our Tools
+          </Link>
+        </div>
+      </div>
+
       {/* JSON-LD Schema */}
       <script
         type="application/ld+json"

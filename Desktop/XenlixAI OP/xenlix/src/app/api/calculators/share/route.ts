@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 
     return createSuccessResponse({
       shareId,
-      url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/calculators/${type}?share=${shareId}`,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost:3000'}/calculators/${type}?share=${shareId}`,
       expiresAt: new Date(expiresAt).toISOString()
     });
 

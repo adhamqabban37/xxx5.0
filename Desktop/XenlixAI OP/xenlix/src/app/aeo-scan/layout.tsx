@@ -8,10 +8,11 @@ export const metadata: Metadata = {
     title: "Free AEO Scan | Answer Engine Optimization Audit - XenlixAI",
     description: "Get a free AEO (Answer Engine Optimization) audit to see why your website isn't showing up in ChatGPT, Claude, Perplexity and other AI search engines. Instant results in 60 seconds.",
     type: "website",
-    url: "/aeo-scan",
+    url: "https://www.xenlixai.com/aeo-scan",
+    siteName: "XenlixAI",
     images: [
       {
-        url: "/og-aeo-scan.jpg",
+        url: "https://www.xenlixai.com/og-aeo-scan.jpg",
         width: 1200,
         height: 630,
         alt: "Free AEO Scan - Answer Engine Optimization Audit"
@@ -22,10 +23,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Free AEO Scan | Answer Engine Optimization Audit - XenlixAI",
     description: "Get a free AEO (Answer Engine Optimization) audit to see why your website isn't showing up in ChatGPT, Claude, Perplexity and other AI search engines. Instant results in 60 seconds.",
-    images: ["/twitter-aeo-scan.jpg"]
+    creator: "@XenlixAI",
+    images: ["https://www.xenlixai.com/og-aeo-scan.jpg"]
   },
   alternates: {
-    canonical: "/aeo-scan"
+    canonical: "https://www.xenlixai.com/aeo-scan"
   }
 };
 

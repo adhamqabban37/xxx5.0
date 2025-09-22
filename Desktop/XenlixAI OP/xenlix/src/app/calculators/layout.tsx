@@ -9,12 +9,23 @@ export const metadata: Metadata = {
     title: 'Business Calculators | XenlixAI',
     description: 'Free ROI and pricing calculators to optimize your business decisions',
     type: 'website',
-    url: 'https://yourdomain.com/calculators',
+    url: 'https://www.xenlixai.com/calculators',
+    siteName: 'XenlixAI',
+    images: [
+      {
+        url: 'https://www.xenlixai.com/og-calculators.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Business Calculators - XenlixAI ROI & Pricing Tools',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Business Calculators | XenlixAI',
     description: 'Free ROI and pricing calculators to optimize your business decisions',
+    creator: '@XenlixAI',
+    images: ['https://www.xenlixai.com/og-calculators.jpg'],
   },
   robots: {
     index: true,

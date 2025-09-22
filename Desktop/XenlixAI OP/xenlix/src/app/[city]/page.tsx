@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { LocalSEOGenerator } from '@/lib/local-seo-generator';
 import { CityData, BusinessLocation, CityPageGenerationConfig, GeneratedCityPage } from '@/types/local-seo';
 import { NormalizedBusinessProfile } from '@/lib/business-profile-parser';
+import { MetadataTemplates } from '@/components/SEOMetadata';
 
 // Sample business profile - in production, this would come from database
 const SAMPLE_BUSINESS_PROFILE: NormalizedBusinessProfile = {
@@ -423,121 +424,31 @@ interface CityPageProps {
 }
 
 // Generate metadata for the city page
-export async function generateMetadata({ params }: CityPageProps): Promise<Metadata> {
-  const citySlug = params.city;
+export async function generateMetadata({ params, searchParams }: { 
+  params: Promise<{ city: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}): Promise<Metadata> {
+  const resolvedParams = await params;
+  const citySlug = resolvedParams.city;
   const cityData = CITY_DATABASE[citySlug];
   
   if (!cityData) {
     return {
       title: 'City Not Found',
-      description: 'The requested city page could not be found.'
+      description: 'The requested city page could not be found.',
+      robots: 'noindex, nofollow'
     };
   }
 
-  // Create business location from city data
-  const businessLocation: BusinessLocation = {
-    primaryAddress: {
-      street: "123 Business Ave",
-      city: cityData.name,
-      state: cityData.state,
-      zipCode: cityData.zipCodes[0],
-      country: cityData.country
-    },
-    serviceAreas: {
-      cities: [cityData.name, ...cityData.characteristics.neighborhoodNames.slice(0, 5)],
-      counties: [cityData.county || `${cityData.name} County`],
-      radiusMiles: 25,
-      specificZipCodes: cityData.zipCodes
-    },
-    locationSpecific: {
-      localCompetitors: [],
-      localPartnerships: [],
-      communityInvolvement: [],
-      localCertifications: [],
-      localAwards: []
-    }
-  };
+  const resolvedSearchParams = await searchParams;
 
-  // Generate page data
-  const generator = new LocalSEOGenerator({
-    businessProfile: SAMPLE_BUSINESS_PROFILE,
-    targetCity: cityData,
-    businessLocation,
-    config: DEFAULT_CONFIG
-  });
-
-  const result = await generator.generateCityPage();
-  
-  if (!result.success || !result.data) {
-    return {
-      title: 'Error Generating Page',
-      description: 'An error occurred while generating the city page.'
-    };
-  }
-
-  const metadata = result.data.metadata;
-
-  return {
-    title: metadata.title,
-    description: metadata.metaDescription,
-    keywords: [...metadata.primaryKeywords, ...metadata.secondaryKeywords].join(', '),
-    authors: [{ name: SAMPLE_BUSINESS_PROFILE.businessName }],
-    creator: SAMPLE_BUSINESS_PROFILE.businessName,
-    publisher: SAMPLE_BUSINESS_PROFILE.businessName,
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
-    openGraph: {
-      title: metadata.title,
-      description: metadata.metaDescription,
-      url: metadata.canonicalUrl,
-      siteName: SAMPLE_BUSINESS_PROFILE.businessName,
-      type: 'website',
-      locale: 'en_US',
-      images: [
-        {
-          url: '/images/city-pages/default-og.jpg',
-          width: 1200,
-          height: 630,
-          alt: `${SAMPLE_BUSINESS_PROFILE.services[0]} in ${cityData.name}, ${cityData.stateAbbreviation}`
-        }
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: metadata.title,
-      description: metadata.metaDescription,
-      creator: '@xenlix',
-      images: ['/images/city-pages/default-twitter.jpg'],
-    },
-    alternates: {
-      canonical: metadata.canonicalUrl,
-      languages: {
-        'en-US': metadata.canonicalUrl,
-      },
-    },
-    verification: {
-      google: 'your-google-verification-code',
-      yandex: 'your-yandex-verification-code',
-      yahoo: 'your-yahoo-verification-code',
-    },
-    category: 'business',
-    classification: 'Digital Marketing Services',
-    other: {
-      'geo.region': cityData.stateAbbreviation,
-      'geo.placename': cityData.name,
-      'geo.position': `${cityData.coordinates.latitude};${cityData.coordinates.longitude}`,
-      'ICBM': `${cityData.coordinates.latitude}, ${cityData.coordinates.longitude}`,
-    },
-  };
+  // Use the new metadata template system with canonical normalization
+  return MetadataTemplates.cityPage(
+    cityData.name,
+    cityData.stateAbbreviation,
+    `/${citySlug}`,
+    resolvedSearchParams
+  );
 }
 
 // Generate static params for known cities
@@ -549,8 +460,9 @@ export async function generateStaticParams() {
 }
 
 // City page component
-export default async function CityPage({ params }: CityPageProps) {
-  const citySlug = params.city;
+export default async function CityPage({ params }: { params: Promise<{ city: string }> }) {
+  const resolvedParams = await params;
+  const citySlug = resolvedParams.city;
   const cityData = CITY_DATABASE[citySlug];
   
   // Return 404 if city not found
@@ -683,9 +595,12 @@ export default async function CityPage({ params }: CityPageProps) {
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 {pageData.metadata.h2Tags[1]}
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-4">
                 We provide comprehensive {SAMPLE_BUSINESS_PROFILE.services[0].toLowerCase()} solutions 
                 tailored specifically for {cityData.name} businesses.
+              </p>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Ready to dominate local search? <a href="/calculators/pricing" className="text-purple-600 hover:text-purple-800 underline">Calculate your marketing ROI</a> and see how our AI platform can transform your {cityData.name} business.
               </p>
             </div>
 

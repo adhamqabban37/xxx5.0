@@ -28,15 +28,21 @@ export function LocalHero({
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
       {/* Background Image */}
+      <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
       <div className="absolute inset-0 z-0">
         <Image
           src={heroImage}
-          alt={`${city} skyline and business district`}
-          fill
+          alt={`${city} skyline and business district, hero banner for ${title}`}
+          width={1200}
+          height={600}
           priority
-          sizes="100vw"
+          sizes="(max-width: 600px) 100vw, 1200px"
           className="object-cover object-center"
-          quality={85}
+          quality={70}
+          loading="eager"
+          style={{ maxWidth: '100%', height: 'auto' }}
+          unoptimized={false}
+          placeholder="blur"
         />
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />

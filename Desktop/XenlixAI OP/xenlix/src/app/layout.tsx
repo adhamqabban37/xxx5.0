@@ -26,11 +26,22 @@ export const metadata: Metadata = {
     url: "https://www.xenlixai.com",
     siteName: "XenlixAI",
     type: "website",
+    images: [
+      {
+        url: "https://www.xenlixai.com/og-homepage.jpg",
+        width: 1200,
+        height: 630,
+        alt: "XenlixAI - AI Marketing Automation Platform"
+      }
+    ]
   },
   twitter: {
     card: "summary_large_image",
+    title: "XenlixAI | AI Marketing Automation Platform",
+    description: "Scale your business with AI-driven marketing automation, website building, and SEO optimization.",
     site: "@xenlixai",
-    creator: "@xenlixai",
+    creator: "@XenlixAI",
+    images: ["https://www.xenlixai.com/og-homepage.jpg"]
   },
 };
 
@@ -41,7 +52,7 @@ export default function RootLayout({
 }>) {
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": "LocalBusiness",
     "name": "XenlixAI",
     "legalName": "XenlixAI LLC",
     "url": "https://www.xenlixai.com",
@@ -49,8 +60,10 @@ export default function RootLayout({
     "description": "AI-powered marketing & website automation platform. XenlixAI helps businesses scale with AI-driven ad creation, website optimization, SEO automation, and analytics dashboards.",
     "address": {
       "@type": "PostalAddress",
+      "streetAddress": "TBD - Contact for Address",
       "addressLocality": "Dallas",
       "addressRegion": "TX",
+      "postalCode": "TBD",
       "addressCountry": "US"
     },
     "geo": {
@@ -58,12 +71,20 @@ export default function RootLayout({
       "latitude": 32.7767,
       "longitude": -96.7970
     },
+    "telephone": "+1-TBD-TBD-TBDD",
+    "email": "info@xenlixai.com",
+    "openingHours": [
+      "Mo-Fr 09:00-17:00"
+    ],
     "contactPoint": {
       "@type": "ContactPoint",
       "contactType": "customer service",
+      "telephone": "+1-TBD-TBD-TBDD",
+      "email": "info@xenlixai.com",
       "areaServed": ["US", "CA", "GB", "AU"]
     },
     "sameAs": [
+      "https://business.google.com/[TO-BE-UPDATED]",
       "https://x.com/xenlixai",
       "https://www.linkedin.com/company/xenlixai"
     ],

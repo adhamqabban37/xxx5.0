@@ -6,8 +6,31 @@ import CaseStudyCardImage from "./_components/CaseStudyCardImage";
 export const metadata: Metadata = {
   title: "Case Studies | Real Results from AI Marketing & AEO",
   description: "See how businesses across industries are winning with Answer Engine Optimization and AI-powered marketing. Detailed case studies with metrics and results.",
+  keywords: "case studies, AI marketing results, AEO success stories, answer engine optimization case studies, AI SEO results",
+  openGraph: {
+    title: "Case Studies | Real Results from AI Marketing & AEO - XenlixAI",
+    description: "See how businesses across industries are winning with Answer Engine Optimization and AI-powered marketing. Detailed case studies with metrics and results.",
+    type: "website",
+    url: "https://www.xenlixai.com/case-studies",
+    siteName: "XenlixAI",
+    images: [
+      {
+        url: "https://www.xenlixai.com/og-case-studies.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Case Studies - Real Results from AI Marketing & AEO"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Case Studies | Real Results from AI Marketing & AEO - XenlixAI",
+    description: "See how businesses across industries are winning with Answer Engine Optimization and AI-powered marketing. Detailed case studies with metrics and results.",
+    creator: "@XenlixAI",
+    images: ["https://www.xenlixai.com/og-case-studies.jpg"]
+  },
   alternates: {
-    canonical: '/case-studies',
+    canonical: 'https://www.xenlixai.com/case-studies',
   },
 };
 
