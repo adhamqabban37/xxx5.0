@@ -1,9 +1,7 @@
 'use client';
 
-// Sparkline component for 30-day performance trends
-'use client';
-
 import React, { useEffect, useRef } from 'react';
+import { Trend } from '@/types/aeo';
 
 interface SparklineProps {
   data: number[];
@@ -13,7 +11,7 @@ interface SparklineProps {
   strokeWidth?: number;
   className?: string;
   showDots?: boolean;
-  trend?: 'up' | 'down' | 'stable' | 'no-data';
+  trend?: Trend;
 }
 
 export default function Sparkline({
@@ -128,12 +126,12 @@ export function TrendSparkline({
   previousValue,
   changePercent,
   formatValue = (v) => v.toFixed(1),
-  trend,
+  trend = 'stable',
   data,
   ...sparklineProps
 }: TrendSparklineProps) {
-  const trendColor = getTrendColor(trend);
-  const trendIcon = getTrendIcon(trend);
+  const trendColor = getTrendColor(trend ?? 'stable');
+  const trendIcon = getTrendIcon(trend ?? 'stable');
 
   return (
     <div className="flex items-center justify-between">
@@ -206,11 +204,14 @@ interface DashboardCardWithSparklineProps {
   title: string;
   value: string | number;
   previousValue?: number;
-  trend: 'up' | 'down' | 'stable' | 'no-data';
+  trend: Trend;
   sparklineData: number[];
   unit?: string;
   icon?: React.ReactNode;
   className?: string;
+  subtitle?: string;
+  subtitleClass?: string;
+  children?: React.ReactNode;
 }
 
 export function DashboardCardWithSparkline({
@@ -222,6 +223,9 @@ export function DashboardCardWithSparkline({
   unit = '',
   icon,
   className = '',
+  subtitle,
+  subtitleClass = '',
+  children,
 }: DashboardCardWithSparklineProps) {
   const change = previousValue !== undefined 
     ? (typeof value === 'number' ? value - previousValue : 0)
@@ -254,8 +258,14 @@ export function DashboardCardWithSparkline({
               <span className="text-xs text-gray-500">vs last period</span>
             </div>
           )}
+          {subtitle && (
+            <div className={`text-sm mt-1 ${subtitleClass}`}>
+              {subtitle}
+            </div>
+          )}
         </div>
       </div>
+      {children}
     </div>
   );
 }
@@ -320,7 +330,7 @@ export function PerformanceCard({ title, metrics, className = '' }: PerformanceC
 }
 
 // Helper functions
-function getTrendColor(trend: 'up' | 'down' | 'stable' | 'no-data'): string {
+function getTrendColor(trend: Trend): string {
   switch (trend) {
     case 'up': return 'text-green-500';
     case 'down': return 'text-red-500';
@@ -330,7 +340,7 @@ function getTrendColor(trend: 'up' | 'down' | 'stable' | 'no-data'): string {
   }
 }
 
-function getTrendIcon(trend: 'up' | 'down' | 'stable' | 'no-data'): string {
+function getTrendIcon(trend: Trend): string {
   switch (trend) {
     case 'up': return '↗';
     case 'down': return '↘';

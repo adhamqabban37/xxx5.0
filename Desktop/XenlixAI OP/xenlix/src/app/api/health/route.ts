@@ -1,36 +1,148 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import cacheClient from '@/lib/enhanced-redis-cache';
+import { firebaseClient } from '@/lib/firebase-client';
+import { getEnvironmentConfig } from '@/lib/env-config';
+import { HuggingFaceClient } from '@/lib/huggingface-client';
 
 const prisma = new PrismaClient();
 
 export async function GET() {
   try {
     const startTime = Date.now();
+    const config = getEnvironmentConfig();
     
     // Test database connection
     await prisma.$queryRaw`SELECT 1`;
     const dbResponseTime = Date.now() - startTime;
     
+    // Check Redis health
+    const redisHealthy = await cacheClient.checkRedisHealth();
+    const cacheMetrics = cacheClient.getMetrics();
+    
+    // Check HuggingFace service
+    let huggingfaceHealthy = false;
+    let huggingfaceResponseTime = null;
+    let huggingfaceError = null;
+    
+    try {
+      const hfClient = HuggingFaceClient.getInstance();
+      const hfStartTime = Date.now();
+      const hfHealth = await hfClient.healthCheck();
+      huggingfaceResponseTime = Date.now() - hfStartTime;
+      huggingfaceHealthy = hfHealth.status === 'healthy';
+      if (!huggingfaceHealthy) {
+        huggingfaceError = hfHealth.error;
+      }
+    } catch (error) {
+      huggingfaceHealthy = false;
+      huggingfaceError = error instanceof Error ? error.message : 'Unknown HF error';
+    }
+    
     // Get package.json version
     const packageJson = require('../../../../package.json');
     
+    // Check Firebase health
+    const firebaseHealth = await firebaseClient.healthCheck();
+    const firebaseHealthy = firebaseHealth.status === 'healthy';
+    
+    const overallHealthy = redisHealthy && huggingfaceHealthy && firebaseHealthy;
+    const responseTime = Date.now() - startTime;
+
+    const recommendations: Array<{type: string, message: string, action: string}> = [];
+    
+    // Add health recommendations
+    if (!redisHealthy) {
+      recommendations.push({
+        type: 'warning',
+        message: 'Redis unavailable. Using memory cache fallback.',
+        action: 'Check Redis: docker ps | grep redis'
+      });
+    }
+
+    if (!huggingfaceHealthy) {
+      recommendations.push({
+        type: 'error',
+        message: 'HuggingFace Inference API unavailable.',
+        action: 'Check HuggingFace API token and service availability'
+      });
+    }
+
+    if (!firebaseHealthy) {
+      recommendations.push({
+        type: 'error',
+        message: 'Firebase/Firestore unavailable.',
+        action: 'Check Firebase configuration and service account'
+      });
+    }
+
+    if (cacheMetrics.hitRate < 50 && cacheMetrics.totalRequests > 10) {
+      recommendations.push({
+        type: 'info',
+        message: `Low cache hit rate (${cacheMetrics.hitRate}%).`,
+        action: 'Review caching strategy'
+      });
+    }
+
     const healthData = {
-      ok: true,
-      status: "healthy",
+      ok: overallHealthy,
+      status: overallHealthy ? "healthy" : "degraded", 
       time: new Date().toISOString(),
+      responseTime: `${responseTime}ms`,
       mode: process.env.BILLING_MODE || "unknown",
       version: packageJson.version,
       env: process.env.APP_ENV || 'development',
       uptime: process.uptime(),
-      database: {
-        connected: true,
-        responseTime: `${dbResponseTime}ms`
-      },
+      
       services: {
+        database: {
+          connected: true,
+          responseTime: `${dbResponseTime}ms`,
+          type: "sqlite"
+        },
+        
+        redis: {
+          status: redisHealthy ? 'healthy' : 'unhealthy',
+          connected: cacheMetrics.redisConnected,
+          fallbackMode: !cacheMetrics.redisConnected ? 'memory' : null,
+          url: config.redis.url,
+          lastCheck: cacheMetrics.lastHealthCheck,
+        },
+        
+        huggingface: {
+          status: huggingfaceHealthy ? 'healthy' : 'unhealthy',
+          model: 'sentence-transformers/all-MiniLM-L6-v2',
+          responseTime: huggingfaceResponseTime ? `${huggingfaceResponseTime}ms` : null,
+          error: huggingfaceError || null,
+          apiConfigured: !!config.ai.huggingface?.token,
+        },
+
+        firebase: {
+          status: firebaseHealthy ? 'healthy' : 'unhealthy',
+          connected: firebaseHealth.details.firestore,
+          projectId: firebaseHealth.details.projectId,
+          responseTime: firebaseHealth.latency ? `${firebaseHealth.latency}ms` : null,
+          error: firebaseHealth.error || null,
+          storage: firebaseHealth.details.storage,
+        },
+        
+        cache: {
+          mode: cacheMetrics.cacheMode,
+          hitRate: `${cacheMetrics.hitRate}%`,
+          totalRequests: cacheMetrics.totalRequests,
+          hits: cacheMetrics.hits,
+          misses: cacheMetrics.misses,
+          errors: cacheMetrics.errors,
+          avgResponseTime: `${Math.round(cacheMetrics.avgResponseTime)}ms`,
+          memoryCacheSize: cacheMetrics.memoryCacheSize,
+        },
+        
         nextjs: "15.5.3",
         node: process.version,
         platform: process.platform
-      }
+      },
+
+      recommendations
     };
 
     return NextResponse.json(healthData, { 

@@ -11,10 +11,12 @@ const MAX_URLS_PER_SITEMAP = 50000
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { number: string } }
+  { params }: { params: Promise<{ number: string }> }
 ) {
+  const { number: numberParam } = await params;
+  
   try {
-    const sitemapNumber = parseInt(params.number)
+    const sitemapNumber = parseInt(numberParam)
     
     if (isNaN(sitemapNumber) || sitemapNumber < 1) {
       return new NextResponse('Invalid sitemap number', { status: 400 })
@@ -34,7 +36,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error(`Error generating sitemap-${params.number}.xml:`, error)
+    console.error(`Error generating sitemap-${numberParam}.xml:`, error)
     return new NextResponse('Error generating sitemap', { status: 500 })
   }
 }

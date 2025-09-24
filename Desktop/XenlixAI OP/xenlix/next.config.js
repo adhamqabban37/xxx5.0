@@ -104,7 +104,13 @@ const nextConfig = {
         destination: '/api/stripe/webhook'
       }
     ]
-  }
+  },
+  
+  // Docker standalone build support
+  output: 'standalone',
+  
+  // Optimize for serverless/container environments
+  outputFileTracingRoot: __dirname,
 }
 
 module.exports = nextConfig

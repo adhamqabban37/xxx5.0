@@ -1,0 +1,149 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for authentication and authorization
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserId() {
+      return request.auth.uid;
+    }
+    
+    function isOwner(resource) {
+      return resource.data.userId == getUserId();
+    }
+    
+    function isValidTimestamp(timestamp) {
+      return timestamp is timestamp;
+    }
+    
+    // Crawl Results Collection
+    match /crawl_results/{documentId} {
+      // Allow read access to authenticated users for their own data
+      allow read: if isAuthenticated() && (
+        // Allow if no userId field (system data) or if user owns the data
+        !('userId' in resource.data) || isOwner(resource)
+      );
+      
+      // Allow create for authenticated users
+      allow create: if isAuthenticated() && (
+        // Ensure required fields are present
+        request.resource.data.keys().hasAll(['url', 'title', 'content', 'metadata']) &&
+        request.resource.data.url is string &&
+        request.resource.data.title is string &&
+        request.resource.data.content is string &&
+        request.resource.data.metadata is map &&
+        isValidTimestamp(request.resource.data.metadata.crawledAt)
+      );
+      
+      // Allow update for owners only
+      allow update: if isAuthenticated() && (
+        (!('userId' in resource.data) || isOwner(resource)) &&
+        // Prevent modification of core fields
+        request.resource.data.url == resource.data.url &&
+        request.resource.data.metadata.crawledAt == resource.data.metadata.crawledAt
+      );
+      
+      // Allow delete for owners only
+      allow delete: if isAuthenticated() && (
+        !('userId' in resource.data) || isOwner(resource)
+      );
+    }
+    
+    // Embedding Scores Collection
+    match /embedding_scores/{documentId} {
+      allow read: if isAuthenticated();
+      
+      allow create: if isAuthenticated() && (
+        request.resource.data.keys().hasAll(['crawlResultId', 'content', 'embedding', 'metadata']) &&
+        request.resource.data.crawlResultId is string &&
+        request.resource.data.content is string &&
+        request.resource.data.embedding is list &&
+        request.resource.data.metadata is map &&
+        isValidTimestamp(request.resource.data.metadata.createdAt)
+      );
+      
+      allow update: if isAuthenticated() && (
+        // Allow updating similarity scores
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['similarity'])
+      );
+      
+      allow delete: if isAuthenticated();
+    }
+    
+    // Lighthouse Audits Collection
+    match /lighthouse_audits/{documentId} {
+      allow read: if isAuthenticated() && (
+        !('userId' in resource.data) || isOwner(resource)
+      );
+      
+      allow create: if isAuthenticated() && (
+        request.resource.data.keys().hasAll(['url', 'scores', 'metrics', 'opportunities', 'metadata']) &&
+        request.resource.data.url is string &&
+        request.resource.data.scores is map &&
+        request.resource.data.scores.keys().hasAll(['performance', 'accessibility', 'bestPractices', 'seo']) &&
+        request.resource.data.metrics is map &&
+        request.resource.data.opportunities is list &&
+        request.resource.data.metadata is map &&
+        isValidTimestamp(request.resource.data.metadata.auditedAt)
+      );
+      
+      allow update: if isAuthenticated() && (
+        !('userId' in resource.data) || isOwner(resource)
+      );
+      
+      allow delete: if isAuthenticated() && (
+        !('userId' in resource.data) || isOwner(resource)
+      );
+    }
+    
+    // PDF Export Metadata Collection
+    match /pdf_exports/{documentId} {
+      allow read: if isAuthenticated() && (
+        !('userId' in resource.data) || isOwner(resource)
+      );
+      
+      allow create: if isAuthenticated() && (
+        request.resource.data.keys().hasAll(['reportType', 'associatedIds', 'fileName', 'fileSize', 'generatedAt', 'downloadCount', 'metadata']) &&
+        request.resource.data.reportType in ['crawl', 'audit', 'full-analysis'] &&
+        request.resource.data.associatedIds is list &&
+        request.resource.data.fileName is string &&
+        request.resource.data.fileSize is number &&
+        isValidTimestamp(request.resource.data.generatedAt) &&
+        request.resource.data.downloadCount is number &&
+        request.resource.data.metadata is map
+      );
+      
+      allow update: if isAuthenticated() && (
+        (!('userId' in resource.data) || isOwner(resource)) &&
+        // Allow incrementing download count
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloadCount']) &&
+        request.resource.data.downloadCount == resource.data.downloadCount + 1
+      );
+      
+      allow delete: if isAuthenticated() && (
+        !('userId' in resource.data) || isOwner(resource)
+      );
+    }
+    
+    // Health Check Collection (for Firebase health monitoring)
+    match /_health_check/{documentId} {
+      allow read, write: if true; // Allow health checks for system monitoring
+    }
+    
+    // Analytics Collection (for system metrics)
+    match /analytics/{documentId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      // No delete allowed for analytics data
+    }
+    
+    // User Preferences Collection
+    match /user_preferences/{userId} {
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+    }
+  }
+}

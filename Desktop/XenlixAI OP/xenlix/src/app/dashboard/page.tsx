@@ -1,9 +1,9 @@
-import { getServerSession } from "next-auth";
+'use client';
+
+import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-import { authOptions } from "../api/auth/[...nextauth]/route";
 import { SignOutButton } from "./_components/SignOutButton";
 import { Suspense } from "react";
-import { Metadata } from "next";
 import { 
   CheckCircle, 
   AlertTriangle, 
@@ -23,19 +23,21 @@ import { DashboardCardWithSparkline, MiniSparkline } from '@/components/Sparklin
 import { DashboardMetrics } from './_components/DashboardMetrics';
 import { CopyButton } from './_components/CopyButton';
 import SEOGuidanceSection from './_components/SEOGuidanceSection';
+import { QuickCompanyPreview } from '@/components/QuickCompanyPreview';
+import { QuickAIRankTracker } from '@/components/QuickAIRankTracker';
+import QuickReputationMonitor from '@/components/QuickReputationMonitor';
 
-export const metadata: Metadata = {
-  title: "Dashboard | XenlixAI - AI Marketing & AEO Analytics",
-  description: "Monitor your AI marketing performance, AEO optimization progress, and campaign analytics with XenlixAI's comprehensive dashboard.",
-  robots: "noindex, nofollow", // Private dashboard should not be indexed
-};
-
-export default async function DashboardPage() {
-  // Server-side authentication check
-  const session = await getServerSession(authOptions);
+export default function DashboardPage() {
+  // Client-side authentication check
+  const { data: session, status } = useSession();
+  
+  if (status === 'loading') {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
   
   if (!session?.user?.email) {
     redirect("/signin");
+    return null;
   }
 
   // Mock user for demo
@@ -183,6 +185,30 @@ export default async function DashboardPage() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Enhanced Dashboard Promotion Banner */}
+        <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 border border-green-400 rounded-xl p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Zap className="w-8 h-8 text-green-400" />
+              <div>
+                <h2 className="text-xl font-bold text-white mb-1">
+                  🚀 New Enhanced AEO Intelligence Dashboard
+                </h2>
+                <p className="text-green-100 text-sm">
+                  AI-powered business extraction • Interactive AEO tooltips • Auto schema generation • Smart questionnaires
+                </p>
+              </div>
+            </div>
+            <a
+              href="/dashboard/enhanced"
+              className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 shadow-lg"
+            >
+              <Globe className="w-5 h-5" />
+              Try Enhanced Dashboard
+            </a>
+          </div>
+        </div>
+
         {/* Premium Dashboard Banner */}
         <div className="bg-gradient-to-r from-green-900/20 to-blue-900/20 border border-green-600 rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between">
@@ -200,6 +226,38 @@ export default async function DashboardPage() {
         <DashboardMetrics 
           premiumAuditData={premiumAuditData}
         />
+
+        {/* AI Intelligence Widgets */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <QuickCompanyPreview />
+          <QuickAIRankTracker />
+          <QuickReputationMonitor 
+            onViewDetails={() => window.open('/dashboard/enhanced', '_blank')}
+          />
+        </div>
+
+        {/* AI Features Overview */}
+        <div className="bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-xl p-6 mb-8">
+          <h3 className="text-xl font-bold text-white mb-4">🚀 AI-Powered Business Intelligence</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-purple-100">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span className="text-sm">Business extraction</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span className="text-sm">Schema generation</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <span className="text-sm">AEO optimization</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span className="text-sm">AI rank tracking</span>
+            </div>
+          </div>
+        </div>
 
         {/* Priority Quick Fixes */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 mb-8">

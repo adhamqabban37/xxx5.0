@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: xenlix-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-xenlix_redis_2024}
+    networks:
+      - xenlix-network
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: xenlix-redis-ui
+    depends_on:
+      - redis
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:${REDIS_PASSWORD:-xenlix_redis_2024}
+    networks:
+      - xenlix-network
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  xenlix-network:
+    driver: bridge

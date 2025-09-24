@@ -2,23 +2,24 @@
 
 import { DashboardCardWithSparkline, MiniSparkline } from '@/components/Sparkline';
 import { TrendingUp, Search, Calendar } from 'lucide-react';
+import { Trend } from '@/types/aeo';
 
 interface DashboardMetricsProps {
   premiumAuditData: {
     overallScore: number;
     performance: {
-      trend: 'up' | 'down' | 'stable' | 'no-data';
+      trend: Trend;
       sparklineData: number[];
     };
     traffic: {
       current: number;
-      trend: 'up' | 'down' | 'stable' | 'no-data';
+      trend: Trend;
       sparklineData: number[];
       change: number;
     };
     rankings: {
       top10: number;
-      trend: 'up' | 'down' | 'stable' | 'no-data';
+      trend: Trend;
       sparklineData: number[];
       totalTracked: number;
     };
@@ -42,7 +43,6 @@ export function DashboardMetrics({ premiumAuditData }: DashboardMetricsProps) {
         value={`${premiumAuditData.overallScore}/100`}
         trend={premiumAuditData.performance.trend}
         sparklineData={premiumAuditData.performance.sparklineData}
-        formatValue={(val) => `${val}/100`}
         className={getScoreColor(premiumAuditData.overallScore)}
       >
         <div className="w-full bg-slate-700 rounded-full h-2 mt-2">
@@ -58,7 +58,6 @@ export function DashboardMetrics({ premiumAuditData }: DashboardMetricsProps) {
         value={premiumAuditData.traffic.current.toLocaleString()}
         trend={premiumAuditData.traffic.trend}
         sparklineData={premiumAuditData.traffic.sparklineData}
-        formatValue={(val) => val.toLocaleString()}
         icon={<TrendingUp className="w-5 h-5 text-green-400" />}
         subtitle={`+${premiumAuditData.traffic.change}% vs last month`}
         subtitleClass="text-green-400"
@@ -69,7 +68,6 @@ export function DashboardMetrics({ premiumAuditData }: DashboardMetricsProps) {
         value={premiumAuditData.rankings.top10.toString()}
         trend={premiumAuditData.rankings.trend}
         sparklineData={premiumAuditData.rankings.sparklineData}
-        formatValue={(val) => Math.round(val).toString()}
         icon={<Search className="w-5 h-5 text-blue-400" />}
         subtitle={`of ${premiumAuditData.rankings.totalTracked} keywords`}
       />

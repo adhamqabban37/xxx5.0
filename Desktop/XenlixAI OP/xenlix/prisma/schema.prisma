@@ -173,6 +173,7 @@ model AlertThreshold {
   lastTriggered DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  events      AlertEvent[]
   
   @@index([url, metricType])
 }

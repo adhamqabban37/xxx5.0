@@ -1,0 +1,9 @@
+# Python dependencies for Crawl4AI microservice
+fastapi==0.115.12
+uvicorn==0.34.2
+aiohttp==3.11.18
+aiofiles==24.1.0
+beautifulsoup4==4.13.4
+lxml==6.0.2
+requests==2.32.3
+python-multipart==0.0.20
