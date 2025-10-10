@@ -119,6 +119,7 @@
     "@eslint/eslintrc": "^3",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.55.0",
+    "@tailwindcss/cli": "^4.1.14",
     "@tailwindcss/postcss": "^4",
     "@types/cheerio": "^1.0.0",
     "@types/jest": "^30.0.0",
