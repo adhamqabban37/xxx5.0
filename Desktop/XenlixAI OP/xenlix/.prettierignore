@@ -1,0 +1,28 @@
+# Dependencies and build outputs
+node_modules/
+.next/
+.vercel/
+.vscode/
+coverage/
+
+# CI/workflows and lockfiles
+.github/
+pnpm-lock.yaml
+
+# Docs and content
+*.md
+*.mdx
+docs/
+content/
+
+# Generated or heavy assets
+public/img/
+test-results/
+security-audit-*.json
+
+# Docker/YAML configs
+*.yml
+*.yaml
+
+dist/
+build/
