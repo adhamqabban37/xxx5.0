@@ -47,6 +47,8 @@
     "lhci:upload": "lhci upload",
     "test:vitest": "vitest",
     "test:vitest:run": "vitest run"
+    ,
+    "run:company-plugin": "tsx ./scripts/run-company-plugin.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
