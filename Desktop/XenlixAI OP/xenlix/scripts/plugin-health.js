@@ -1,5 +1,14 @@
 #!/usr/bin/env node
-const pkgs = ['prettier','postcss','tailwindcss','eslint','jest','playwright','vitest','tsx'];
+const pkgs = [
+  'prettier',
+  'postcss',
+  'tailwindcss',
+  'eslint',
+  'jest',
+  'playwright',
+  'vitest',
+  'tsx',
+];
 let missing = false;
 for (const p of pkgs) {
   try {
