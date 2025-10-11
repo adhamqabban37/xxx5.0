@@ -9,7 +9,7 @@
     "lint": "eslint",
     "postinstall": "playwright install",
     "format": "prettier --write .",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,html,mjs,cjs}\" \"scripts/**/*.{ts,tsx,js,mjs,cjs}\" \"tests/**/*.{ts,tsx,js}\"",
+    "format:check": "prettier --check .",
     "validate:env": "node validate-env.js",
     "test:cache": "node test-cache-performance.js",
     "smoke:crawl4ai": "tsx scripts/smoke/crawl4ai.smoke.ts",
