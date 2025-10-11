@@ -7,6 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "postinstall": "playwright install",
     "format": "prettier --write .",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,html,mjs,cjs}\" \"scripts/**/*.{ts,tsx,js,mjs,cjs}\" \"tests/**/*.{ts,tsx,js}\"",
     "validate:env": "node validate-env.js",
@@ -46,8 +47,7 @@
     "lhci:assert": "lhci assert",
     "lhci:upload": "lhci upload",
     "test:vitest": "vitest",
-    "test:vitest:run": "vitest run"
-    ,
+    "test:vitest:run": "vitest run",
     "run:company-plugin": "tsx ./scripts/run-company-plugin.ts"
   },
   "dependencies": {
