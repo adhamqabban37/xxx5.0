@@ -1,0 +1,116 @@
+
+> xenlix@0.1.0 build C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix
+> next build --turbopack
+
+   Γû▓ Next.js 15.5.3 (Turbopack)
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ Γ£ô Finished writing to disk in 1383ms
+ Γ£ô Compiled successfully in 77s
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+≡ƒöº Environment Configuration Loaded: {
+  nodeEnv: 'production',
+  environment: 'development',
+  services: {
+    redis: true,
+    firebase: true,
+    crawl4ai: true,
+    openai: true,
+    huggingface: true,
+    anthropic: true
+  }
+}
+Γ£à HuggingFace client wired to hf.ts helpers
+≡ƒöº Environment Configuration Loaded: {
+  nodeEnv: 'production',
+  environment: 'development',
+  services: {
+    redis: true,
+    firebase: true,
+    crawl4ai: true,
+    openai: true,
+    huggingface: true,
+    anthropic: true
+  }
+}
+Γ£à HuggingFace client wired to hf.ts helpers
+≡ƒöº Environment Configuration Loaded: {
+  nodeEnv: 'production',
+  environment: 'development',
+  services: {
+    redis: true,
+    firebase: true,
+    crawl4ai: true,
+    openai: true,
+    huggingface: true,
+    anthropic: true
+  }
+}
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+≡ƒöº Environment Configuration Loaded: {
+  nodeEnv: 'production',
+  environment: 'development',
+  services: {
+    redis: true,
+    firebase: true,
+    crawl4ai: true,
+    openai: true,
+    huggingface: true,
+    anthropic: true
+  }
+}
+Γ£à HuggingFace client wired to hf.ts helpers
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+Γ£à HuggingFace client wired to hf.ts helpers
+≡ƒöº Environment Configuration Loaded: {
+  nodeEnv: 'production',
+  environment: 'development',
+  services: {
+    redis: true,
+    firebase: true,
+    crawl4ai: true,
+    openai: true,
+    huggingface: true,
+    anthropic: true
+  }
+}
+Γ£à HuggingFace client wired to hf.ts helpers
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+Γ£à Firebase Admin initialized successfully
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÜá∩╕Å  Redis connection closed
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 1.

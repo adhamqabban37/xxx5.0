@@ -48,6 +48,12 @@ class EnhancedRedisCache {
   }
 
   private async initializeRedis() {
+    // Only initialize Redis in runtime environment, not during build
+    if (typeof process === 'undefined' || !process.env.NODE_ENV || typeof window !== 'undefined') {
+      console.log('Skipping Redis initialization during build phase');
+      return;
+    }
+
     try {
       const redisConfig = this.config.redis;
 
@@ -94,6 +100,11 @@ class EnhancedRedisCache {
    * Health check for Redis connectivity
    */
   async checkRedisHealth(): Promise<boolean> {
+    // Skip Redis health check during build phase
+    if (typeof process === 'undefined' || !process.env.NODE_ENV || typeof window !== 'undefined') {
+      return false;
+    }
+
     const now = Date.now();
 
     // Skip if we checked recently
@@ -326,6 +337,39 @@ class EnhancedRedisCache {
   }
 }
 
-// Export singleton instance
-export const cacheClient = new EnhancedRedisCache();
+// Lazy singleton instance - only create during runtime
+let _cacheClient: EnhancedRedisCache | null = null;
+
+export function getCacheClient(): EnhancedRedisCache {
+  if (!_cacheClient) {
+    _cacheClient = new EnhancedRedisCache();
+  }
+  return _cacheClient;
+}
+
+// Export legacy compatibility object that delegates to lazy instance
+export const cacheClient = {
+  get cache() {
+    return getCacheClient();
+  },
+  async get(key: string) {
+    return getCacheClient().get(key);
+  },
+  async set(key: string, value: any, ttl?: number) {
+    return getCacheClient().set(key, value, ttl);
+  },
+  async del(key: string) {
+    return getCacheClient().del(key);
+  },
+  async checkRedisHealth() {
+    return getCacheClient().checkRedisHealth();
+  },
+  async disconnect() {
+    return getCacheClient().disconnect();
+  },
+  getMetrics() {
+    return getCacheClient().getMetrics();
+  },
+};
+
 export default cacheClient;

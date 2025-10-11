@@ -9,7 +9,18 @@ import { Queue, Worker, Job } from 'bullmq';
 import { PrismaClient } from '@prisma/client';
 import Redis from 'ioredis';
 
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+// Lazy Redis initialization to prevent build-time connections
+function getRedisClient() {
+  if (typeof process === 'undefined' || !process.env.NODE_ENV || typeof window !== 'undefined') {
+    return null;
+  }
+  return new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    retryDelayOnFailover: 100,
+  });
+}
+
 const prisma = new PrismaClient();
 
 // Job data interfaces
@@ -37,22 +48,16 @@ interface HealthCheckJobData {
 export class SimpleCitationJobProcessor {
   private static instance: SimpleCitationJobProcessor;
 
-  private citationQueue: Queue;
-  private authorityQueue: Queue;
-  private healthQueue: Queue;
+  private citationQueue: Queue | null = null;
+  private authorityQueue: Queue | null = null;
+  private healthQueue: Queue | null = null;
 
-  private citationWorker: Worker;
-  private authorityWorker: Worker;
-  private healthWorker: Worker;
+  private citationWorker: Worker | null = null;
+  private authorityWorker: Worker | null = null;
+  private healthWorker: Worker | null = null;
 
   private constructor() {
-    // Initialize queues
-    this.citationQueue = new Queue('citation-processing', { connection: redis });
-    this.authorityQueue = new Queue('authority-scoring', { connection: redis });
-    this.healthQueue = new Queue('health-check', { connection: redis });
-
-    // Initialize workers
-    this.initializeWorkers();
+    // Queues and workers will be initialized lazily when needed
   }
 
   static getInstance(): SimpleCitationJobProcessor {
@@ -62,7 +67,22 @@ export class SimpleCitationJobProcessor {
     return SimpleCitationJobProcessor.instance;
   }
 
+  private initializeQueues() {
+    if (this.citationQueue) return; // Already initialized
+
+    const redis = getRedisClient();
+    if (!redis) return; // Not in runtime environment
+
+    this.citationQueue = new Queue('citation-processing', { connection: redis });
+    this.authorityQueue = new Queue('authority-scoring', { connection: redis });
+    this.healthQueue = new Queue('health-check', { connection: redis });
+
+    this.initializeWorkers();
+  }
+
   private initializeWorkers() {
+    const redis = getRedisClient();
+    if (!redis) return;
     // Citation processing worker
     this.citationWorker = new Worker(
       'citation-processing',
@@ -70,7 +90,7 @@ export class SimpleCitationJobProcessor {
         return this.processCitation(job.data);
       },
       {
-        connection: redis,
+        connection: getRedisClient(),
         concurrency: 5,
         removeOnComplete: 100,
         removeOnFail: 50,
@@ -84,7 +104,7 @@ export class SimpleCitationJobProcessor {
         return this.processAuthorityScoring(job.data);
       },
       {
-        connection: redis,
+        connection: getRedisClient(),
         concurrency: 3,
         removeOnComplete: 100,
         removeOnFail: 50,
@@ -104,7 +124,7 @@ export class SimpleCitationJobProcessor {
         return this.processHealthCheck(job.data);
       },
       {
-        connection: redis,
+        connection: getRedisClient(),
         concurrency: 2,
         removeOnComplete: 100,
         removeOnFail: 50,
@@ -129,6 +149,9 @@ export class SimpleCitationJobProcessor {
    * Process citation metadata and schedule related jobs
    */
   private async processCitation(data: CitationProcessingJobData): Promise<void> {
+    this.initializeQueues();
+    if (!this.authorityQueue || !this.healthQueue) return;
+
     const { answerId, citationId, domain } = data;
 
     try {
@@ -182,6 +205,9 @@ export class SimpleCitationJobProcessor {
    * Score domain authority using Open PageRank API
    */
   private async processAuthorityScoring(data: AuthorityScoringJobData): Promise<void> {
+    this.initializeQueues();
+    if (!this.authorityQueue) return;
+
     const { citationId, domain, retryCount = 0 } = data;
 
     try {
@@ -354,7 +380,10 @@ export class SimpleCitationJobProcessor {
       // Consider 2xx and 3xx status codes as "live"
       return response.status >= 200 && response.status < 400;
     } catch (error) {
-      console.log(`URL health check failed for ${url}:`, error.message);
+      console.log(
+        `URL health check failed for ${url}:`,
+        error instanceof Error ? error.message : String(error)
+      );
       return false;
     }
   }
@@ -363,6 +392,9 @@ export class SimpleCitationJobProcessor {
    * Schedule citation processing for an answer
    */
   async scheduleCitationProcessing(answerId: string): Promise<void> {
+    this.initializeQueues();
+    if (!this.citationQueue) return;
+
     try {
       // Get citations for this answer - using raw SQL to avoid type issues
       const citations = (await prisma.$queryRaw`
@@ -398,6 +430,11 @@ export class SimpleCitationJobProcessor {
    * Get job queue statistics
    */
   async getQueueStats() {
+    this.initializeQueues();
+    if (!this.citationQueue || !this.authorityQueue || !this.healthQueue) {
+      return { citation: null, authority: null, health: null, timestamp: new Date().toISOString() };
+    }
+
     const [citationStats, authorityStats, healthStats] = await Promise.all([
       this.citationQueue.getJobCounts(),
       this.authorityQueue.getJobCounts(),
@@ -416,19 +453,27 @@ export class SimpleCitationJobProcessor {
    * Cleanup and close connections
    */
   async cleanup() {
-    await Promise.all([
-      this.citationWorker.close(),
-      this.authorityWorker.close(),
-      this.healthWorker.close(),
-    ]);
+    if (this.citationWorker && this.authorityWorker && this.healthWorker) {
+      await Promise.all([
+        this.citationWorker.close(),
+        this.authorityWorker.close(),
+        this.healthWorker.close(),
+      ]);
+    }
 
-    await Promise.all([
-      this.citationQueue.close(),
-      this.authorityQueue.close(),
-      this.healthQueue.close(),
-    ]);
+    if (this.citationQueue && this.authorityQueue && this.healthQueue) {
+      await Promise.all([
+        this.citationQueue.close(),
+        this.authorityQueue.close(),
+        this.healthQueue.close(),
+      ]);
+    }
 
-    await redis.quit();
+    const redis = getRedisClient();
+    if (redis) {
+      await redis.quit();
+    }
+
     await prisma.$disconnect();
 
     console.log('✅ Citation job processor cleaned up');

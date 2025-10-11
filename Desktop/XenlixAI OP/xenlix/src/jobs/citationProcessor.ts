@@ -19,16 +19,20 @@ import { join } from 'node:path';
 
 const prisma = new PrismaClient();
 
-// Redis connection for BullMQ
-const redis = new IORedis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  password: process.env.REDIS_PASSWORD,
-  db: parseInt(process.env.REDIS_DB || '0'),
-  retryDelayOnFailover: 100,
-  enableReadyCheck: false,
-  maxRetriesPerRequest: null,
-});
+// Lazy Redis initialization to prevent build-time connections
+function getRedisClient() {
+  if (typeof process === 'undefined' || !process.env.NODE_ENV || typeof window !== 'undefined') {
+    throw new Error('Redis client not available in this environment');
+  }
+  return new IORedis({
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379'),
+    password: process.env.REDIS_PASSWORD,
+    db: parseInt(process.env.REDIS_DB || '0'),
+    enableReadyCheck: false,
+    maxRetriesPerRequest: null,
+  });
+}
 
 export interface CitationProcessingJobData {
   answerId: string;
@@ -66,7 +70,7 @@ export class CitationJobProcessor {
   private constructor() {
     // Initialize queues
     this.citationQueue = new Queue('citation-processing', {
-      connection: redis,
+      connection: getRedisClient(),
       defaultJobOptions: {
         removeOnComplete: 100,
         removeOnFail: 50,
@@ -79,7 +83,7 @@ export class CitationJobProcessor {
     });
 
     this.authorityQueue = new Queue('authority-scoring', {
-      connection: redis,
+      connection: getRedisClient(),
       defaultJobOptions: {
         removeOnComplete: 50,
         removeOnFail: 25,
@@ -92,7 +96,7 @@ export class CitationJobProcessor {
     });
 
     this.healthCheckQueue = new Queue('health-check', {
-      connection: redis,
+      connection: getRedisClient(),
       defaultJobOptions: {
         removeOnComplete: 30,
         removeOnFail: 20,
@@ -106,7 +110,7 @@ export class CitationJobProcessor {
 
     // Initialize workers
     this.citationWorker = new Worker('citation-processing', this.processCitationJob.bind(this), {
-      connection: redis,
+      connection: getRedisClient(),
       concurrency: 5,
       limiter: {
         max: 10,
@@ -115,7 +119,7 @@ export class CitationJobProcessor {
     });
 
     this.authorityWorker = new Worker('authority-scoring', this.processAuthorityJob.bind(this), {
-      connection: redis,
+      connection: getRedisClient(),
       concurrency: 3,
       limiter: {
         max: 30,
@@ -124,7 +128,7 @@ export class CitationJobProcessor {
     });
 
     this.healthCheckWorker = new Worker('health-check', this.processHealthCheckJob.bind(this), {
-      connection: redis,
+      connection: getRedisClient(),
       concurrency: 2,
       limiter: {
         max: 5,
@@ -556,7 +560,7 @@ export class CitationJobProcessor {
       this.healthCheckWorker.close(),
     ]);
 
-    await redis.quit();
+    await getRedisClient().quit();
     await prisma.$disconnect();
 
     console.log('Citation job processor shutdown complete');

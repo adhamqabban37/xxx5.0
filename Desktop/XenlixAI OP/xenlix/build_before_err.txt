@@ -1,0 +1,511 @@
+ ΓÜá Slow filesystem detected. The benchmark took 652ms. If C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next is a network drive, consider moving it to a local folder. If you have an antivirus enabled, consider excluding your project directory.
+Γ¥î Redis health check failed: Error: Stream isn't writeable and enableOfflineQueue options is false
+    at EventEmitter.sendCommand (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__c22bb8fe._.js:139:79455)
+    at EventEmitter.ping (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__c22bb8fe._.js:139:12995)
+    at s.checkRedisHealth (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__7b68e3c9._.js:1:12427)
+    at s.initializeRedis (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__7b68e3c9._.js:1:12055)
+    at new s (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__7b68e3c9._.js:1:11399)
+    at __TURBOPACK__module__evaluation__ (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__7b68e3c9._.js:1:15173)
+    at instantiateModule (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:702:9)
+    at getOrInstantiateModuleFromParent (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:725:12)
+    at Context.esmImport [as i] (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:215:20)
+    at <unknown> (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__7b68e3c9._.js:1:15327)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Γ¥î Redis health check failed: Error: Stream isn't writeable and enableOfflineQueue options is false
+    at EventEmitter.sendCommand (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__05b09fb3._.js:139:79397)
+    at EventEmitter.ping (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__05b09fb3._.js:139:12995)
+    at s.checkRedisHealth (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__29d4651a._.js:1:15753)
+    at s.initializeRedis (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__29d4651a._.js:1:15381)
+    at new s (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__29d4651a._.js:1:14725)
+    at __TURBOPACK__module__evaluation__ (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__29d4651a._.js:1:18499)
+    at instantiateModule (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:702:9)
+    at getOrInstantiateModuleFromParent (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:725:12)
+    at Context.esmImport [as i] (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:215:20)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis health check failed: Error: Stream isn't writeable and enableOfflineQueue options is false
+    at EventEmitter.sendCommand (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__c22bb8fe._.js:139:79455)
+    at EventEmitter.ping (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__c22bb8fe._.js:139:12995)
+    at s.checkRedisHealth (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__3dfb73dc._.js:1:9638)
+    at s.initializeRedis (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__3dfb73dc._.js:1:9266)
+    at new s (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__3dfb73dc._.js:1:8610)
+    at __TURBOPACK__module__evaluation__ (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__3dfb73dc._.js:1:12384)
+    at instantiateModule (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:702:9)
+    at getOrInstantiateModuleFromParent (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:725:12)
+    at Context.esmImport [as i] (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:215:20)
+    at <unknown> (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\_84849fb8._.js:1:5582)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Redis connection error: Error: connect ETIMEDOUT
+    at Socket.<anonymous> (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__c22bb8fe._.js:139:76998) {
+  errorno: 'ETIMEDOUT',
+  code: 'ETIMEDOUT',
+  syscall: 'connect'
+}
+[ioredis] Unhandled error event: Error: connect ETIMEDOUT
+    at Socket.<anonymous> (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__c22bb8fe._.js:139:76998)
+    at Object.onceWrapper (node:events:632:28)
+    at Socket.emit (node:events:518:28)
+    at Socket._onTimeout (node:net:609:8)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7)
+Γ¥î Redis connection error: connect ETIMEDOUT
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Redis connection error: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:6379) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 6379
+}
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+    at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17)
+Γ¥î Redis connection error: connect ECONNREFUSED 127.0.0.1:6379
+Error: no schema with key or ref "https://json-schema.org/draft/2020-12/schema"
+    at c.validate (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__669f20c0._.js:4:43439)
+    at c.validateSchema (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__669f20c0._.js:4:45286)
+    at c._addSchema (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__669f20c0._.js:4:48488)
+    at c.compile (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__669f20c0._.js:4:43584)
+    at __TURBOPACK__module__evaluation__ (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__669f20c0._.js:7:33156)
+    at instantiateModule (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:702:9)
+    at getOrInstantiateModuleFromParent (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:725:12)
+    at Context.esmImport [as i] (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:215:20)
+    at <unknown> (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[root-of-the-server]__669f20c0._.js:7:34232)
+    at Context.asyncModule [as a] (C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix\.next\server\chunks\[turbopack]_runtime.js:421:5)
+
+> Build error occurred
+[Error: Failed to collect page data for /api/companies] {
+  type: 'Error'
+}

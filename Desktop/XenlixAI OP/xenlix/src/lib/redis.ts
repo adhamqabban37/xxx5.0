@@ -3,57 +3,170 @@ import { Queue } from 'bullmq';
 import { getEnvironmentConfig } from './env-config';
 
 // Get Redis configuration from environment
-const envConfig = getEnvironmentConfig();
-const redisConfig = {
-  host: envConfig.redis.host,
-  port: envConfig.redis.port,
-  password: envConfig.redis.password,
-  retryDelayOnFailover: 100,
-  enableReadyCheck: false,
-  maxRetriesPerRequest: null,
-};
+let redisConfig: any = null;
+let _redis: Redis | null = null;
+let _redisSubscriber: Redis | null = null;
 
-// Create Redis clients
-export const redis = new Redis(redisConfig);
-export const redisSubscriber = new Redis(redisConfig);
+function getRedisConfig() {
+  if (!redisConfig) {
+    const envConfig = getEnvironmentConfig();
+    redisConfig = {
+      host: envConfig.redis.host,
+      port: envConfig.redis.port,
+      password: envConfig.redis.password,
+      retryDelayOnFailover: 100,
+      enableReadyCheck: false,
+      maxRetriesPerRequest: null,
+    };
+  }
+  return redisConfig;
+}
 
-// Job Queues (using BullMQ)
-export const crawlQueue = new Queue('crawl jobs', {
-  connection: redisConfig,
-  defaultJobOptions: {
-    removeOnComplete: 100,
-    removeOnFail: 50,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
+// Lazy Redis client getters
+export function getRedisClient(): Redis {
+  if (!_redis) {
+    _redis = new Redis(getRedisConfig());
+  }
+  return _redis;
+}
+
+export function getRedisSubscriber(): Redis {
+  if (!_redisSubscriber) {
+    _redisSubscriber = new Redis(getRedisConfig());
+  }
+  return _redisSubscriber;
+}
+
+// For backward compatibility - lazy Redis instances
+let _exportedRedis: Redis | null = null;
+let _exportedRedisSubscriber: Redis | null = null;
+
+// Lazy Redis getters to avoid build-time connections
+function getLazyRedis(): Redis | null {
+  if (
+    !_exportedRedis &&
+    typeof process !== 'undefined' &&
+    process.env.NODE_ENV &&
+    typeof window === 'undefined'
+  ) {
+    try {
+      _exportedRedis = getRedisClient();
+    } catch (e) {
+      console.warn('Redis connection failed, operations will be skipped');
+    }
+  }
+  return _exportedRedis;
+}
+
+function getLazyRedisSubscriber(): Redis | null {
+  if (
+    !_exportedRedisSubscriber &&
+    typeof process !== 'undefined' &&
+    process.env.NODE_ENV &&
+    typeof window === 'undefined'
+  ) {
+    try {
+      _exportedRedisSubscriber = getRedisSubscriber();
+    } catch (e) {
+      console.warn('Redis subscriber connection failed, operations will be skipped');
+    }
+  }
+  return _exportedRedisSubscriber;
+}
+
+export const redis = getLazyRedis();
+export const redisSubscriber = getLazyRedisSubscriber();
+
+// Job Queues (using BullMQ) - lazy initialization to prevent build-time Redis connections
+let _crawlQueue: Queue | null = null;
+let _auditQueue: Queue | null = null;
+let _embeddingQueue: Queue | null = null;
+
+export function getCrawlQueue(): Queue {
+  if (
+    !_crawlQueue &&
+    typeof process !== 'undefined' &&
+    process.env.NODE_ENV &&
+    typeof window === 'undefined'
+  ) {
+    _crawlQueue = new Queue('crawl jobs', {
+      connection: getRedisConfig(),
+      defaultJobOptions: {
+        removeOnComplete: 100,
+        removeOnFail: 50,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      },
+    });
+  }
+  return _crawlQueue!;
+}
+
+export function getAuditQueue(): Queue {
+  if (
+    !_auditQueue &&
+    typeof process !== 'undefined' &&
+    process.env.NODE_ENV &&
+    typeof window === 'undefined'
+  ) {
+    _auditQueue = new Queue('audit jobs', {
+      connection: getRedisConfig(),
+      defaultJobOptions: {
+        removeOnComplete: 100,
+        removeOnFail: 50,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      },
+    });
+  }
+  return _auditQueue!;
+}
+
+export function getEmbeddingQueue(): Queue {
+  if (
+    !_embeddingQueue &&
+    typeof process !== 'undefined' &&
+    process.env.NODE_ENV &&
+    typeof window === 'undefined'
+  ) {
+    _embeddingQueue = new Queue('embedding jobs', {
+      connection: getRedisConfig(),
+      defaultJobOptions: {
+        removeOnComplete: 50,
+        removeOnFail: 25,
+        attempts: 2,
+        backoff: {
+          type: 'exponential',
+          delay: 1000,
+        },
+      },
+    });
+  }
+  return _embeddingQueue!;
+}
+
+// Legacy exports for backward compatibility - lazy proxies
+export const crawlQueue = new Proxy({} as Queue, {
+  get(target, prop) {
+    return getCrawlQueue()[prop as keyof Queue];
   },
 });
 
-export const auditQueue = new Queue('audit jobs', {
-  connection: redisConfig,
-  defaultJobOptions: {
-    removeOnComplete: 100,
-    removeOnFail: 50,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
+export const auditQueue = new Proxy({} as Queue, {
+  get(target, prop) {
+    return getAuditQueue()[prop as keyof Queue];
   },
 });
 
-export const embeddingQueue = new Queue('embedding jobs', {
-  connection: redisConfig,
-  defaultJobOptions: {
-    removeOnComplete: 50,
-    removeOnFail: 25,
-    attempts: 2,
-    backoff: {
-      type: 'exponential',
-      delay: 1000,
-    },
+export const embeddingQueue = new Proxy({} as Queue, {
+  get(target, prop) {
+    return getEmbeddingQueue()[prop as keyof Queue];
   },
 });
 
@@ -70,7 +183,7 @@ export class CacheService {
 
   async set(key: string, value: any, ttl: number = 3600): Promise<void> {
     try {
-      await redis.setex(key, ttl, JSON.stringify(value));
+      await getRedisClient().setex(key, ttl, JSON.stringify(value));
     } catch (error) {
       console.error('Redis cache set error:', error);
     }
@@ -78,7 +191,7 @@ export class CacheService {
 
   async get<T>(key: string): Promise<T | null> {
     try {
-      const value = await redis.get(key);
+      const value = await getRedisClient().get(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
       console.error('Redis cache get error:', error);
@@ -88,7 +201,7 @@ export class CacheService {
 
   async del(key: string): Promise<void> {
     try {
-      await redis.del(key);
+      await getRedisClient().del(key);
     } catch (error) {
       console.error('Redis cache delete error:', error);
     }
@@ -96,7 +209,7 @@ export class CacheService {
 
   async exists(key: string): Promise<boolean> {
     try {
-      return (await redis.exists(key)) === 1;
+      return (await getRedisClient().exists(key)) === 1;
     } catch (error) {
       console.error('Redis cache exists error:', error);
       return false;
@@ -153,23 +266,49 @@ export class CacheService {
   }
 }
 
-// Initialize connection
-redis.on('connect', () => {
-  console.log('Redis connected successfully');
-});
+// Initialize connection when needed
+function initializeRedisEvents() {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV && typeof window === 'undefined') {
+    const redisClient = getRedisClient();
 
-redis.on('error', (error) => {
-  console.error('Redis connection error:', error);
-});
+    redisClient.on('connect', () => {
+      console.log('Redis connected successfully');
+    });
+
+    redisClient.on('error', (error) => {
+      console.error('Redis connection error:', error);
+    });
+  }
+}
+
+// Initialize events on first access
+let eventsInitialized = false;
+function ensureEventsInitialized() {
+  if (!eventsInitialized) {
+    initializeRedisEvents();
+    eventsInitialized = true;
+  }
+}
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
-  await redis.quit();
-  await redisSubscriber.quit();
-  await crawlQueue.close();
-  await auditQueue.close();
-  await embeddingQueue.close();
-  process.exit(0);
-});
+if (typeof process !== 'undefined' && process.env.NODE_ENV && typeof window === 'undefined') {
+  process.on('SIGINT', async () => {
+    try {
+      await getRedisClient().quit();
+      await getRedisSubscriber().quit();
+      await crawlQueue.close();
+      await auditQueue.close();
+      await embeddingQueue.close();
+    } catch (error) {
+      console.error('Error during graceful shutdown:', error);
+    }
+    process.exit(0);
+  });
+}
 
-export default redis;
+export default {
+  get redis() {
+    ensureEventsInitialized();
+    return getRedisClient();
+  },
+};

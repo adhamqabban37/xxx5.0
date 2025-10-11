@@ -85,10 +85,14 @@ const memoryCache = new Map<string, PSICacheEntry>();
 function initializeCache(): Redis | null {
   if (redisClient) return redisClient;
 
+  // Skip Redis initialization during build phase
+  if (typeof process === 'undefined' || !process.env.NODE_ENV || typeof window !== 'undefined') {
+    return null;
+  }
+
   try {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
     redisClient = new Redis(redisUrl, {
-      retryDelayOnFailover: 100,
       enableReadyCheck: false,
       maxRetriesPerRequest: 3,
       lazyConnect: true,

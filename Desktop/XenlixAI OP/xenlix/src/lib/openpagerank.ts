@@ -52,13 +52,16 @@ const RATE_LIMIT = {
 
 // Redis client (optional)
 let redis: any = null;
-try {
-  if (process.env.REDIS_URL) {
-    const Redis = require('ioredis');
-    redis = new Redis(process.env.REDIS_URL);
+// Skip Redis initialization during build phase
+if (typeof process !== 'undefined' && process.env.NODE_ENV && typeof window === 'undefined') {
+  try {
+    if (process.env.REDIS_URL) {
+      const Redis = require('ioredis');
+      redis = new Redis(process.env.REDIS_URL);
+    }
+  } catch (error) {
+    console.log('Redis not available, using in-memory cache');
   }
-} catch (error) {
-  console.log('Redis not available, using in-memory cache');
 }
 
 /**

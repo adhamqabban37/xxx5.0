@@ -4,13 +4,55 @@ import { prisma } from './prisma';
 import { CompanyAnalysisPlugin } from './company-analysis-plugin';
 import { validateCompanyInfoData, extractMetricsFromCompanyInfo } from './company-info-schema';
 
-// Redis connection
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+// Lazy Redis initialization to prevent build-time connections
+function getRedisClient() {
+  if (typeof process === 'undefined' || !process.env.NODE_ENV || typeof window !== 'undefined') {
+    return null;
+  }
+  return new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    retryDelayOnFailover: 100,
+  });
+}
 
-// Job queues
-export const companyAnalysisQueue = new Queue('company-analysis', { connection: redis });
-export const visibilitySweepQueue = new Queue('visibility-sweep', { connection: redis });
-export const competitorAnalysisQueue = new Queue('competitor-analysis', { connection: redis });
+// Job queues - use lazy initialization with proxies
+let _companyAnalysisQueue: Queue | null = null;
+let _visibilitySweepQueue: Queue | null = null;
+let _competitorAnalysisQueue: Queue | null = null;
+
+export const companyAnalysisQueue = new Proxy({} as Queue, {
+  get(target, prop) {
+    if (!_companyAnalysisQueue) {
+      const redis = getRedisClient();
+      if (!redis) return undefined;
+      _companyAnalysisQueue = new Queue('company-analysis', { connection: redis });
+    }
+    return _companyAnalysisQueue[prop as keyof Queue];
+  },
+});
+
+export const visibilitySweepQueue = new Proxy({} as Queue, {
+  get(target, prop) {
+    if (!_visibilitySweepQueue) {
+      const redis = getRedisClient();
+      if (!redis) return undefined;
+      _visibilitySweepQueue = new Queue('visibility-sweep', { connection: redis });
+    }
+    return _visibilitySweepQueue[prop as keyof Queue];
+  },
+});
+
+export const competitorAnalysisQueue = new Proxy({} as Queue, {
+  get(target, prop) {
+    if (!_competitorAnalysisQueue) {
+      const redis = getRedisClient();
+      if (!redis) return undefined;
+      _competitorAnalysisQueue = new Queue('competitor-analysis', { connection: redis });
+    }
+    return _competitorAnalysisQueue[prop as keyof Queue];
+  },
+});
 
 // Job data interfaces
 interface CompanyAnalysisJobData {
@@ -196,7 +238,7 @@ export const companyAnalysisWorker = new Worker(
       throw error;
     }
   },
-  { connection: redis }
+  { connection: getRedisClient() }
 );
 
 /**
@@ -258,7 +300,7 @@ export const visibilitySweepWorker = new Worker(
       throw error;
     }
   },
-  { connection: redis }
+  { connection: getRedisClient() }
 );
 
 /**
@@ -309,7 +351,7 @@ export const competitorAnalysisWorker = new Worker(
       throw error;
     }
   },
-  { connection: redis }
+  { connection: getRedisClient() }
 );
 
 /**
@@ -502,5 +544,5 @@ process.on('SIGINT', async () => {
   await companyAnalysisWorker.close();
   await visibilitySweepWorker.close();
   await competitorAnalysisWorker.close();
-  await redis.disconnect();
+  await getRedisClient().disconnect();
 });

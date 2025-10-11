@@ -49,8 +49,8 @@ export interface CollectionJobResult {
 }
 
 export class AIVisibilityOrchestrator {
-  private collectionQueue: Queue;
-  private worker: Worker;
+  private collectionQueue?: Queue;
+  private worker?: Worker;
   private collectorManager: CollectorManager;
   private brandParser: BrandMentionParser;
   private scorer: AIVisibilityScorer;
@@ -74,19 +74,10 @@ export class AIVisibilityOrchestrator {
       ...config,
     };
 
-    // Initialize queue
-    this.collectionQueue = new Queue('ai-visibility-collection', {
-      connection: this.config.redis_connection,
-      defaultJobOptions: {
-        attempts: this.config.retry_attempts,
-        backoff: {
-          type: 'exponential',
-          delay: this.config.retry_delay,
-        },
-        removeOnComplete: 50, // Keep last 50 completed jobs
-        removeOnFail: 100, // Keep last 100 failed jobs
-      },
-    });
+    // Skip Redis initialization during build phase
+    if (typeof process !== 'undefined' && process.env.NODE_ENV && typeof window === 'undefined') {
+      this.initializeQueues();
+    }
 
     // Initialize components
     this.collectorManager = new CollectorManager({
@@ -103,6 +94,22 @@ export class AIVisibilityOrchestrator {
     });
 
     this.scorer = new AIVisibilityScorer();
+  }
+
+  private initializeQueues(): void {
+    // Initialize queue
+    this.collectionQueue = new Queue('ai-visibility-collection', {
+      connection: this.config.redis_connection,
+      defaultJobOptions: {
+        attempts: this.config.retry_attempts,
+        backoff: {
+          type: 'exponential',
+          delay: this.config.retry_delay,
+        },
+        removeOnComplete: 50, // Keep last 50 completed jobs
+        removeOnFail: 100, // Keep last 100 failed jobs
+      },
+    });
 
     // Initialize worker
     this.worker = new Worker('ai-visibility-collection', this.processJob.bind(this), {
@@ -132,6 +139,10 @@ export class AIVisibilityOrchestrator {
    * Schedule daily AI visibility collection jobs
    */
   async scheduleDailyCollection(): Promise<void> {
+    if (!this.collectionQueue) {
+      throw new Error('Collection queue not initialized');
+    }
+
     try {
       // Remove existing scheduled jobs
       await this.collectionQueue.removeRepeatable('daily-collection', {
@@ -167,6 +178,10 @@ export class AIVisibilityOrchestrator {
    * Manually trigger collection for specific prompts or brands
    */
   async triggerCollection(jobData: AIVisibilityJobData): Promise<Job> {
+    if (!this.collectionQueue) {
+      throw new Error('Collection queue not initialized');
+    }
+
     try {
       const job = await this.collectionQueue.add('manual-collection', jobData, {
         priority: 10, // High priority for manual jobs
@@ -459,6 +474,11 @@ export class AIVisibilityOrchestrator {
   }
 
   private setupEventHandlers(): void {
+    if (!this.worker || !this.collectionQueue) {
+      logger.warn('Cannot setup event handlers - queue or worker not initialized');
+      return;
+    }
+
     this.worker.on('completed', (job, result: CollectionJobResult) => {
       logger.info('Job completed successfully', {
         job_id: job.id,
@@ -483,6 +503,10 @@ export class AIVisibilityOrchestrator {
   }
 
   async getJobStatus(jobId: string): Promise<any> {
+    if (!this.collectionQueue) {
+      throw new Error('Collection queue not initialized');
+    }
+
     const job = await this.collectionQueue.getJob(jobId);
     if (!job) return null;
 
@@ -501,8 +525,12 @@ export class AIVisibilityOrchestrator {
 
   async cleanup(): Promise<void> {
     try {
-      await this.worker.close();
-      await this.collectionQueue.close();
+      if (this.worker) {
+        await this.worker.close();
+      }
+      if (this.collectionQueue) {
+        await this.collectionQueue.close();
+      }
       await this.collectorManager.cleanup();
       await prisma.$disconnect();
       logger.info('AI Visibility orchestrator cleaned up');
