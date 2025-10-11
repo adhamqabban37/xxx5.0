@@ -3,12 +3,12 @@
 import React, { useState } from 'react';
 import { useAEOScore, AEOScoreRequest } from '@/hooks/useAEOScore';
 import { AEOScoreDisplay } from '@/components/AEOScoreDisplay';
-import { 
-  MagnifyingGlassIcon, 
-  PlusIcon, 
-  TrashIcon, 
+import {
+  MagnifyingGlassIcon,
+  PlusIcon,
+  TrashIcon,
   InformationCircleIcon,
-  ChartBarIcon 
+  ChartBarIcon,
 } from '@heroicons/react/24/outline';
 
 export default function AEOAnalyzerPage() {
@@ -35,8 +35,8 @@ export default function AEOAnalyzerPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const validQueries = queries.filter(q => q.trim().length > 0);
+
+    const validQueries = queries.filter((q) => q.trim().length > 0);
     if (!url || validQueries.length === 0) {
       return;
     }
@@ -45,7 +45,7 @@ export default function AEOAnalyzerPage() {
       url,
       queries: validQueries,
       scanType,
-      includeSemanticAnalysis: true
+      includeSemanticAnalysis: true,
     };
 
     try {
@@ -71,8 +71,8 @@ export default function AEOAnalyzerPage() {
             AEO Semantic Analyzer
           </h1>
           <p className="mt-2 text-gray-600 max-w-2xl mx-auto">
-            Analyze how well your website content answers user queries using advanced semantic analysis 
-            powered by sentence-transformers and AI.
+            Analyze how well your website content answers user queries using advanced semantic
+            analysis powered by sentence-transformers and AI.
           </p>
         </div>
 
@@ -98,9 +98,7 @@ export default function AEOAnalyzerPage() {
 
             {/* Scan Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Scan Type
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Scan Type</label>
               <div className="flex space-x-4">
                 <label className="flex items-center">
                   <input
@@ -143,7 +141,7 @@ export default function AEOAnalyzerPage() {
                   Add Query
                 </button>
               </div>
-              
+
               <div className="space-y-3">
                 {queries.map((query, index) => (
                   <div key={index} className="flex items-center space-x-2">
@@ -168,11 +166,12 @@ export default function AEOAnalyzerPage() {
                   </div>
                 ))}
               </div>
-              
+
               <div className="mt-2 flex items-start space-x-2 text-sm text-gray-600">
                 <InformationCircleIcon className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 <p>
-                  Add questions your target audience might ask. The AI will analyze how well your content answers these queries.
+                  Add questions your target audience might ask. The AI will analyze how well your
+                  content answers these queries.
                 </p>
               </div>
             </div>
@@ -181,7 +180,7 @@ export default function AEOAnalyzerPage() {
             <div className="flex items-center space-x-4">
               <button
                 type="submit"
-                disabled={loading || !url || queries.every(q => !q.trim())}
+                disabled={loading || !url || queries.every((q) => !q.trim())}
                 className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -196,7 +195,7 @@ export default function AEOAnalyzerPage() {
                   </>
                 )}
               </button>
-              
+
               {result && (
                 <button
                   type="button"
@@ -232,7 +231,11 @@ export default function AEOAnalyzerPage() {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
               <div className="ml-3">
@@ -247,11 +250,13 @@ export default function AEOAnalyzerPage() {
 
         {/* Results */}
         {result && <AEOScoreDisplay result={result} />}
-        
+
         {/* Help Section */}
         {!result && !loading && (
           <div className="bg-white rounded-lg border border-gray-200 p-6 mt-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">How AEO Semantic Analysis Works</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              How AEO Semantic Analysis Works
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="bg-blue-100 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
@@ -259,27 +264,30 @@ export default function AEOAnalyzerPage() {
                 </div>
                 <h4 className="font-medium mb-2">Content Extraction</h4>
                 <p className="text-sm text-gray-600">
-                  Our AI crawls your website and extracts all text content, including headings, paragraphs, and FAQ sections.
+                  Our AI crawls your website and extracts all text content, including headings,
+                  paragraphs, and FAQ sections.
                 </p>
               </div>
-              
+
               <div className="text-center">
                 <div className="bg-green-100 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
                   <span className="text-green-600 font-bold">2</span>
                 </div>
                 <h4 className="font-medium mb-2">Semantic Embedding</h4>
                 <p className="text-sm text-gray-600">
-                  Using sentence-transformers (all-MiniLM-L6-v2), we generate embeddings for both your queries and content.
+                  Using sentence-transformers (all-MiniLM-L6-v2), we generate embeddings for both
+                  your queries and content.
                 </p>
               </div>
-              
+
               <div className="text-center">
                 <div className="bg-purple-100 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
                   <span className="text-purple-600 font-bold">3</span>
                 </div>
                 <h4 className="font-medium mb-2">Similarity Analysis</h4>
                 <p className="text-sm text-gray-600">
-                  We compute cosine similarity between queries and content to find the best matches and identify gaps.
+                  We compute cosine similarity between queries and content to find the best matches
+                  and identify gaps.
                 </p>
               </div>
             </div>

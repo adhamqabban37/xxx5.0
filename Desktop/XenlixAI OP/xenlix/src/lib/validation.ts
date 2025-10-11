@@ -21,19 +21,21 @@ export type ApiResponse<T = any> = ValidationErrorResponse | SuccessResponse<T>;
 export async function validateRequest<T>(
   request: NextRequest,
   schema: z.ZodSchema<T>
-): Promise<{ success: true; data: T } | { success: false; response: NextResponse<ValidationErrorResponse> }> {
+): Promise<
+  { success: true; data: T } | { success: false; response: NextResponse<ValidationErrorResponse> }
+> {
   try {
     const body = await request.json();
     const validatedData = schema.parse(body);
-    
+
     return {
       success: true,
-      data: validatedData
+      data: validatedData,
     };
   } catch (error) {
     if (error instanceof ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      
+
       error.issues.forEach((issue) => {
         const path = issue.path.join('.');
         if (!fieldErrors[path]) {
@@ -48,23 +50,23 @@ export async function validateRequest<T>(
           {
             success: false,
             error: 'Validation failed',
-            fieldErrors
+            fieldErrors,
           } as ValidationErrorResponse,
           { status: 400 }
-        )
+        ),
       };
     }
-    
+
     // Handle JSON parsing errors
     return {
       success: false,
       response: NextResponse.json(
         {
           success: false,
-          error: 'Invalid JSON format'
+          error: 'Invalid JSON format',
         } as ValidationErrorResponse,
         { status: 400 }
-      )
+      ),
     };
   }
 }
@@ -81,7 +83,7 @@ export function createErrorResponse(
     {
       success: false,
       error,
-      ...(fieldErrors && { fieldErrors })
+      ...(fieldErrors && { fieldErrors }),
     } as ValidationErrorResponse,
     { status }
   );
@@ -97,7 +99,7 @@ export function createSuccessResponse<T>(
   return NextResponse.json(
     {
       success: true,
-      data
+      data,
     } as SuccessResponse<T>,
     { status }
   );

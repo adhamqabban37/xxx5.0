@@ -85,7 +85,7 @@ export function useAEOScore() {
           url: request.url,
           queries: request.queries,
           scanType: request.scanType || 'full',
-          includeSemanticAnalysis: request.includeSemanticAnalysis ?? true
+          includeSemanticAnalysis: request.includeSemanticAnalysis ?? true,
         }),
       });
 
@@ -117,7 +117,7 @@ export function useAEOScore() {
     loading,
     result,
     error,
-    reset
+    reset,
   };
 }
 
@@ -159,10 +159,14 @@ export const aeoUtils = {
    */
   getPriorityColor: (priority: string): string => {
     switch (priority) {
-      case 'high': return 'text-red-600 bg-red-50 border-red-200';
-      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'low': return 'text-blue-600 bg-blue-50 border-blue-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'high':
+        return 'text-red-600 bg-red-50 border-red-200';
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'low':
+        return 'text-blue-600 bg-blue-50 border-blue-200';
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   },
 
@@ -177,28 +181,38 @@ export const aeoUtils = {
    * Categorize weak spots by issue type
    */
   categorizeWeakSpots: (weakSpots: WeakSpot[]): Record<string, WeakSpot[]> => {
-    return weakSpots.reduce((acc, spot) => {
-      const category = spot.issue.includes('No relevant content') ? 'Missing Content' : 'Weak Matches';
-      if (!acc[category]) acc[category] = [];
-      acc[category].push(spot);
-      return acc;
-    }, {} as Record<string, WeakSpot[]>);
+    return weakSpots.reduce(
+      (acc, spot) => {
+        const category = spot.issue.includes('No relevant content')
+          ? 'Missing Content'
+          : 'Weak Matches';
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(spot);
+        return acc;
+      },
+      {} as Record<string, WeakSpot[]>
+    );
   },
 
   /**
    * Get top queries by confidence
    */
-  getTopQueries: (result: AEOScoreResult | null, limit: number = 5): Array<{query: string, confidence: number}> => {
+  getTopQueries: (
+    result: AEOScoreResult | null,
+    limit: number = 5
+  ): Array<{ query: string; confidence: number }> => {
     if (!result?.topMatchingContent) return [];
-    
-    const queryConfidence = result.topMatchingContent
-      .reduce((acc, match) => {
+
+    const queryConfidence = result.topMatchingContent.reduce(
+      (acc, match) => {
         if (!acc[match.query] || acc[match.query] < match.score) {
           acc[match.query] = match.score;
         }
         return acc;
-      }, {} as Record<string, number>);
-    
+      },
+      {} as Record<string, number>
+    );
+
     return Object.entries(queryConfidence)
       .map(([query, confidence]) => ({ query, confidence }))
       .sort((a, b) => b.confidence - a.confidence)
@@ -209,9 +223,12 @@ export const aeoUtils = {
    * Calculate content type distribution
    */
   getContentTypeDistribution: (matches: ContentMatch[]): Record<string, number> => {
-    return matches.reduce((acc, match) => {
-      acc[match.type] = (acc[match.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-  }
+    return matches.reduce(
+      (acc, match) => {
+        acc[match.type] = (acc[match.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+  },
 };

@@ -33,7 +33,7 @@ export class BusinessSchemaGenerator {
       includeOrganization: true,
       includeBreadcrumbs: true,
       includeWebsite: true,
-      ...options
+      ...options,
     };
 
     // 1. LocalBusiness Schema (Primary)
@@ -63,7 +63,10 @@ export class BusinessSchemaGenerator {
 
     // 6. Review Schema
     if (defaultOptions.includeReviews && businessInfo.reputation) {
-      schemas.push(this.generateAggregateRatingSchema(businessInfo));
+      const ratingSchema = this.generateAggregateRatingSchema(businessInfo);
+      if (ratingSchema) {
+        schemas.push(ratingSchema);
+      }
     }
 
     // 7. Breadcrumb Schema
@@ -71,7 +74,7 @@ export class BusinessSchemaGenerator {
       schemas.push(this.generateBreadcrumbSchema(businessInfo));
     }
 
-    return schemas.filter(schema => schema !== null);
+    return schemas.filter((schema) => schema !== null);
   }
 
   /**
@@ -98,7 +101,7 @@ export class BusinessSchemaGenerator {
         addressLocality: businessInfo.location.address.city,
         addressRegion: businessInfo.location.address.state,
         postalCode: businessInfo.location.address.zipCode,
-        addressCountry: businessInfo.location.address.country || 'US'
+        addressCountry: businessInfo.location.address.country || 'US',
       };
     }
 
@@ -107,7 +110,7 @@ export class BusinessSchemaGenerator {
       schema.geo = {
         '@type': 'GeoCoordinates',
         latitude: businessInfo.location.coordinates.latitude,
-        longitude: businessInfo.location.coordinates.longitude
+        longitude: businessInfo.location.coordinates.longitude,
       };
     }
 
@@ -118,9 +121,9 @@ export class BusinessSchemaGenerator {
 
     // Add service areas
     if (businessInfo.location.serviceArea.length > 0) {
-      schema.areaServed = businessInfo.location.serviceArea.map(area => ({
+      schema.areaServed = businessInfo.location.serviceArea.map((area) => ({
         '@type': 'City',
-        name: area
+        name: area,
       }));
     }
 
@@ -138,9 +141,9 @@ export class BusinessSchemaGenerator {
           '@type': 'Offer',
           itemOffered: {
             '@type': 'Service',
-            name: service
-          }
-        }))
+            name: service,
+          },
+        })),
       };
     }
 
@@ -151,7 +154,7 @@ export class BusinessSchemaGenerator {
         ratingValue: businessInfo.reputation.averageRating,
         reviewCount: businessInfo.reputation.totalReviews,
         bestRating: 5,
-        worstRating: 1
+        worstRating: 1,
       };
     }
 
@@ -164,7 +167,7 @@ export class BusinessSchemaGenerator {
     if (businessInfo.attributes.employeeCount) {
       schema.numberOfEmployees = {
         '@type': 'QuantitativeValue',
-        value: businessInfo.attributes.employeeCount
+        value: businessInfo.attributes.employeeCount,
       };
     }
 
@@ -175,7 +178,7 @@ export class BusinessSchemaGenerator {
    * Generate Organization schema
    */
   private generateOrganizationSchema(businessInfo: BusinessInfo): Record<string, any> {
-    const schema = {
+    const schema: Record<string, any> = {
       '@context': 'https://schema.org',
       '@type': 'Organization',
       '@id': `${businessInfo.contact.website}#organization`,
@@ -188,8 +191,8 @@ export class BusinessSchemaGenerator {
         telephone: businessInfo.contact.phone,
         email: businessInfo.contact.email,
         contactType: 'customer service',
-        availableLanguage: ['English']
-      }
+        availableLanguage: ['English'],
+      },
     };
 
     // Add social media profiles
@@ -212,16 +215,16 @@ export class BusinessSchemaGenerator {
       name: businessInfo.businessName,
       description: `${businessInfo.businessName} - ${businessInfo.services.join(', ')}`,
       publisher: {
-        '@id': `${businessInfo.contact.website}#organization`
+        '@id': `${businessInfo.contact.website}#organization`,
       },
       potentialAction: {
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: `${businessInfo.contact.website}/search?q={search_term_string}`
+          urlTemplate: `${businessInfo.contact.website}/search?q={search_term_string}`,
         },
-        'query-input': 'required name=search_term_string'
-      }
+        'query-input': 'required name=search_term_string',
+      },
     };
   }
 
@@ -235,19 +238,20 @@ export class BusinessSchemaGenerator {
       '@id': `${businessInfo.contact.website}#service-${index + 1}`,
       name: service,
       provider: {
-        '@id': `${businessInfo.contact.website}#business`
+        '@id': `${businessInfo.contact.website}#business`,
       },
-      areaServed: businessInfo.location.serviceArea.length > 0 
-        ? businessInfo.location.serviceArea.map(area => ({
-            '@type': 'City',
-            name: area
-          }))
-        : {
-            '@type': 'City',
-            name: businessInfo.location.address.city
-          },
+      areaServed:
+        businessInfo.location.serviceArea.length > 0
+          ? businessInfo.location.serviceArea.map((area) => ({
+              '@type': 'City',
+              name: area,
+            }))
+          : {
+              '@type': 'City',
+              name: businessInfo.location.address.city,
+            },
       serviceType: service,
-      description: `Professional ${service.toLowerCase()} services provided by ${businessInfo.businessName}`
+      description: `Professional ${service.toLowerCase()} services provided by ${businessInfo.businessName}`,
     }));
   }
 
@@ -261,14 +265,14 @@ export class BusinessSchemaGenerator {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
       '@id': `${businessInfo.contact.website}#faq`,
-      mainEntity: faqs.map(faq => ({
+      mainEntity: faqs.map((faq) => ({
         '@type': 'Question',
         name: faq.question,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: faq.answer
-        }
-      }))
+          text: faq.answer,
+        },
+      })),
     };
   }
 
@@ -289,12 +293,12 @@ export class BusinessSchemaGenerator {
         ratingValue: businessInfo.reputation.averageRating,
         reviewCount: businessInfo.reputation.totalReviews,
         bestRating: 5,
-        worstRating: 1
+        worstRating: 1,
       },
       brand: {
         '@type': 'Brand',
-        name: businessInfo.businessName
-      }
+        name: businessInfo.businessName,
+      },
     };
   }
 
@@ -310,21 +314,21 @@ export class BusinessSchemaGenerator {
           '@type': 'ListItem',
           position: 1,
           name: 'Home',
-          item: businessInfo.contact.website
+          item: businessInfo.contact.website,
         },
         {
           '@type': 'ListItem',
           position: 2,
           name: businessInfo.industry,
-          item: `${businessInfo.contact.website}/${businessInfo.industry.toLowerCase().replace(/\s+/g, '-')}`
+          item: `${businessInfo.contact.website}/${businessInfo.industry.toLowerCase().replace(/\s+/g, '-')}`,
         },
         {
           '@type': 'ListItem',
           position: 3,
           name: businessInfo.location.address.city,
-          item: `${businessInfo.contact.website}/${businessInfo.location.address.city.toLowerCase().replace(/\s+/g, '-')}`
-        }
-      ]
+          item: `${businessInfo.contact.website}/${businessInfo.location.address.city.toLowerCase().replace(/\s+/g, '-')}`,
+        },
+      ],
     };
   }
 
@@ -333,21 +337,21 @@ export class BusinessSchemaGenerator {
    */
   private getBusinessType(industry: string): string {
     const industryMap: Record<string, string> = {
-      'healthcare': 'MedicalOrganization',
-      'dental': 'Dentist',
+      healthcare: 'MedicalOrganization',
+      dental: 'Dentist',
       'legal services': 'Attorney',
       'real estate': 'RealEstateAgent',
-      'restaurant': 'Restaurant',
-      'automotive': 'AutomotiveBusiness',
-      'construction': 'GeneralContractor',
-      'plumbing': 'Plumber',
-      'electrical': 'Electrician',
-      'hvac': 'HVACBusiness',
-      'beauty': 'BeautySalon',
-      'fitness': 'ExerciseGym',
-      'retail': 'Store',
-      'hotel': 'LodgingBusiness',
-      'education': 'EducationalOrganization'
+      restaurant: 'Restaurant',
+      automotive: 'AutomotiveBusiness',
+      construction: 'GeneralContractor',
+      plumbing: 'Plumber',
+      electrical: 'Electrician',
+      hvac: 'HVACBusiness',
+      beauty: 'BeautySalon',
+      fitness: 'ExerciseGym',
+      retail: 'Store',
+      hotel: 'LodgingBusiness',
+      education: 'EducationalOrganization',
     };
 
     const lowerIndustry = industry.toLowerCase();
@@ -357,73 +361,82 @@ export class BusinessSchemaGenerator {
   /**
    * Generate industry-specific FAQ content
    */
-  private generateIndustryFAQs(businessInfo: BusinessInfo): Array<{question: string, answer: string}> {
-    const industryFAQs: Record<string, Array<{question: string, answer: string}>> = {
-      'healthcare': [
+  private generateIndustryFAQs(
+    businessInfo: BusinessInfo
+  ): Array<{ question: string; answer: string }> {
+    const industryFAQs: Record<string, Array<{ question: string; answer: string }>> = {
+      healthcare: [
         {
           question: 'What insurance do you accept?',
-          answer: `${businessInfo.businessName} accepts most major insurance plans. Please contact us to verify your specific insurance coverage.`
+          answer: `${businessInfo.businessName} accepts most major insurance plans. Please contact us to verify your specific insurance coverage.`,
         },
         {
           question: 'How do I schedule an appointment?',
-          answer: `You can schedule an appointment by calling ${businessInfo.contact.phone} or visiting our website at ${businessInfo.contact.website}.`
+          answer: `You can schedule an appointment by calling ${businessInfo.contact.phone} or visiting our website at ${businessInfo.contact.website}.`,
         },
         {
           question: 'What are your office hours?',
-          answer: 'Our office hours vary by day. Please check our website or call for current hours.'
-        }
+          answer:
+            'Our office hours vary by day. Please check our website or call for current hours.',
+        },
       ],
       'legal services': [
         {
           question: 'Do you offer free consultations?',
-          answer: `${businessInfo.businessName} offers initial consultations. Contact us at ${businessInfo.contact.phone} to discuss your case.`
+          answer: `${businessInfo.businessName} offers initial consultations. Contact us at ${businessInfo.contact.phone} to discuss your case.`,
         },
         {
           question: 'What types of cases do you handle?',
-          answer: `We specialize in ${businessInfo.services.join(', ')}. Contact us to discuss your specific legal needs.`
+          answer: `We specialize in ${businessInfo.services.join(', ')}. Contact us to discuss your specific legal needs.`,
         },
         {
           question: 'How much do your services cost?',
-          answer: 'Legal fees vary based on the complexity of your case. We offer transparent pricing and will discuss costs during your consultation.'
-        }
+          answer:
+            'Legal fees vary based on the complexity of your case. We offer transparent pricing and will discuss costs during your consultation.',
+        },
       ],
       'real estate': [
         {
           question: 'Are you available for showings on weekends?',
-          answer: `Yes, ${businessInfo.businessName} offers flexible scheduling including weekends and evenings to accommodate your schedule.`
+          answer: `Yes, ${businessInfo.businessName} offers flexible scheduling including weekends and evenings to accommodate your schedule.`,
         },
         {
           question: 'What areas do you serve?',
-          answer: `We serve ${businessInfo.location.serviceArea.join(', ')} and surrounding areas.`
+          answer: `We serve ${businessInfo.location.serviceArea.join(', ')} and surrounding areas.`,
         },
         {
           question: 'How do you price homes for sale?',
-          answer: 'We use comprehensive market analysis and local expertise to price homes competitively and accurately.'
-        }
-      ]
+          answer:
+            'We use comprehensive market analysis and local expertise to price homes competitively and accurately.',
+        },
+      ],
     };
 
     const lowerIndustry = businessInfo.industry.toLowerCase();
-    return industryFAQs[lowerIndustry] || [
-      {
-        question: `What services does ${businessInfo.businessName} offer?`,
-        answer: `We specialize in ${businessInfo.services.join(', ')}. Contact us at ${businessInfo.contact.phone} for more information.`
-      },
-      {
-        question: 'What areas do you serve?',
-        answer: `We proudly serve ${businessInfo.location.address.city}${businessInfo.location.serviceArea.length > 0 ? ' and ' + businessInfo.location.serviceArea.join(', ') : ''}.`
-      },
-      {
-        question: 'How can I contact you?',
-        answer: `You can reach us by phone at ${businessInfo.contact.phone}, email at ${businessInfo.contact.email}, or visit our website at ${businessInfo.contact.website}.`
-      }
-    ];
+    return (
+      industryFAQs[lowerIndustry] || [
+        {
+          question: `What services does ${businessInfo.businessName} offer?`,
+          answer: `We specialize in ${businessInfo.services.join(', ')}. Contact us at ${businessInfo.contact.phone} for more information.`,
+        },
+        {
+          question: 'What areas do you serve?',
+          answer: `We proudly serve ${businessInfo.location.address.city}${businessInfo.location.serviceArea.length > 0 ? ' and ' + businessInfo.location.serviceArea.join(', ') : ''}.`,
+        },
+        {
+          question: 'How can I contact you?',
+          answer: `You can reach us by phone at ${businessInfo.contact.phone}, email at ${businessInfo.contact.email}, or visit our website at ${businessInfo.contact.website}.`,
+        },
+      ]
+    );
   }
 
   /**
    * Format business hours for schema
    */
-  private formatBusinessHours(hours: NonNullable<BusinessInfo['hours']>): Array<Record<string, any>> {
+  private formatBusinessHours(
+    hours: NonNullable<BusinessInfo['hours']>
+  ): Array<Record<string, any>> {
     const dayMapping: Record<string, string> = {
       monday: 'Monday',
       tuesday: 'Tuesday',
@@ -431,7 +444,7 @@ export class BusinessSchemaGenerator {
       thursday: 'Thursday',
       friday: 'Friday',
       saturday: 'Saturday',
-      sunday: 'Sunday'
+      sunday: 'Sunday',
     };
 
     const openingHours: Array<Record<string, any>> = [];
@@ -444,7 +457,7 @@ export class BusinessSchemaGenerator {
             '@type': 'OpeningHoursSpecification',
             dayOfWeek: dayName,
             opens: this.extractOpenTime(timeRange),
-            closes: this.extractCloseTime(timeRange)
+            closes: this.extractCloseTime(timeRange),
           });
         }
       }
@@ -496,14 +509,14 @@ export class BusinessSchemaGenerator {
   private inferPriceRange(industry: string): string {
     const priceRanges: Record<string, string> = {
       'legal services': '$$$$',
-      'healthcare': '$$$',
-      'dental': '$$$',
+      healthcare: '$$$',
+      dental: '$$$',
       'real estate': '$$$',
-      'automotive': '$$',
-      'restaurant': '$$',
-      'beauty': '$$',
-      'fitness': '$',
-      'retail': '$-$$'
+      automotive: '$$',
+      restaurant: '$$',
+      beauty: '$$',
+      fitness: '$',
+      retail: '$-$$',
     };
 
     return priceRanges[industry.toLowerCase()] || '$$';
@@ -517,7 +530,7 @@ export class BusinessSchemaGenerator {
     return [
       `${baseUrl}/images/logo.jpg`,
       `${baseUrl}/images/storefront.jpg`,
-      `${baseUrl}/images/team.jpg`
+      `${baseUrl}/images/team.jpg`,
     ];
   }
 }

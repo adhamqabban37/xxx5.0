@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { Resend } from 'resend';
-import { generateAdminNotificationEmail, generateAutoReplyEmail } from '@/components/emails/contact-emails';
+import {
+  generateAdminNotificationEmail,
+  generateAutoReplyEmail,
+} from '@/components/emails/contact-emails';
 import { validateRequest, createErrorResponse, createSuccessResponse } from '@/lib/validation';
 
 // Prevent execution during build time
@@ -23,15 +26,18 @@ function getResendClient() {
 
 // Validation schema
 const contactSchema = z.object({
-  name: z.string()
+  name: z
+    .string()
     .min(1, 'Name is required')
     .max(100, 'Name must be less than 100 characters')
     .regex(/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces'),
   email: z.string().email('Please enter a valid email address'),
-  company: z.string()
+  company: z
+    .string()
     .min(1, 'Company name is required')
     .max(100, 'Company name must be less than 100 characters'),
-  message: z.string()
+  message: z
+    .string()
     .min(10, 'Message must be at least 10 characters')
     .max(2000, 'Message must be less than 2000 characters'),
 });
@@ -45,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { name, email, company, message } = validation.data;
-    
+
     // Save to database
     const lead = await (prisma as any).lead.create({
       data: {
@@ -66,7 +72,7 @@ export async function POST(request: NextRequest) {
           company,
           message,
           leadId: lead.id,
-          submittedAt: new Date().toLocaleString()
+          submittedAt: new Date().toLocaleString(),
         });
 
         await resend.emails.send({
@@ -89,7 +95,7 @@ export async function POST(request: NextRequest) {
           name,
           email,
           company,
-          message
+          message,
         });
 
         await resend.emails.send({
@@ -105,10 +111,9 @@ export async function POST(request: NextRequest) {
     }
 
     return createSuccessResponse({
-      message: 'Thank you for your message. We\'ll get back to you soon!',
-      leadId: lead.id
+      message: "Thank you for your message. We'll get back to you soon!",
+      leadId: lead.id,
     });
-    
   } catch (error) {
     return createErrorResponse('Something went wrong. Please try again later.', 500);
   }

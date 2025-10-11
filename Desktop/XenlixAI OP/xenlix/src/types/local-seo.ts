@@ -1,8 +1,8 @@
 // Local SEO Types
 // Comprehensive type definitions for dynamic city-focused landing pages with AEO+SEO optimization
 
-import { NormalizedBusinessProfile } from "@/lib/business-profile-parser";
-import { LocalBusiness, Service, FAQPage, AggregateRating } from "./schema";
+import { NormalizedBusinessProfile } from '@/lib/business-profile-parser';
+import { LocalBusiness, Service, FAQPage, AggregateRating } from './schema';
 
 // City and location data structures
 export interface CityData {
@@ -13,7 +13,7 @@ export interface CityData {
   county?: string;
   region?: string;
   country: string;
-  
+
   // Geographic data
   coordinates: {
     latitude: number;
@@ -21,7 +21,7 @@ export interface CityData {
   };
   timezone: string;
   zipCodes: string[];
-  
+
   // Demographics and market data
   demographics: {
     population: number;
@@ -30,7 +30,7 @@ export interface CityData {
     householdCount: number;
     businessCount?: number;
   };
-  
+
   // Economic indicators
   economy: {
     majorIndustries: string[];
@@ -38,7 +38,7 @@ export interface CityData {
     economicGrowthRate?: number;
     businessFriendlyRating?: number;
   };
-  
+
   // Local characteristics
   characteristics: {
     localKeywords: string[];
@@ -60,7 +60,7 @@ export interface BusinessLocation {
     zipCode: string;
     country: string;
   };
-  
+
   // Service coverage
   serviceAreas: {
     cities: string[];
@@ -68,7 +68,7 @@ export interface BusinessLocation {
     radiusMiles: number;
     specificZipCodes: string[];
   };
-  
+
   // Location-specific data
   locationSpecific: {
     localCompetitors: string[];
@@ -85,21 +85,21 @@ export interface CityPageSEOMetadata {
   citySlug: string;
   canonicalUrl: string;
   alternateUrls?: { [lang: string]: string };
-  
+
   // Core SEO elements
   title: string;
   metaDescription: string;
   h1: string;
   h2Tags: string[];
   h3Tags: string[];
-  
+
   // Keywords and targeting
   primaryKeywords: string[];
   secondaryKeywords: string[];
   longTailKeywords: string[];
   localKeywords: string[];
   semanticKeywords: string[];
-  
+
   // Local SEO specifics
   localSEOSignals: {
     businessNameInTitle: boolean;
@@ -109,7 +109,7 @@ export interface CityPageSEOMetadata {
     localEvents: string[];
     neighborhoodMentions: string[];
   };
-  
+
   // AEO optimization
   aeoOptimization: {
     questionBasedHeaders: string[];
@@ -131,7 +131,7 @@ export interface CityPageContent {
     backgroundImage?: string;
     trustSignals: string[];
   };
-  
+
   // Service sections
   services: {
     primary: {
@@ -146,7 +146,7 @@ export interface CityPageContent {
       localRelevance: string;
     }[];
   };
-  
+
   // Local information
   localInfo: {
     areaDescription: string;
@@ -165,7 +165,7 @@ export interface CityPageContent {
       location: string;
     }[];
   };
-  
+
   // FAQ section optimized for local searches
   faq: {
     question: string;
@@ -173,7 +173,7 @@ export interface CityPageContent {
     category: 'general' | 'location' | 'service' | 'pricing';
     keywordTargets: string[];
   }[];
-  
+
   // Call-to-action sections
   cta: {
     primary: {
@@ -203,7 +203,7 @@ export interface InternalLinkingStrategy {
       url: string;
     }[];
   };
-  
+
   // Content links
   contentLinks: {
     // Links to other city pages
@@ -213,7 +213,7 @@ export interface InternalLinkingStrategy {
       linkText: string;
       relevanceScore: number;
     }[];
-    
+
     // Links to service pages
     servicePages: {
       serviceName: string;
@@ -221,7 +221,7 @@ export interface InternalLinkingStrategy {
       linkText: string;
       context: string;
     }[];
-    
+
     // Links to core pages
     corePages: {
       pageName: string;
@@ -230,7 +230,7 @@ export interface InternalLinkingStrategy {
       placement: 'header' | 'content' | 'footer' | 'sidebar';
     }[];
   };
-  
+
   // SEO link distribution
   linkDistribution: {
     totalInternalLinks: number;
@@ -248,41 +248,41 @@ export interface InternalLinkingStrategy {
 export interface CityPageStructuredData {
   // Main business schema
   localBusiness: LocalBusiness;
-  
+
   // Service schemas
   services: Service[];
-  
+
   // FAQ schema
   faqPage: FAQPage;
-  
+
   // Local business aggregated rating
   aggregateRating?: AggregateRating;
-  
+
   // Additional schemas
   breadcrumbList: {
-    "@context": "https://schema.org";
-    "@type": "BreadcrumbList";
+    '@context': 'https://schema.org';
+    '@type': 'BreadcrumbList';
     itemListElement: {
-      "@type": "ListItem";
+      '@type': 'ListItem';
       position: number;
       name: string;
       item: string;
     }[];
   };
-  
+
   // Local area schema
   place?: {
-    "@context": "https://schema.org";
-    "@type": "Place";
+    '@context': 'https://schema.org';
+    '@type': 'Place';
     name: string;
     address: {
-      "@type": "PostalAddress";
+      '@type': 'PostalAddress';
       addressLocality: string;
       addressRegion: string;
       addressCountry: string;
     };
     geo: {
-      "@type": "GeoCoordinates";
+      '@type': 'GeoCoordinates';
       latitude: number;
       longitude: number;
     };
@@ -297,7 +297,7 @@ export interface CityPageGenerationConfig {
     theme: string;
     components: string[];
   };
-  
+
   // SEO configuration
   seo: {
     enableAEO: boolean;
@@ -306,7 +306,7 @@ export interface CityPageGenerationConfig {
     enableLocalSchema: boolean;
     customMetaTags: { [key: string]: string };
   };
-  
+
   // Content generation
   content: {
     autoGenerateFromProfile: boolean;
@@ -315,7 +315,7 @@ export interface CityPageGenerationConfig {
     generateLocalFAQ: boolean;
     localContentDepth: 'basic' | 'detailed' | 'comprehensive';
   };
-  
+
   // Performance optimization
   performance: {
     enableStaticGeneration: boolean;
@@ -329,16 +329,16 @@ export interface CityPageGenerationConfig {
 export interface GeneratedCityPage {
   // Page metadata
   metadata: CityPageSEOMetadata;
-  
+
   // Page content
   content: CityPageContent;
-  
+
   // Structured data
   structuredData: CityPageStructuredData;
-  
+
   // Internal linking
   internalLinks: InternalLinkingStrategy;
-  
+
   // Generation info
   generationInfo: {
     generatedAt: Date;
@@ -347,7 +347,7 @@ export interface GeneratedCityPage {
     cityDataVersion: string;
     configUsed: CityPageGenerationConfig;
   };
-  
+
   // Performance metrics
   performance: {
     estimatedLoadTime: number;
@@ -362,16 +362,16 @@ export interface GeneratedCityPage {
 export interface LocalSEOGeneratorOptions {
   // Business profile to use
   businessProfile: NormalizedBusinessProfile;
-  
+
   // Target city
   targetCity: CityData;
-  
+
   // Business location data
   businessLocation: BusinessLocation;
-  
+
   // Generation configuration
   config: CityPageGenerationConfig;
-  
+
   // Optional customizations
   customizations?: {
     customContent?: Partial<CityPageContent>;

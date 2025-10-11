@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 
 const title = 'Dallas AI Marketing | Local SEO & AEO | XenlixAI';
-const description = 'Dallas AI marketing that gets you found in ChatGPT & Google. Local SEO + high-intent ads with 14-day results guarantee. Book your audit today!';
+const description =
+  'Dallas AI marketing that gets you found in ChatGPT & Google. Local SEO + high-intent ads with 14-day results guarantee. Book your audit today!';
 const canonicalUrl = '/dallas';
 const imageUrl = '/img/dallas-hero.jpg';
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   description,
   keywords: [
     'AI SEO Dallas',
-    'Answer Engine Optimization Dallas', 
+    'Answer Engine Optimization Dallas',
     'AEO Dallas',
     'ChatGPT optimization Dallas',
     'AI marketing Dallas',
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
     'AI advertising Dallas',
     'Dallas business marketing',
     'DFW SEO services',
-    'Dallas PPC management'
+    'Dallas PPC management',
   ],
   authors: [{ name: 'XenlixAI' }],
   creator: 'XenlixAI',

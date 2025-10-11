@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { PrismaClient } from "@prisma/client";
-import { authOptions } from "../../auth/[...nextauth]/route";
-import { z } from "zod";
-import { buildAeoChecklist } from "@/lib/seo/aeo";
-import { buildSeoChecklist } from "@/lib/seo/seo";
-import { normalizeProfile } from "@/lib/seo/normalize";
-import { validateRequest, createErrorResponse, createSuccessResponse } from "@/lib/validation";
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { PrismaClient } from '@prisma/client';
+import { authOptions } from '../../auth/[...nextauth]/route';
+import { z } from 'zod';
+import { buildAeoChecklist } from '@/lib/seo/aeo';
+import { buildSeoChecklist } from '@/lib/seo/seo';
+import { normalizeProfile } from '@/lib/seo/normalize';
+import { validateRequest, createErrorResponse, createSuccessResponse } from '@/lib/validation';
 
 const prisma = new PrismaClient();
 
@@ -60,7 +60,7 @@ function generateAEOGuidance(profile: GuidanceProfile): GuidanceSection {
 
   // Generate AEO checklist items using our new function
   const aeoItems = buildAeoChecklist(normalizedProfile);
-  
+
   // Convert AEO checklist items to guidance items format
   const items: GuidanceItem[] = aeoItems.map((item, index) => ({
     id: `aeo-${index + 1}`,
@@ -71,11 +71,16 @@ function generateAEOGuidance(profile: GuidanceProfile): GuidanceSection {
     impact: item.priority, // Use priority as impact indicator
     completed: item.status === 'complete',
     category: item.category,
-    estimatedTime: item.priority === 'high' ? '2-4 hours' : item.priority === 'medium' ? '1-2 hours' : '30-60 minutes',
-    resources: [] // Default empty resources for now
+    estimatedTime:
+      item.priority === 'high'
+        ? '2-4 hours'
+        : item.priority === 'medium'
+          ? '1-2 hours'
+          : '30-60 minutes',
+    resources: [], // Default empty resources for now
   }));
 
-  const completedItems = items.filter(item => item.completed).length;
+  const completedItems = items.filter((item) => item.completed).length;
   const progress = Math.round((completedItems / items.length) * 100);
 
   return {
@@ -84,7 +89,7 @@ function generateAEOGuidance(profile: GuidanceProfile): GuidanceSection {
     progress,
     totalItems: items.length,
     completedItems,
-    items
+    items,
   };
 }
 
@@ -101,7 +106,7 @@ function generateTraditionalSEOGuidance(profile: GuidanceProfile): GuidanceSecti
 
   // Generate SEO checklist items using our new function
   const seoItems = buildSeoChecklist(normalizedProfile);
-  
+
   // Convert SEO checklist items to guidance items format
   const items: GuidanceItem[] = seoItems.map((item, index) => ({
     id: `seo-${index + 1}`,
@@ -112,20 +117,26 @@ function generateTraditionalSEOGuidance(profile: GuidanceProfile): GuidanceSecti
     impact: item.priority, // Use priority as impact indicator
     completed: item.status === 'complete',
     category: item.category,
-    estimatedTime: item.priority === 'high' ? '3-5 hours' : item.priority === 'medium' ? '1-3 hours' : '30-90 minutes',
-    resources: [] // Default empty resources for now
+    estimatedTime:
+      item.priority === 'high'
+        ? '3-5 hours'
+        : item.priority === 'medium'
+          ? '1-3 hours'
+          : '30-90 minutes',
+    resources: [], // Default empty resources for now
   }));
 
-  const completedItems = items.filter(item => item.completed).length;
+  const completedItems = items.filter((item) => item.completed).length;
   const progress = Math.round((completedItems / items.length) * 100);
 
   return {
     title: 'Traditional SEO',
-    description: 'Essential search engine optimization tactics for Google, Bing, and other search engines',
+    description:
+      'Essential search engine optimization tactics for Google, Bing, and other search engines',
     progress,
     totalItems: items.length,
     completedItems,
-    items
+    items,
   };
 }
 
@@ -152,34 +163,34 @@ function generateGuidance(profile: GuidanceProfile) {
 
   // Mock recommendations based on business type and goals
   const recommendations = [];
-  
-  if (goals.includes("increase_sales")) {
-    recommendations.push("Focus on Shopping campaigns for direct product promotion");
-    recommendations.push("Use audience targeting to reach high-intent customers");
-  }
-  
-  if (goals.includes("brand_awareness")) {
-    recommendations.push("Allocate budget to Display and Video campaigns");
-    recommendations.push("Target broad awareness audiences with compelling creative");
-  }
-  
-  if (goals.includes("lead_generation")) {
-    recommendations.push("Implement lead form extensions in Search campaigns");
-    recommendations.push("Use remarketing lists to re-engage website visitors");
+
+  if (goals.includes('increase_sales')) {
+    recommendations.push('Focus on Shopping campaigns for direct product promotion');
+    recommendations.push('Use audience targeting to reach high-intent customers');
   }
 
-  if (businessType.includes("ecommerce") || businessType.includes("retail")) {
-    recommendations.push("Set up Google Merchant Center for Shopping campaigns");
-    recommendations.push("Implement dynamic remarketing for cart abandoners");
+  if (goals.includes('brand_awareness')) {
+    recommendations.push('Allocate budget to Display and Video campaigns');
+    recommendations.push('Target broad awareness audiences with compelling creative');
+  }
+
+  if (goals.includes('lead_generation')) {
+    recommendations.push('Implement lead form extensions in Search campaigns');
+    recommendations.push('Use remarketing lists to re-engage website visitors');
+  }
+
+  if (businessType.includes('ecommerce') || businessType.includes('retail')) {
+    recommendations.push('Set up Google Merchant Center for Shopping campaigns');
+    recommendations.push('Implement dynamic remarketing for cart abandoners');
   }
 
   // Mock optimization tips
   const optimizationTips = [
-    "Test different ad copy variations weekly",
-    "Monitor search terms and add negative keywords regularly",
-    "Adjust bids based on time-of-day performance",
-    "Use automated bidding strategies for efficiency",
-    "Set up conversion tracking for all important actions",
+    'Test different ad copy variations weekly',
+    'Monitor search terms and add negative keywords regularly',
+    'Adjust bids based on time-of-day performance',
+    'Use automated bidding strategies for efficiency',
+    'Set up conversion tracking for all important actions',
   ];
 
   return {
@@ -188,19 +199,19 @@ function generateGuidance(profile: GuidanceProfile) {
       budgetAnalysis,
       keyRecommendations: recommendations.slice(0, 3),
       optimizationTips: optimizationTips.slice(0, 4),
-      priority: "high",
-      estimatedImpact: "20-30% improvement in performance",
+      priority: 'high',
+      estimatedImpact: '20-30% improvement in performance',
     },
     aeoGuidance,
     traditionalSEOGuidance,
     businessProfile: {
       name: profile.businessName,
       industry: profile.businessType,
-      hasProfile: true
+      hasProfile: true,
     },
     lastUpdated: new Date().toISOString(),
     timestamp: new Date().toISOString(),
-    version: "2.0",
+    version: '2.0',
   };
 }
 
@@ -210,17 +221,17 @@ export async function GET(request: NextRequest) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // For GET requests, return sample guidance data
     const mockProfile: GuidanceProfile = {
-      businessName: "Sample Business",
-      businessType: "general",
-      targetAudience: "general audience",
-      goals: ["increase_sales"],
+      businessName: 'Sample Business',
+      businessType: 'general',
+      targetAudience: 'general audience',
+      goals: ['increase_sales'],
       monthlyBudget: 1000,
-      currentChallenges: "general optimization"
+      currentChallenges: 'general optimization',
     };
 
     const guidanceData = generateGuidance(mockProfile);
@@ -231,14 +242,14 @@ export async function GET(request: NextRequest) {
         aeo: guidanceData.aeoGuidance,
         traditionalSEO: guidanceData.traditionalSEOGuidance,
         businessProfile: guidanceData.businessProfile,
-        lastUpdated: guidanceData.lastUpdated
-      }
+        lastUpdated: guidanceData.lastUpdated,
+      },
     });
   } catch (error) {
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to generate guidance recommendations' 
+      {
+        success: false,
+        error: 'Failed to generate guidance recommendations',
       },
       { status: 500 }
     );
@@ -255,7 +266,7 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return createErrorResponse("Unauthorized", 401);
+      return createErrorResponse('Unauthorized', 401);
     }
 
     // Find user
@@ -264,7 +275,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return createErrorResponse("User not found", 404);
+      return createErrorResponse('User not found', 404);
     }
 
     // Generate AI guidance
@@ -276,10 +287,10 @@ export async function POST(request: NextRequest) {
       traditionalSEO: guidanceOutput.traditionalSEOGuidance,
       businessProfile: guidanceOutput.businessProfile,
       lastUpdated: guidanceOutput.lastUpdated,
-      legacy: guidanceOutput.guidance // Keep legacy format for compatibility
+      legacy: guidanceOutput.guidance, // Keep legacy format for compatibility
     });
   } catch (error) {
-    console.error("AI guidance generation error:", error);
-    return createErrorResponse("Internal server error", 500);
+    console.error('AI guidance generation error:', error);
+    return createErrorResponse('Internal server error', 500);
   }
 }

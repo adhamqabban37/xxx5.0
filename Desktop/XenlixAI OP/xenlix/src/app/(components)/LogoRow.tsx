@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import Image from "next/image";
+import Image from 'next/image';
 
 interface Logo {
   name: string;
@@ -16,31 +16,25 @@ interface LogoRowProps {
 }
 
 const defaultLogos: Logo[] = [
-  { name: "Shine Auto Detailing", src: "/placeholders/shine-auto.svg", width: 120, height: 40 },
-  { name: "Lakeview Dental", src: "/placeholders/lakeview-dental.svg", width: 140, height: 40 },
-  { name: "NutriCo", src: "/placeholders/nutricorp.svg", width: 100, height: 40 },
-  { name: "TechFlow Solutions", src: "/placeholders/techflow.svg", width: 160, height: 40 },
-  { name: "LocalFresh Markets", src: "/placeholders/localfresh.svg", width: 150, height: 40 },
-  { name: "Apex Consulting", src: "/placeholders/apex.svg", width: 130, height: 40 },
+  { name: 'Shine Auto Detailing', src: '/placeholders/shine-auto.svg', width: 120, height: 40 },
+  { name: 'Lakeview Dental', src: '/placeholders/lakeview-dental.svg', width: 140, height: 40 },
+  { name: 'NutriCo', src: '/placeholders/nutricorp.svg', width: 100, height: 40 },
+  { name: 'TechFlow Solutions', src: '/placeholders/techflow.svg', width: 160, height: 40 },
+  { name: 'LocalFresh Markets', src: '/placeholders/localfresh.svg', width: 150, height: 40 },
+  { name: 'Apex Consulting', src: '/placeholders/apex.svg', width: 130, height: 40 },
 ];
 
-export default function LogoRow({ 
-  title = "Trusted by Growing Businesses", 
+export default function LogoRow({
+  title = 'Trusted by Growing Businesses',
   logos = defaultLogos,
-  className = ""
+  className = '',
 }: LogoRowProps) {
   return (
-    <section 
-      className={`py-12 ${className}`}
-      aria-labelledby="clients-heading"
-    >
+    <section className={`py-12 ${className}`} aria-labelledby="clients-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title */}
         {title && (
-          <h2 
-            id="clients-heading"
-            className="text-center text-lg font-semibold text-gray-600 mb-8"
-          >
+          <h2 id="clients-heading" className="text-center text-lg font-semibold text-gray-600 mb-8">
             {title}
           </h2>
         )}
@@ -48,10 +42,7 @@ export default function LogoRow({
         {/* Logo Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center justify-items-center">
           {logos.map((logo, index) => (
-            <div
-              key={index}
-              className="relative group transition-all duration-300 hover:scale-105"
-            >
+            <div key={index} className="relative group transition-all duration-300 hover:scale-105">
               <Image
                 src={logo.src}
                 alt={`${logo.name} logo`}

@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xenlix.ai/schemas/company-info.schema.json",
+  "title": "CompanyInfo",
+  "type": "object",
+  "required": ["source", "company", "web", "content", "extractions", "metrics", "provenance"],
+  "properties": {
+    "source": {
+      "type": "object",
+      "required": ["requestedUrl", "finalUrl", "collectedAt"],
+      "properties": {
+        "requestedUrl": { "type": "string", "format": "uri" },
+        "finalUrl": { "type": "string", "format": "uri" },
+        "httpStatus": { "type": "integer", "minimum": 100, "maximum": 599 },
+        "collectedAt": { "type": "string", "format": "date-time" },
+        "locale": { "type": "string" },
+        "region": { "type": "string" }
+      }
+    },
+    "company": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "legalName": { "type": "string" },
+        "description": { "type": "string" },
+        "industry": { "type": "string" },
+        "foundedYear": { "type": "integer" },
+        "employeesRange": { "type": "string", "description": "e.g., 1-10, 11-50" },
+        "address": {
+          "type": "object",
+          "properties": {
+            "street": { "type": "string" },
+            "locality": { "type": "string" },
+            "region": { "type": "string" },
+            "postalCode": { "type": "string" },
+            "country": { "type": "string" }
+          }
+        },
+        "contacts": {
+          "type": "object",
+          "properties": {
+            "email": { "type": "string" },
+            "phone": { "type": "string" }
+          }
+        }
+      }
+    },
+    "web": {
+      "type": "object",
+      "required": ["domain"],
+      "properties": {
+        "domain": { "type": "string" },
+        "canonicalUrl": { "type": "string", "format": "uri" },
+        "sitemapUrl": { "type": "string", "format": "uri" },
+        "robotsTxt": { "type": "string" },
+        "social": {
+          "type": "object",
+          "properties": {
+            "twitter": { "type": "string" },
+            "linkedin": { "type": "string" },
+            "facebook": { "type": "string" },
+            "youtube": { "type": "string" },
+            "instagram": { "type": "string" }
+          }
+        },
+        "technologies": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Detected stack (e.g., Next.js, WordPress)"
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "required": ["title", "meta"],
+      "properties": {
+        "title": { "type": "string" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "keywords": { "type": "array", "items": { "type": "string" } },
+            "og": {
+              "type": "object",
+              "properties": {
+                "og:title": { "type": "string" },
+                "og:description": { "type": "string" },
+                "og:image": { "type": "string" }
+              }
+            }
+          }
+        },
+        "schemaOrg": {
+          "type": "array",
+          "description": "Extracted JSON-LD blocks",
+          "items": {
+            "type": "object",
+            "properties": {
+              "@type": { "type": "string" },
+              "@context": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "headings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": { "level": { "type": "integer" }, "text": { "type": "string" } },
+            "required": ["level", "text"]
+          }
+        }
+      }
+    },
+    "extractions": {
+      "type": "object",
+      "required": ["brandMentions", "citations"],
+      "properties": {
+        "brandMentions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "brand": { "type": "string" },
+              "aliasMatched": { "type": "string" },
+              "position": { "type": "integer", "nullable": true },
+              "sentiment": { "type": "integer", "enum": [-1, 0, 1] }
+            },
+            "required": ["brand"]
+          }
+        },
+        "citations": {
+          "type": "array",
+          "description": "Links/domains referenced on page or in AI answers",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": { "type": "string" },
+              "domain": { "type": "string" },
+              "title": { "type": "string" },
+              "rank": { "type": "integer" },
+              "source": { "type": "string", "enum": ["page", "ai-answer"] }
+            },
+            "required": ["domain"]
+          }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["opr", "lighthouse", "aeo"],
+      "properties": {
+        "opr": {
+          "type": "object",
+          "properties": {
+            "domain": { "type": "string" },
+            "rank": { "type": "number" },
+            "fetchedAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "lighthouse": {
+          "type": "object",
+          "properties": {
+            "performance": { "type": "number" },
+            "accessibility": { "type": "number" },
+            "bestPractices": { "type": "number" },
+            "seo": { "type": "number" },
+            "reportPath": { "type": "string" }
+          }
+        },
+        "aeo": {
+          "type": "object",
+          "description": "Answer-Engine Optimization signals",
+          "properties": {
+            "visibilityIndex": { "type": "number", "minimum": 0, "maximum": 100 },
+            "coveragePct": { "type": "number", "minimum": 0, "maximum": 100 },
+            "sourceSharePct": { "type": "number", "minimum": 0, "maximum": 100 },
+            "lastSweepAt": { "type": "string", "format": "date-time" }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["hash", "pipelineVersion"],
+      "properties": {
+        "hash": { "type": "string", "description": "HTML/content hash or snapshot id" },
+        "pipelineVersion": { "type": "string" },
+        "collector": { "type": "string", "description": "perplexity|crawler|manual" },
+        "notes": { "type": "string" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

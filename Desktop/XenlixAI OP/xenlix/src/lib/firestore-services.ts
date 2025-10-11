@@ -1,4 +1,10 @@
-import { firebaseClient, CrawlResult, EmbeddingScore, LighthouseAudit, PDFExportMetadata } from './firebase-client';
+import {
+  firebaseClient,
+  CrawlResult,
+  EmbeddingScore,
+  LighthouseAudit,
+  PDFExportMetadata,
+} from './firebase-client';
 import { Timestamp } from 'firebase-admin/firestore';
 
 // Firestore collection names
@@ -28,7 +34,7 @@ abstract class BaseFirestoreService<T> {
       return Timestamp.fromDate(obj);
     }
     if (Array.isArray(obj)) {
-      return obj.map(item => this.convertDatesToTimestamps(item));
+      return obj.map((item) => this.convertDatesToTimestamps(item));
     }
     if (obj && typeof obj === 'object') {
       const result: any = {};
@@ -46,7 +52,7 @@ abstract class BaseFirestoreService<T> {
       return obj.toDate();
     }
     if (Array.isArray(obj)) {
-      return obj.map(item => this.convertTimestampsToDates(item));
+      return obj.map((item) => this.convertTimestampsToDates(item));
     }
     if (obj && typeof obj === 'object') {
       const result: any = {};
@@ -77,11 +83,11 @@ abstract class BaseFirestoreService<T> {
     try {
       const db = await this.getFirestore();
       const doc = await db.collection(this.collectionName).doc(id).get();
-      
+
       if (!doc.exists) {
         return null;
       }
-      
+
       const data = doc.data() as T;
       return this.convertTimestampsToDates(data);
     } catch (error) {
@@ -120,17 +126,17 @@ abstract class BaseFirestoreService<T> {
     try {
       const db = await this.getFirestore();
       let query = db.collection(this.collectionName).orderBy('__name__');
-      
+
       if (startAfter) {
         query = query.startAfter(startAfter);
       }
-      
+
       if (limit) {
         query = query.limit(limit);
       }
-      
+
       const snapshot = await query.get();
-      return snapshot.docs.map(doc => this.convertTimestampsToDates(doc.data()) as T);
+      return snapshot.docs.map((doc) => this.convertTimestampsToDates(doc.data()) as T);
     } catch (error) {
       console.error(`❌ Error getting all documents from ${this.collectionName}:`, error);
       throw error;
@@ -153,11 +159,14 @@ export class CrawlResultsService extends BaseFirestoreService<CrawlResult> {
         .where('url', '==', url)
         .orderBy('metadata.crawledAt', 'desc')
         .get();
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...this.convertTimestampsToDates(doc.data())
-      } as CrawlResult));
+
+      return snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...this.convertTimestampsToDates(doc.data()),
+          }) as CrawlResult
+      );
     } catch (error) {
       console.error('❌ Error getting crawl results by URL:', error);
       throw error;
@@ -173,11 +182,14 @@ export class CrawlResultsService extends BaseFirestoreService<CrawlResult> {
         .orderBy('metadata.crawledAt', 'desc')
         .limit(limit)
         .get();
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...this.convertTimestampsToDates(doc.data())
-      } as CrawlResult));
+
+      return snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...this.convertTimestampsToDates(doc.data()),
+          }) as CrawlResult
+      );
     } catch (error) {
       console.error('❌ Error getting recent crawl results:', error);
       throw error;
@@ -195,11 +207,14 @@ export class CrawlResultsService extends BaseFirestoreService<CrawlResult> {
         .where('title', '<=', searchTerm + '\uf8ff')
         .limit(limit)
         .get();
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...this.convertTimestampsToDates(doc.data())
-      } as CrawlResult));
+
+      return snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...this.convertTimestampsToDates(doc.data()),
+          }) as CrawlResult
+      );
     } catch (error) {
       console.error('❌ Error searching crawl results:', error);
       throw error;
@@ -222,11 +237,14 @@ export class EmbeddingScoresService extends BaseFirestoreService<EmbeddingScore>
         .where('crawlResultId', '==', crawlResultId)
         .orderBy('metadata.createdAt', 'desc')
         .get();
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...this.convertTimestampsToDates(doc.data())
-      } as EmbeddingScore));
+
+      return snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...this.convertTimestampsToDates(doc.data()),
+          }) as EmbeddingScore
+      );
     } catch (error) {
       console.error('❌ Error getting embeddings by crawl result ID:', error);
       throw error;
@@ -234,7 +252,11 @@ export class EmbeddingScoresService extends BaseFirestoreService<EmbeddingScore>
   }
 
   // Find similar embeddings (simplified similarity search)
-  async findSimilar(targetEmbedding: number[], threshold = 0.8, limit = 10): Promise<EmbeddingScore[]> {
+  async findSimilar(
+    targetEmbedding: number[],
+    threshold = 0.8,
+    limit = 10
+  ): Promise<EmbeddingScore[]> {
     try {
       // Note: This is a basic implementation. For production, consider using vector databases
       // like Pinecone, Weaviate, or Cloud SQL with vector extensions
@@ -243,21 +265,24 @@ export class EmbeddingScoresService extends BaseFirestoreService<EmbeddingScore>
         .collection(this.collectionName)
         .limit(100) // Get a larger sample to compute similarity
         .get();
-      
-      const embeddings = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...this.convertTimestampsToDates(doc.data())
-      } as EmbeddingScore));
+
+      const embeddings = snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...this.convertTimestampsToDates(doc.data()),
+          }) as EmbeddingScore
+      );
 
       // Compute cosine similarity
-      const withSimilarity = embeddings.map(embedding => {
+      const withSimilarity = embeddings.map((embedding) => {
         const similarity = this.cosineSimilarity(targetEmbedding, embedding.embedding);
         return { ...embedding, similarity };
       });
 
       // Filter and sort by similarity
       return withSimilarity
-        .filter(item => item.similarity >= threshold)
+        .filter((item) => item.similarity >= threshold)
         .sort((a, b) => (b.similarity || 0) - (a.similarity || 0))
         .slice(0, limit);
     } catch (error) {
@@ -269,17 +294,17 @@ export class EmbeddingScoresService extends BaseFirestoreService<EmbeddingScore>
   // Calculate cosine similarity between two vectors
   private cosineSimilarity(a: number[], b: number[]): number {
     if (a.length !== b.length) return 0;
-    
+
     let dotProduct = 0;
     let normA = 0;
     let normB = 0;
-    
+
     for (let i = 0; i < a.length; i++) {
       dotProduct += a[i] * b[i];
       normA += a[i] * a[i];
       normB += b[i] * b[i];
     }
-    
+
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 }
@@ -299,11 +324,14 @@ export class LighthouseAuditsService extends BaseFirestoreService<LighthouseAudi
         .where('url', '==', url)
         .orderBy('metadata.auditedAt', 'desc')
         .get();
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...this.convertTimestampsToDates(doc.data())
-      } as LighthouseAudit));
+
+      return snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...this.convertTimestampsToDates(doc.data()),
+          }) as LighthouseAudit
+      );
     } catch (error) {
       console.error('❌ Error getting audits by URL:', error);
       throw error;
@@ -324,11 +352,14 @@ export class LighthouseAuditsService extends BaseFirestoreService<LighthouseAudi
         .where(`scores.${scoreType}`, '<=', maxScore)
         .orderBy(`scores.${scoreType}`, 'desc')
         .get();
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...this.convertTimestampsToDates(doc.data())
-      } as LighthouseAudit));
+
+      return snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...this.convertTimestampsToDates(doc.data()),
+          }) as LighthouseAudit
+      );
     } catch (error) {
       console.error('❌ Error getting audits by score range:', error);
       throw error;
@@ -344,10 +375,10 @@ export class LighthouseAuditsService extends BaseFirestoreService<LighthouseAudi
     try {
       const db = await this.getFirestore();
       const snapshot = await db.collection(this.collectionName).get();
-      
-      const audits = snapshot.docs.map(doc => doc.data() as LighthouseAudit);
+
+      const audits = snapshot.docs.map((doc) => doc.data() as LighthouseAudit);
       const totalAudits = audits.length;
-      
+
       if (totalAudits === 0) {
         return {
           averageScores: {},
@@ -359,8 +390,8 @@ export class LighthouseAuditsService extends BaseFirestoreService<LighthouseAudi
       // Calculate average scores
       const scoreKeys = ['performance', 'accessibility', 'bestPractices', 'seo'];
       const averageScores: { [key: string]: number } = {};
-      
-      scoreKeys.forEach(key => {
+
+      scoreKeys.forEach((key) => {
         const total = audits.reduce((sum, audit) => sum + (audit.scores as any)[key], 0);
         averageScores[key] = total / totalAudits;
       });
@@ -372,10 +403,14 @@ export class LighthouseAuditsService extends BaseFirestoreService<LighthouseAudi
         good: 0,
       };
 
-      audits.forEach(audit => {
-        const avgScore = (audit.scores.performance + audit.scores.accessibility + 
-                         audit.scores.bestPractices + audit.scores.seo) / 4;
-        
+      audits.forEach((audit) => {
+        const avgScore =
+          (audit.scores.performance +
+            audit.scores.accessibility +
+            audit.scores.bestPractices +
+            audit.scores.seo) /
+          4;
+
         if (avgScore < 50) scoreDistribution.poor++;
         else if (avgScore < 90) scoreDistribution.needsImprovement++;
         else scoreDistribution.good++;
@@ -408,11 +443,14 @@ export class PDFExportService extends BaseFirestoreService<PDFExportMetadata> {
         .where('reportType', '==', reportType)
         .orderBy('generatedAt', 'desc')
         .get();
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...this.convertTimestampsToDates(doc.data())
-      } as PDFExportMetadata));
+
+      return snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...this.convertTimestampsToDates(doc.data()),
+          }) as PDFExportMetadata
+      );
     } catch (error) {
       console.error('❌ Error getting exports by type:', error);
       throw error;
@@ -424,7 +462,7 @@ export class PDFExportService extends BaseFirestoreService<PDFExportMetadata> {
     try {
       const db = await this.getFirestore();
       const docRef = db.collection(this.collectionName).doc(id);
-      
+
       await db.runTransaction(async (transaction) => {
         const doc = await transaction.get(docRef);
         if (doc.exists) {
@@ -432,7 +470,7 @@ export class PDFExportService extends BaseFirestoreService<PDFExportMetadata> {
           transaction.update(docRef, { downloadCount: currentCount + 1 });
         }
       });
-      
+
       console.log(`✅ Incremented download count for PDF export:`, id);
     } catch (error) {
       console.error('❌ Error incrementing download count:', error);
@@ -450,16 +488,16 @@ export class PDFExportService extends BaseFirestoreService<PDFExportMetadata> {
     try {
       const db = await this.getFirestore();
       const snapshot = await db.collection(this.collectionName).get();
-      
-      const exports = snapshot.docs.map(doc => doc.data() as PDFExportMetadata);
-      
+
+      const exports = snapshot.docs.map((doc) => doc.data() as PDFExportMetadata);
+
       const totalExports = exports.length;
       const totalDownloads = exports.reduce((sum, exp) => sum + exp.downloadCount, 0);
       const totalFileSize = exports.reduce((sum, exp) => sum + exp.fileSize, 0);
       const averageFileSize = totalExports > 0 ? totalFileSize / totalExports : 0;
 
       const exportsByType: { [key: string]: number } = {};
-      exports.forEach(exp => {
+      exports.forEach((exp) => {
         exportsByType[exp.reportType] = (exportsByType[exp.reportType] || 0) + 1;
       });
 
@@ -484,7 +522,9 @@ export const pdfExportService = new PDFExportService();
 
 // Utility function to initialize all indexes
 export async function initializeFirestoreIndexes(): Promise<void> {
-  console.log('📝 Note: Firestore indexes need to be created manually in Firebase Console or via Firebase CLI');
+  console.log(
+    '📝 Note: Firestore indexes need to be created manually in Firebase Console or via Firebase CLI'
+  );
   console.log('Required indexes:');
   console.log('- crawl_results: url, metadata.crawledAt');
   console.log('- embedding_scores: crawlResultId, metadata.createdAt');

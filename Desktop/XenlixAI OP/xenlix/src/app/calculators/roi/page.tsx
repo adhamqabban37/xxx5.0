@@ -4,20 +4,35 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { NumberInput } from '../_components/NumberInput';
 import { ResultCard, MetricRow, ActionButton } from '../_components/ResultCard';
-import { calcRoi, roiPresets, formatCurrency, formatPercent, formatNumber, type RoiInput } from '@/lib/calc';
-import { createShareableUrl, getStateFromUrl, exportToCSV, copyToClipboard, copyJsonToClipboard } from '@/lib/share';
+import {
+  calcRoi,
+  roiPresets,
+  formatCurrency,
+  formatPercent,
+  formatNumber,
+  type RoiInput,
+} from '@/lib/calc';
+import {
+  createShareableUrl,
+  getStateFromUrl,
+  exportToCSV,
+  copyToClipboard,
+  copyJsonToClipboard,
+} from '@/lib/share';
 
 export default function ROICalculatorPage() {
   const [inputs, setInputs] = useState<RoiInput>({
     monthlyAdSpend: 5000,
-    cpc: 1.50,
+    cpc: 1.5,
     cr: 0.025,
     aov: 85,
     closeRate: 1.0,
-    aeoLift: 0.25
+    aeoLift: 0.25,
   });
-  
-  const [showToast, setShowToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const [showToast, setShowToast] = useState<{ message: string; type: 'success' | 'error' } | null>(
+    null
+  );
 
   // Load state from URL on mount
   useEffect(() => {
@@ -31,7 +46,7 @@ export default function ROICalculatorPage() {
   const results = useMemo(() => calcRoi(inputs), [inputs]);
 
   const handleInputChange = (field: keyof RoiInput, value: number) => {
-    setInputs(prev => ({ ...prev, [field]: value }));
+    setInputs((prev) => ({ ...prev, [field]: value }));
   };
 
   const handlePresetChange = (preset: keyof typeof roiPresets) => {
@@ -41,9 +56,9 @@ export default function ROICalculatorPage() {
   const handleCopyLink = async () => {
     const url = createShareableUrl('/calculators/roi', { type: 'roi', inputs });
     const success = await copyToClipboard(url);
-    setShowToast({ 
-      message: success ? 'Link copied to clipboard!' : 'Failed to copy link', 
-      type: success ? 'success' : 'error' 
+    setShowToast({
+      message: success ? 'Link copied to clipboard!' : 'Failed to copy link',
+      type: success ? 'success' : 'error',
     });
     setTimeout(() => setShowToast(null), 3000);
   };
@@ -67,7 +82,7 @@ export default function ROICalculatorPage() {
       'With AEO CAC': formatCurrency(results.withAeo.cac),
       'With AEO ROI': formatPercent(results.withAeo.roi),
     };
-    
+
     exportToCSV(data, 'roi-calculation');
     setShowToast({ message: 'CSV downloaded successfully!', type: 'success' });
     setTimeout(() => setShowToast(null), 3000);
@@ -76,9 +91,9 @@ export default function ROICalculatorPage() {
   const handleCopyJSON = async () => {
     const data = { inputs, results };
     const success = await copyJsonToClipboard(data);
-    setShowToast({ 
-      message: success ? 'JSON copied to clipboard!' : 'Failed to copy JSON', 
-      type: success ? 'success' : 'error' 
+    setShowToast({
+      message: success ? 'JSON copied to clipboard!' : 'Failed to copy JSON',
+      type: success ? 'success' : 'error',
     });
     setTimeout(() => setShowToast(null), 3000);
   };
@@ -89,8 +104,8 @@ export default function ROICalculatorPage() {
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold tracking-tight">ROI & CAC Calculator</h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Calculate your advertising return on investment and customer acquisition costs. 
-          See how AI Engine Optimization (AEO) can boost your results.
+          Calculate your advertising return on investment and customer acquisition costs. See how AI
+          Engine Optimization (AEO) can boost your results.
         </p>
       </div>
 
@@ -99,7 +114,7 @@ export default function ROICalculatorPage() {
         <div className="space-y-6">
           <div className="rounded-lg border bg-card p-6">
             <h2 className="text-lg font-semibold mb-4">Business Metrics</h2>
-            
+
             {/* Presets */}
             <div className="mb-6">
               <label className="text-sm font-medium mb-2 block">Quick Presets</label>
@@ -201,9 +216,9 @@ export default function ROICalculatorPage() {
 
             <div className="mt-6 p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">
-                <strong>AEO Lift Explanation:</strong> AI Engine Optimization increases qualified traffic 
-                through better targeting and ad optimization. Your conversion rate remains the same, 
-                but you get more high-quality visitors.
+                <strong>AEO Lift Explanation:</strong> AI Engine Optimization increases qualified
+                traffic through better targeting and ad optimization. Your conversion rate remains
+                the same, but you get more high-quality visitors.
               </p>
             </div>
           </div>
@@ -217,8 +232,8 @@ export default function ROICalculatorPage() {
               <MetricRow label="Conversions" value={formatNumber(results.conversions)} />
               <MetricRow label="Revenue" value={formatCurrency(results.revenue)} />
               <MetricRow label="CAC" value={formatCurrency(results.cac)} />
-              <MetricRow 
-                label="ROI" 
+              <MetricRow
+                label="ROI"
                 value={formatPercent(results.roi)}
                 className="border-t pt-2 font-semibold"
               />
@@ -227,44 +242,44 @@ export default function ROICalculatorPage() {
 
           <ResultCard title="With AEO Optimization">
             <div className="space-y-1">
-              <MetricRow 
-                label="Monthly Clicks" 
+              <MetricRow
+                label="Monthly Clicks"
                 value={formatNumber(results.withAeo.clicks)}
                 delta={{
                   value: `+${formatNumber(results.withAeo.clicks - results.clicks)}`,
-                  type: 'increase'
+                  type: 'increase',
                 }}
               />
-              <MetricRow 
-                label="Conversions" 
+              <MetricRow
+                label="Conversions"
                 value={formatNumber(results.withAeo.conversions)}
                 delta={{
                   value: `+${formatNumber(results.withAeo.conversions - results.conversions)}`,
-                  type: 'increase'
+                  type: 'increase',
                 }}
               />
-              <MetricRow 
-                label="Revenue" 
+              <MetricRow
+                label="Revenue"
                 value={formatCurrency(results.withAeo.revenue)}
                 delta={{
                   value: `+${formatCurrency(results.withAeo.revenue - results.revenue)}`,
-                  type: 'increase'
+                  type: 'increase',
                 }}
               />
-              <MetricRow 
-                label="CAC" 
+              <MetricRow
+                label="CAC"
                 value={formatCurrency(results.withAeo.cac)}
                 delta={{
                   value: formatCurrency(results.withAeo.cac - results.cac),
-                  type: results.withAeo.cac < results.cac ? 'increase' : 'decrease'
+                  type: results.withAeo.cac < results.cac ? 'increase' : 'decrease',
                 }}
               />
-              <MetricRow 
-                label="ROI" 
+              <MetricRow
+                label="ROI"
                 value={formatPercent(results.withAeo.roi)}
                 delta={{
                   value: formatPercent(results.withAeo.roi - results.roi),
-                  type: 'increase'
+                  type: 'increase',
                 }}
                 className="border-t pt-2 font-semibold"
               />
@@ -297,9 +312,11 @@ export default function ROICalculatorPage() {
 
       {/* Toast Notification */}
       {showToast && (
-        <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-          showToast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-        }`}>
+        <div
+          className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+            showToast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+          }`}
+        >
           {showToast.message}
         </div>
       )}
@@ -309,18 +326,19 @@ export default function ROICalculatorPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            "name": "ROI Calculator",
-            "description": "Calculate advertising return on investment and customer acquisition costs",
-            "applicationCategory": "BusinessApplication",
-            "operatingSystem": "Web Browser",
-            "offers": {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "USD"
-            }
-          })
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            name: 'ROI Calculator',
+            description:
+              'Calculate advertising return on investment and customer acquisition costs',
+            applicationCategory: 'BusinessApplication',
+            operatingSystem: 'Web Browser',
+            offers: {
+              '@type': 'Offer',
+              price: '0',
+              priceCurrency: 'USD',
+            },
+          }),
         }}
       />
     </div>

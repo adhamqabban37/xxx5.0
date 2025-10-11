@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useAppStore } from "@/lib/store";
-import { AdDraftBundle, GenerateAdsRequest, GenerateAdsResponse } from "@/types/ads";
-import { toJSON, toCSV, download } from "@/lib/exporters";
-import InputsForm from "./_components/InputsForm";
-import AdPreview from "./_components/AdPreview";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useAppStore } from '@/lib/store';
+import { AdDraftBundle, GenerateAdsRequest, GenerateAdsResponse } from '@/types/ads';
+import { toJSON, toCSV, download } from '@/lib/exporters';
+import InputsForm from './_components/InputsForm';
+import AdPreview from './_components/AdPreview';
 
 export default function AdsPage() {
   const { profile } = useAppStore();
@@ -45,7 +45,7 @@ export default function AdsPage() {
 
   const handleDownloadJSON = () => {
     if (!adBundle) return;
-    
+
     const jsonData = toJSON(adBundle);
     const timestamp = new Date().toISOString().split('T')[0];
     download(`ad-drafts-${timestamp}.json`, jsonData, 'application/json');
@@ -53,7 +53,7 @@ export default function AdsPage() {
 
   const handleDownloadCSV = () => {
     if (!adBundle) return;
-    
+
     const csvData = toCSV(adBundle);
     const timestamp = new Date().toISOString().split('T')[0];
     download(`ad-drafts-${timestamp}.csv`, csvData, 'text/csv');
@@ -77,12 +77,10 @@ export default function AdsPage() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-              AI Ad Creator
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">AI Ad Creator</h1>
             <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-              Generate ready-to-edit ad drafts for Google, Bing, Meta, and TikTok campaigns. 
-              Powered by intelligent rules engine for optimal performance.
+              Generate ready-to-edit ad drafts for Google, Bing, Meta, and TikTok campaigns. Powered
+              by intelligent rules engine for optimal performance.
             </p>
           </div>
         </div>
@@ -118,23 +116,15 @@ export default function AdsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Form */}
             <div className="space-y-6">
-              <InputsForm
-                profile={profile}
-                onSubmit={handleGenerateAds}
-                isLoading={isLoading}
-              />
+              <InputsForm profile={profile} onSubmit={handleGenerateAds} isLoading={isLoading} />
 
               {/* Error Display */}
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-md p-4">
                   <div className="flex">
                     <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-800">
-                        Error generating ads
-                      </h3>
-                      <div className="mt-2 text-sm text-red-700">
-                        {error}
-                      </div>
+                      <h3 className="text-sm font-medium text-red-800">Error generating ads</h3>
+                      <div className="mt-2 text-sm text-red-700">{error}</div>
                     </div>
                   </div>
                 </div>
@@ -146,9 +136,7 @@ export default function AdsPage() {
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
                 <div className="p-6 border-b border-gray-200">
                   <h2 className="text-xl font-semibold text-gray-900">Ad Previews</h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Generated ad drafts will appear here
-                  </p>
+                  <p className="text-sm text-gray-600 mt-1">Generated ad drafts will appear here</p>
                 </div>
 
                 <div className="p-6">
@@ -157,7 +145,7 @@ export default function AdsPage() {
                   ) : adBundle ? (
                     <div className="space-y-6">
                       <AdPreview bundle={adBundle} />
-                      
+
                       {/* Actions Bar */}
                       <div className="pt-6 border-t border-gray-200">
                         <h3 className="text-sm font-medium text-gray-900 mb-4">Export Options</h3>
@@ -191,7 +179,8 @@ export default function AdsPage() {
                         Ready to Generate Ads
                       </h3>
                       <p className="text-gray-600">
-                        Fill out the form and click &ldquo;Generate Ad Drafts&rdquo; to see your personalized campaigns.
+                        Fill out the form and click &ldquo;Generate Ad Drafts&rdquo; to see your
+                        personalized campaigns.
                       </p>
                     </div>
                   )}
@@ -214,7 +203,8 @@ export default function AdsPage() {
                     <div>
                       <span className="text-gray-600">Total Budget:</span>
                       <span className="ml-2 font-medium">
-                        ${(adBundle.budget.dailyUSD * adBundle.budget.durationDays).toLocaleString()}
+                        $
+                        {(adBundle.budget.dailyUSD * adBundle.budget.durationDays).toLocaleString()}
                       </span>
                     </div>
                     <div>

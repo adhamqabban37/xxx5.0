@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Cache responses for 6 hours
-export const revalidate = 60 * 60 * 6;
+export const revalidate = 21600;
 
 // Simple in-memory cache for fallback data
 const cache = new Map<string, { data: PSIResponse; timestamp: number }>();
@@ -78,18 +78,20 @@ function extractMetrics(data: any): PSIMetrics {
 
   // Core Web Vitals and performance metrics
   const score = Math.round((performanceCategory.score || 0) * 100);
-  
+
   // LCP (Largest Contentful Paint)
   const lcpAudit = audits['largest-contentful-paint'];
   const lcpMs = lcpAudit?.numericValue ? Math.round(lcpAudit.numericValue) : null;
 
   // INP (Interaction to Next Paint) - try multiple audit keys
-  const inpAudit = audits['interaction-to-next-paint'] || audits['experimental-interaction-to-next-paint'];
+  const inpAudit =
+    audits['interaction-to-next-paint'] || audits['experimental-interaction-to-next-paint'];
   const inpMs = inpAudit?.numericValue ? Math.round(inpAudit.numericValue) : null;
 
   // CLS (Cumulative Layout Shift)
   const clsAudit = audits['cumulative-layout-shift'];
-  const cls = clsAudit?.numericValue !== undefined ? Math.round(clsAudit.numericValue * 1000) / 1000 : null;
+  const cls =
+    clsAudit?.numericValue !== undefined ? Math.round(clsAudit.numericValue * 1000) / 1000 : null;
 
   // TBT (Total Blocking Time)
   const tbtAudit = audits['total-blocking-time'];
@@ -101,11 +103,13 @@ function extractMetrics(data: any): PSIMetrics {
 
   // Speed Index
   const speedIndexAudit = audits['speed-index'];
-  const speedIndexMs = speedIndexAudit?.numericValue ? Math.round(speedIndexAudit.numericValue) : null;
+  const speedIndexMs = speedIndexAudit?.numericValue
+    ? Math.round(speedIndexAudit.numericValue)
+    : null;
 
   // Extract opportunities (load-opportunities group)
   const opportunities: Array<{ id: string; title: string; savingsMs: number }> = [];
-  
+
   if (performanceCategory.auditRefs) {
     performanceCategory.auditRefs
       .filter((ref: any) => ref.group === 'load-opportunities')
@@ -142,25 +146,19 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.PSI_API_KEY;
     if (!apiKey) {
       console.error('PSI_API_KEY not configured');
-      return NextResponse.json(
-        { error: 'PageSpeed Insights API not configured' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'PageSpeed Insights API not configured' }, { status: 500 });
     }
 
     // Parse and validate request
     const body: PSIRequest = await request.json();
-    
+
     if (!body.url || typeof body.url !== 'string') {
-      return NextResponse.json(
-        { error: 'URL is required and must be a string' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'URL is required and must be a string' }, { status: 400 });
     }
 
     // Ensure URL has protocol
     const testUrl = body.url.startsWith('http') ? body.url : `https://${body.url}`;
-    
+
     if (!isValidUrl(testUrl)) {
       return NextResponse.json(
         { error: 'Invalid URL format. Must be a valid http/https URL.' },
@@ -202,7 +200,7 @@ export async function POST(request: NextRequest) {
       if (!mobileResponse.ok) {
         const errorBody = await mobileResponse.text().catch(() => 'Unknown error');
         console.error(`PSI Mobile API error ${mobileResponse.status}:`, errorBody.slice(0, 400));
-        
+
         // Try to serve cached data if available
         if (cachedData) {
           console.log('Serving cached data due to API error');
@@ -213,7 +211,7 @@ export async function POST(request: NextRequest) {
             },
           });
         }
-        
+
         // Provide specific error messages based on status
         let errorMessage = 'Google PageSpeed Insights service error';
         if (mobileResponse.status === 429) {
@@ -223,7 +221,7 @@ export async function POST(request: NextRequest) {
         } else if (mobileResponse.status >= 500) {
           errorMessage = 'Google PageSpeed Insights service is temporarily unavailable.';
         }
-        
+
         return NextResponse.json(
           {
             error: errorMessage,
@@ -239,7 +237,7 @@ export async function POST(request: NextRequest) {
       if (!desktopResponse.ok) {
         const errorBody = await desktopResponse.text().catch(() => 'Unknown error');
         console.error(`PSI Desktop API error ${desktopResponse.status}:`, errorBody.slice(0, 400));
-        
+
         // Try to serve cached data if available
         if (cachedData) {
           console.log('Serving cached data due to API error');
@@ -250,7 +248,7 @@ export async function POST(request: NextRequest) {
             },
           });
         }
-        
+
         // Provide specific error messages based on status
         let errorMessage = 'Google PageSpeed Insights service error';
         if (desktopResponse.status === 429) {
@@ -260,7 +258,7 @@ export async function POST(request: NextRequest) {
         } else if (desktopResponse.status >= 500) {
           errorMessage = 'Google PageSpeed Insights service is temporarily unavailable.';
         }
-        
+
         return NextResponse.json(
           {
             error: errorMessage,
@@ -290,7 +288,9 @@ export async function POST(request: NextRequest) {
       // Store successful response in cache for future fallback
       setCachedData(testUrl, response);
 
-      console.log(`PSI data fetched successfully: Mobile ${mobileMetrics.score}/100, Desktop ${desktopMetrics.score}/100`);
+      console.log(
+        `PSI data fetched successfully: Mobile ${mobileMetrics.score}/100, Desktop ${desktopMetrics.score}/100`
+      );
 
       return NextResponse.json(response, {
         headers: {
@@ -298,13 +298,12 @@ export async function POST(request: NextRequest) {
           'X-Data-Source': 'live',
         },
       });
-
     } catch (fetchError) {
       clearTimeout(timeoutId);
-      
+
       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
         console.error('PSI API request timeout');
-        
+
         // Try to serve cached data if available
         const cachedFallback = getCachedData(testUrl);
         if (cachedFallback) {
@@ -316,25 +315,27 @@ export async function POST(request: NextRequest) {
             },
           });
         }
-        
+
         return NextResponse.json(
-          { error: 'PageSpeed analysis timed out. The URL may be slow to respond. Please try again.' },
+          {
+            error:
+              'PageSpeed analysis timed out. The URL may be slow to respond. Please try again.',
+          },
           { status: 408 }
         );
       }
-      
+
       throw fetchError; // Re-throw to be caught by outer catch
     }
-
   } catch (error) {
     console.error('PSI API error:', error);
-    
+
     // Try to serve cached data as last resort
     try {
       const body: PSIRequest = await request.json();
       const testUrl = body.url?.startsWith('http') ? body.url : `https://${body.url}`;
       const cachedFallback = getCachedData(testUrl);
-      
+
       if (cachedFallback) {
         console.log('Serving cached data due to internal error');
         return NextResponse.json(cachedFallback, {
@@ -347,18 +348,12 @@ export async function POST(request: NextRequest) {
     } catch (fallbackError) {
       console.error('Failed to serve cached fallback:', fallbackError);
     }
-    
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 // Reject other HTTP methods
 export async function GET() {
-  return NextResponse.json(
-    { error: 'Method not allowed. Use POST.' },
-    { status: 405 }
-  );
+  return NextResponse.json({ error: 'Method not allowed. Use POST.' }, { status: 405 });
 }

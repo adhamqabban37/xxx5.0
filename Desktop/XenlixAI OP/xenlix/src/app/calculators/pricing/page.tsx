@@ -5,7 +5,13 @@ import Link from 'next/link';
 import { NumberInput } from '../_components/NumberInput';
 import { ResultCard, BreakdownTable, ActionButton } from '../_components/ResultCard';
 import { calcPricing, formatCurrency, type PricingInput } from '@/lib/calc';
-import { createShareableUrl, getStateFromUrl, exportToCSV, copyToClipboard, copyJsonToClipboard } from '@/lib/share';
+import {
+  createShareableUrl,
+  getStateFromUrl,
+  exportToCSV,
+  copyToClipboard,
+  copyJsonToClipboard,
+} from '@/lib/share';
 
 export default function PricingCalculatorPage() {
   const [inputs, setInputs] = useState<PricingInput>({
@@ -15,11 +21,13 @@ export default function PricingCalculatorPage() {
     addOns: {
       whiteLabel: false,
       prioritySupport: true,
-      auditsPerQuarter: 1
-    }
+      auditsPerQuarter: 1,
+    },
   });
-  
-  const [showToast, setShowToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const [showToast, setShowToast] = useState<{ message: string; type: 'success' | 'error' } | null>(
+    null
+  );
 
   // Load state from URL on mount
   useEffect(() => {
@@ -33,29 +41,29 @@ export default function PricingCalculatorPage() {
   const results = useMemo(() => calcPricing(inputs), [inputs]);
 
   const handleInputChange = (field: keyof PricingInput, value: any) => {
-    setInputs(prev => ({ ...prev, [field]: value }));
+    setInputs((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleAddOnChange = (field: keyof PricingInput['addOns'], value: any) => {
-    setInputs(prev => ({ 
-      ...prev, 
-      addOns: { ...prev.addOns, [field]: value }
+    setInputs((prev) => ({
+      ...prev,
+      addOns: { ...prev.addOns, [field]: value },
     }));
   };
 
   const handleCopyLink = async () => {
     const url = createShareableUrl('/calculators/pricing', { type: 'pricing', inputs });
     const success = await copyToClipboard(url);
-    setShowToast({ 
-      message: success ? 'Link copied to clipboard!' : 'Failed to copy link', 
-      type: success ? 'success' : 'error' 
+    setShowToast({
+      message: success ? 'Link copied to clipboard!' : 'Failed to copy link',
+      type: success ? 'success' : 'error',
     });
     setTimeout(() => setShowToast(null), 3000);
   };
 
   const handleDownloadCSV = () => {
     const data = {
-      'Plan': inputs.plan,
+      Plan: inputs.plan,
       'Team Seats': inputs.seats,
       'AI Runs per Month': inputs.aiRuns,
       'White Label': inputs.addOns.whiteLabel ? 'Yes' : 'No',
@@ -66,7 +74,7 @@ export default function PricingCalculatorPage() {
       'Total Monthly Price': formatCurrency(results.total),
       'Annual Price': formatCurrency(results.total * 12),
     };
-    
+
     exportToCSV(data, 'pricing-calculation');
     setShowToast({ message: 'CSV downloaded successfully!', type: 'success' });
     setTimeout(() => setShowToast(null), 3000);
@@ -75,9 +83,9 @@ export default function PricingCalculatorPage() {
   const handleCopyJSON = async () => {
     const data = { inputs, results };
     const success = await copyJsonToClipboard(data);
-    setShowToast({ 
-      message: success ? 'JSON copied to clipboard!' : 'Failed to copy JSON', 
-      type: success ? 'success' : 'error' 
+    setShowToast({
+      message: success ? 'JSON copied to clipboard!' : 'Failed to copy JSON',
+      type: success ? 'success' : 'error',
     });
     setTimeout(() => setShowToast(null), 3000);
   };
@@ -85,13 +93,18 @@ export default function PricingCalculatorPage() {
   const planDescriptions = {
     basic: 'Perfect for small teams getting started with AI marketing',
     pro: 'Most popular plan for growing businesses',
-    growth: 'Enterprise-grade features for scaling companies'
+    growth: 'Enterprise-grade features for scaling companies',
   };
 
   const planFeatures = {
     basic: ['Basic AI tools', 'Email support', 'Up to 50 AI runs/month'],
-    pro: ['Advanced AI tools', 'Priority support', 'Custom integrations', 'Up to 200 AI runs/month'],
-    growth: ['All features', 'Dedicated success manager', 'Custom training', 'Unlimited AI runs']
+    pro: [
+      'Advanced AI tools',
+      'Priority support',
+      'Custom integrations',
+      'Up to 200 AI runs/month',
+    ],
+    growth: ['All features', 'Dedicated success manager', 'Custom training', 'Unlimited AI runs'],
   };
 
   return (
@@ -100,8 +113,8 @@ export default function PricingCalculatorPage() {
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold tracking-tight">Pricing Calculator</h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Calculate your monthly subscription cost based on your team size, usage, and add-on requirements.
-          Find the perfect plan for your business needs.
+          Calculate your monthly subscription cost based on your team size, usage, and add-on
+          requirements. Find the perfect plan for your business needs.
         </p>
       </div>
 
@@ -110,25 +123,29 @@ export default function PricingCalculatorPage() {
         <div className="space-y-6">
           <div className="rounded-lg border bg-card p-6">
             <h2 className="text-lg font-semibold mb-4">Plan Configuration</h2>
-            
+
             {/* Plan Selection */}
             <div className="mb-6">
               <label className="text-sm font-medium mb-3 block">Choose Your Plan</label>
               <div className="space-y-3">
                 {(['basic', 'pro', 'growth'] as const).map((plan) => (
                   <div key={plan} className="relative">
-                    <label className={`block p-4 border rounded-lg cursor-pointer transition-all ${
-                      inputs.plan === plan 
-                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
-                        : 'border-border hover:border-primary/50'
-                    }`}>
+                    <label
+                      className={`block p-4 border rounded-lg cursor-pointer transition-all ${
+                        inputs.plan === plan
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
                       <div className="flex items-center">
                         <input
                           type="radio"
                           name="plan"
                           value={plan}
                           checked={inputs.plan === plan}
-                          onChange={(e) => handleInputChange('plan', e.target.value as PricingInput['plan'])}
+                          onChange={(e) =>
+                            handleInputChange('plan', e.target.value as PricingInput['plan'])
+                          }
                           className="sr-only"
                         />
                         <div className="flex-1">
@@ -143,7 +160,9 @@ export default function PricingCalculatorPage() {
                           </div>
                           <div className="mt-2">
                             {planFeatures[plan].map((feature, idx) => (
-                              <div key={idx} className="text-xs text-muted-foreground">• {feature}</div>
+                              <div key={idx} className="text-xs text-muted-foreground">
+                                • {feature}
+                              </div>
                             ))}
                           </div>
                         </div>
@@ -180,7 +199,7 @@ export default function PricingCalculatorPage() {
 
             <div className="mt-6 space-y-4">
               <h3 className="font-medium">Add-ons</h3>
-              
+
               <label className="flex items-center space-x-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -228,16 +247,18 @@ export default function PricingCalculatorPage() {
         {/* Results Panel */}
         <div className="space-y-6">
           <ResultCard title="Pricing Breakdown">
-            <BreakdownTable 
-              items={results.breakdown.filter(item => item.price > 0)}
+            <BreakdownTable
+              items={results.breakdown.filter((item) => item.price > 0)}
               total={results.total}
               formatPrice={formatCurrency}
             />
-            
+
             <div className="mt-6 p-4 bg-muted rounded-lg">
               <div className="text-center">
                 <div className="text-sm text-muted-foreground">Annual pricing</div>
-                <div className="text-2xl font-bold">{formatCurrency(results.total * 12 * 0.85)}/year</div>
+                <div className="text-2xl font-bold">
+                  {formatCurrency(results.total * 12 * 0.85)}/year
+                </div>
                 <div className="text-sm text-green-600">Save 15% with annual billing</div>
               </div>
             </div>
@@ -246,39 +267,80 @@ export default function PricingCalculatorPage() {
           <ResultCard title="What's Included">
             <div className="space-y-3">
               <div className="flex items-center text-sm">
-                <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                <svg
+                  className="w-4 h-4 text-green-500 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 {inputs.seats} team member{inputs.seats > 1 ? 's' : ''}
               </div>
               <div className="flex items-center text-sm">
-                <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                <svg
+                  className="w-4 h-4 text-green-500 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 {inputs.aiRuns} AI runs per month
               </div>
               {inputs.addOns.whiteLabel && (
                 <div className="flex items-center text-sm">
-                  <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  <svg
+                    className="w-4 h-4 text-green-500 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   White label branding
                 </div>
               )}
               {inputs.addOns.prioritySupport && (
                 <div className="flex items-center text-sm">
-                  <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  <svg
+                    className="w-4 h-4 text-green-500 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   24/7 priority support
                 </div>
               )}
               {inputs.addOns.auditsPerQuarter > 0 && (
                 <div className="flex items-center text-sm">
-                  <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  <svg
+                    className="w-4 h-4 text-green-500 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
                   </svg>
-                  {inputs.addOns.auditsPerQuarter} marketing audit{inputs.addOns.auditsPerQuarter > 1 ? 's' : ''} per quarter
+                  {inputs.addOns.auditsPerQuarter} marketing audit
+                  {inputs.addOns.auditsPerQuarter > 1 ? 's' : ''} per quarter
                 </div>
               )}
             </div>
@@ -310,9 +372,11 @@ export default function PricingCalculatorPage() {
 
       {/* Toast Notification */}
       {showToast && (
-        <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-          showToast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-        }`}>
+        <div
+          className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+            showToast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+          }`}
+        >
           {showToast.message}
         </div>
       )}
@@ -324,14 +388,14 @@ export default function PricingCalculatorPage() {
           Found your perfect plan? Start your AI marketing transformation today.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link 
-            href="/plans" 
+          <Link
+            href="/plans"
             className="inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition-colors"
           >
             View All Plans
           </Link>
-          <Link 
-            href="/tools/json-ld" 
+          <Link
+            href="/tools/json-ld"
             className="inline-flex items-center justify-center px-6 py-2 border border-primary text-sm font-medium rounded-md text-primary hover:bg-primary/10 transition-colors"
           >
             Try Our Tools
@@ -344,33 +408,33 @@ export default function PricingCalculatorPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            "name": "Pricing Calculator",
-            "description": "Calculate subscription pricing for XenlixAI plans",
-            "applicationCategory": "BusinessApplication",
-            "operatingSystem": "Web Browser",
-            "offers": [
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            name: 'Pricing Calculator',
+            description: 'Calculate subscription pricing for XenlixAI plans',
+            applicationCategory: 'BusinessApplication',
+            operatingSystem: 'Web Browser',
+            offers: [
               {
-                "@type": "Offer",
-                "name": "Basic Plan",
-                "price": "49",
-                "priceCurrency": "USD"
+                '@type': 'Offer',
+                name: 'Basic Plan',
+                price: '49',
+                priceCurrency: 'USD',
               },
               {
-                "@type": "Offer", 
-                "name": "Pro Plan",
-                "price": "149",
-                "priceCurrency": "USD"
+                '@type': 'Offer',
+                name: 'Pro Plan',
+                price: '149',
+                priceCurrency: 'USD',
               },
               {
-                "@type": "Offer",
-                "name": "Growth Plan", 
-                "price": "399",
-                "priceCurrency": "USD"
-              }
-            ]
-          })
+                '@type': 'Offer',
+                name: 'Growth Plan',
+                price: '399',
+                priceCurrency: 'USD',
+              },
+            ],
+          }),
         }}
       />
     </div>

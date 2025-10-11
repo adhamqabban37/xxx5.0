@@ -1,0 +1,196 @@
+# ===================================
+# LIGHTHOUSE DOCKERFILE
+# Debian-based Node.js with Chromium for reliable Lighthouse audits
+# ===================================
+
+FROM node:20-bullseye-slim AS lighthouse
+
+# Install system dependencies and Chromium
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+        chromium \
+        ca-certificates \
+        fonts-liberation \
+        libasound2 \
+        libatk-bridge2.0-0 \
+        libatk1.0-0 \
+        libc6 \
+        libcairo2 \
+        libcups2 \
+        libdbus-1-3 \
+        libexpat1 \
+        libfontconfig1 \
+        libgcc1 \
+        libgconf-2-4 \
+        libgdk-pixbuf2.0-0 \
+        libglib2.0-0 \
+        libgtk-3-0 \
+        libnspr4 \
+        libnss3 \
+        libpango-1.0-0 \
+        libpangocairo-1.0-0 \
+        libstdc++6 \
+        libx11-6 \
+        libx11-xcb1 \
+        libxcb1 \
+        libxcomposite1 \
+        libxcursor1 \
+        libxdamage1 \
+        libxext6 \
+        libxfixes3 \
+        libxi6 \
+        libxrandr2 \
+        libxrender1 \
+        libxss1 \
+        libxtst6 \
+        lsb-release \
+        wget \
+        xdg-utils \
+        curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Set Chrome path environment variable
+ENV CHROME_PATH=/usr/bin/chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+# Install Lighthouse globally for CLI usage
+RUN npm install -g lighthouse && lighthouse --version
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code and scripts
+COPY . .
+
+# Make scripts executable
+RUN chmod +x scripts/check-chrome.sh
+
+# Verify Chrome installation during build (fail early)
+RUN scripts/check-chrome.sh
+
+# Create reports directory
+RUN mkdir -p reports && chmod 755 reports
+
+# Add non-root user for security
+RUN groupadd -r lighthouse && useradd -r -g lighthouse -G audio,video lighthouse \
+    && mkdir -p /home/lighthouse/Downloads \
+    && chown -R lighthouse:lighthouse /home/lighthouse \
+    && chown -R lighthouse:lighthouse /app
+
+# Switch to non-root user
+USER lighthouse
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD scripts/check-chrome.sh || exit 1
+
+# Default command - run Lighthouse audit
+CMD ["npm", "run", "audit:lighthouse"]
+
+# ===================================
+# PRODUCTION BUILD WITH LIGHTHOUSE
+# Multi-stage build that includes both app and Lighthouse
+# ===================================
+
+FROM node:20-bullseye-slim AS app-with-lighthouse
+
+# Install system dependencies including Chromium
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+        chromium \
+        ca-certificates \
+        fonts-liberation \
+        libasound2 \
+        libatk-bridge2.0-0 \
+        libatk1.0-0 \
+        libc6 \
+        libcairo2 \
+        libcups2 \
+        libdbus-1-3 \
+        libexpat1 \
+        libfontconfig1 \
+        libgcc1 \
+        libgconf-2-4 \
+        libgdk-pixbuf2.0-0 \
+        libglib2.0-0 \
+        libgtk-3-0 \
+        libnspr4 \
+        libnss3 \
+        libpango-1.0-0 \
+        libpangocairo-1.0-0 \
+        libstdc++6 \
+        libx11-6 \
+        libx11-xcb1 \
+        libxcb1 \
+        libxcomposite1 \
+        libxcursor1 \
+        libxdamage1 \
+        libxext6 \
+        libxfixes3 \
+        libxi6 \
+        libxrandr2 \
+        libxrender1 \
+        libxss1 \
+        libxtst6 \
+        lsb-release \
+        wget \
+        xdg-utils \
+        curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Environment variables
+ENV CHROME_PATH=/usr/bin/chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev for building)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Install Lighthouse globally
+RUN npm install -g lighthouse
+
+# Make scripts executable and verify Chrome
+RUN chmod +x scripts/check-chrome.sh && scripts/check-chrome.sh
+
+# Create non-root user
+RUN groupadd -r xenlix && useradd -r -g xenlix -G audio,video xenlix \
+    && mkdir -p /home/xenlix/Downloads \
+    && chown -R xenlix:xenlix /home/xenlix \
+    && chown -R xenlix:xenlix /app
+
+# Create reports directory
+RUN mkdir -p reports && chown -R xenlix:xenlix reports
+
+USER xenlix
+
+# Expose port
+EXPOSE 3000
+
+# Health check that includes Chrome verification
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Start command - can be overridden for different use cases
+CMD ["npm", "start"]

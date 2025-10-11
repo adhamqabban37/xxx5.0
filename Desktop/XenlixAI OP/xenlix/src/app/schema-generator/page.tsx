@@ -1,8 +1,13 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import { SchemaGenerator } from '@/lib/schema-generator';
-import { BusinessProfileForSchema, FAQData, SchemaGeneratorOptions, SchemaOutput } from '@/types/schema';
+import {
+  BusinessProfileForSchema,
+  FAQData,
+  SchemaGeneratorOptions,
+  SchemaOutput,
+} from '@/types/schema';
 
 export default function SchemaGeneratorPage() {
   const [businessProfile, setBusinessProfile] = useState<BusinessProfileForSchema>({
@@ -15,18 +20,18 @@ export default function SchemaGeneratorPage() {
       city: '',
       state: '',
       zipCode: '',
-      country: 'US'
+      country: 'US',
     },
     contact: {
       phone: '',
       email: '',
-      website: ''
+      website: '',
     },
     socialMedia: {
       facebook: '',
       twitter: '',
       instagram: '',
-      linkedin: ''
+      linkedin: '',
     },
     hours: {
       monday: { open: '09:00', close: '17:00' },
@@ -35,19 +40,17 @@ export default function SchemaGeneratorPage() {
       thursday: { open: '09:00', close: '17:00' },
       friday: { open: '09:00', close: '17:00' },
       saturday: { open: '10:00', close: '16:00' },
-      sunday: { open: '', close: '' }
+      sunday: { open: '', close: '' },
     },
     rating: {
       value: 4.5,
       count: 0,
-      reviews: []
-    }
+      reviews: [],
+    },
   });
 
   const [faqData, setFaqData] = useState<FAQData>({
-    questions: [
-      { question: '', answer: '' }
-    ]
+    questions: [{ question: '', answer: '' }],
   });
 
   const [options, setOptions] = useState<SchemaGeneratorOptions>({
@@ -57,7 +60,7 @@ export default function SchemaGeneratorPage() {
     includeWebsite: true,
     includeOrganization: false,
     minifyOutput: false,
-    validateSchema: true
+    validateSchema: true,
   });
 
   const [generatedSchemas, setGeneratedSchemas] = useState<SchemaOutput | null>(null);
@@ -67,7 +70,7 @@ export default function SchemaGeneratorPage() {
   const generateSchemas = () => {
     const generator = new SchemaGenerator(options);
     const schemas = generator.generateSchemas(
-      businessProfile, 
+      businessProfile,
       options.includeFAQ ? faqData : undefined
     );
     setGeneratedSchemas(schemas);
@@ -98,7 +101,8 @@ export default function SchemaGeneratorPage() {
   const loadSampleData = () => {
     setBusinessProfile({
       businessName: 'Elite Auto Detailing',
-      description: 'Professional automotive detailing services with eco-friendly products and premium care for your vehicle.',
+      description:
+        'Professional automotive detailing services with eco-friendly products and premium care for your vehicle.',
       industry: 'automotive',
       services: ['Car Wash', 'Paint Protection', 'Ceramic Coating', 'Interior Detailing'],
       address: {
@@ -106,17 +110,17 @@ export default function SchemaGeneratorPage() {
         city: 'Austin',
         state: 'Texas',
         zipCode: '78701',
-        country: 'US'
+        country: 'US',
       },
       contact: {
         phone: '+1-512-555-0123',
         email: 'info@eliteautodetailing.com',
-        website: 'https://eliteautodetailing.com'
+        website: 'https://eliteautodetailing.com',
       },
       socialMedia: {
         facebook: 'https://facebook.com/eliteautodetailing',
         instagram: 'https://instagram.com/eliteautodetailing',
-        linkedin: 'https://linkedin.com/company/eliteautodetailing'
+        linkedin: 'https://linkedin.com/company/eliteautodetailing',
       },
       hours: {
         monday: { open: '08:00', close: '18:00' },
@@ -125,7 +129,7 @@ export default function SchemaGeneratorPage() {
         thursday: { open: '08:00', close: '18:00' },
         friday: { open: '08:00', close: '18:00' },
         saturday: { open: '09:00', close: '17:00' },
-        sunday: { open: '', close: '' }
+        sunday: { open: '', close: '' },
       },
       rating: {
         value: 4.8,
@@ -135,66 +139,70 @@ export default function SchemaGeneratorPage() {
             author: 'John Smith',
             rating: 5,
             text: 'Excellent service! My car looks brand new.',
-            date: '2024-09-01'
+            date: '2024-09-01',
           },
           {
             author: 'Sarah Johnson',
             rating: 4,
             text: 'Professional work and great attention to detail.',
-            date: '2024-08-28'
-          }
-        ]
+            date: '2024-08-28',
+          },
+        ],
       },
       coordinates: {
         latitude: 30.2672,
-        longitude: -97.7431
+        longitude: -97.7431,
       },
       foundingDate: '2020-01-01',
       founder: 'Mike Rodriguez',
       employeeCount: 8,
-      slogan: 'Where your car gets the royal treatment'
+      slogan: 'Where your car gets the royal treatment',
     });
 
     setFaqData({
       questions: [
         {
           question: 'How long does a full detail take?',
-          answer: 'A complete exterior and interior detail typically takes 3-4 hours, depending on the vehicle size and condition.'
+          answer:
+            'A complete exterior and interior detail typically takes 3-4 hours, depending on the vehicle size and condition.',
         },
         {
           question: 'Do you offer mobile detailing services?',
-          answer: 'Yes, we provide mobile detailing services throughout the Austin metro area for your convenience.'
+          answer:
+            'Yes, we provide mobile detailing services throughout the Austin metro area for your convenience.',
         },
         {
           question: 'What products do you use?',
-          answer: 'We use only premium, eco-friendly detailing products that are safe for your vehicle and the environment.'
-        }
-      ]
+          answer:
+            'We use only premium, eco-friendly detailing products that are safe for your vehicle and the environment.',
+        },
+      ],
     });
   };
 
   const handleServiceChange = (services: string) => {
-    const serviceArray = services.split(',').map(s => s.trim()).filter(s => s.length > 0);
-    setBusinessProfile(prev => ({ ...prev, services: serviceArray }));
+    const serviceArray = services
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    setBusinessProfile((prev) => ({ ...prev, services: serviceArray }));
   };
 
   const addFaqQuestion = () => {
-    setFaqData(prev => ({
-      questions: [...prev.questions, { question: '', answer: '' }]
+    setFaqData((prev) => ({
+      questions: [...prev.questions, { question: '', answer: '' }],
     }));
   };
 
   const updateFaqQuestion = (index: number, field: 'question' | 'answer', value: string) => {
-    setFaqData(prev => ({
-      questions: prev.questions.map((q, i) => 
-        i === index ? { ...q, [field]: value } : q
-      )
+    setFaqData((prev) => ({
+      questions: prev.questions.map((q, i) => (i === index ? { ...q, [field]: value } : q)),
     }));
   };
 
   const removeFaqQuestion = (index: number) => {
-    setFaqData(prev => ({
-      questions: prev.questions.filter((_, i) => i !== index)
+    setFaqData((prev) => ({
+      questions: prev.questions.filter((_, i) => i !== index),
     }));
   };
 
@@ -202,9 +210,7 @@ export default function SchemaGeneratorPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Schema.org JSON-LD Generator
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Schema.org JSON-LD Generator</h1>
           <p className="text-lg text-gray-600">
             Generate structured data markup for better SEO and rich snippets
           </p>
@@ -223,7 +229,7 @@ export default function SchemaGeneratorPage() {
               { id: 'profile', label: 'Business Profile' },
               { id: 'faq', label: 'FAQ Data' },
               { id: 'options', label: 'Schema Options' },
-              { id: 'output', label: 'Generated Schema' }
+              { id: 'output', label: 'Generated Schema' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -244,12 +250,12 @@ export default function SchemaGeneratorPage() {
         {activeTab === 'profile' && (
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">Business Profile Information</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Basic Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Business Name *
@@ -257,7 +263,9 @@ export default function SchemaGeneratorPage() {
                   <input
                     type="text"
                     value={businessProfile.businessName}
-                    onChange={(e) => setBusinessProfile(prev => ({ ...prev, businessName: e.target.value }))}
+                    onChange={(e) =>
+                      setBusinessProfile((prev) => ({ ...prev, businessName: e.target.value }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -268,19 +276,21 @@ export default function SchemaGeneratorPage() {
                   </label>
                   <textarea
                     value={businessProfile.description}
-                    onChange={(e) => setBusinessProfile(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setBusinessProfile((prev) => ({ ...prev, description: e.target.value }))
+                    }
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Industry
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
                   <select
                     value={businessProfile.industry}
-                    onChange={(e) => setBusinessProfile(prev => ({ ...prev, industry: e.target.value }))}
+                    onChange={(e) =>
+                      setBusinessProfile((prev) => ({ ...prev, industry: e.target.value }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select Industry</option>
@@ -315,48 +325,48 @@ export default function SchemaGeneratorPage() {
               {/* Contact & Location */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-gray-900">Contact & Location</h3>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                   <input
                     type="tel"
                     value={businessProfile.contact?.phone}
-                    onChange={(e) => setBusinessProfile(prev => ({ 
-                      ...prev, 
-                      contact: { ...prev.contact!, phone: e.target.value }
-                    }))}
+                    onChange={(e) =>
+                      setBusinessProfile((prev) => ({
+                        ...prev,
+                        contact: { ...prev.contact!, phone: e.target.value },
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
                     type="email"
                     value={businessProfile.contact?.email}
-                    onChange={(e) => setBusinessProfile(prev => ({ 
-                      ...prev, 
-                      contact: { ...prev.contact!, email: e.target.value }
-                    }))}
+                    onChange={(e) =>
+                      setBusinessProfile((prev) => ({
+                        ...prev,
+                        contact: { ...prev.contact!, email: e.target.value },
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Website
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
                   <input
                     type="url"
                     value={businessProfile.contact?.website}
-                    onChange={(e) => setBusinessProfile(prev => ({ 
-                      ...prev, 
-                      contact: { ...prev.contact!, website: e.target.value }
-                    }))}
+                    onChange={(e) =>
+                      setBusinessProfile((prev) => ({
+                        ...prev,
+                        contact: { ...prev.contact!, website: e.target.value },
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -368,40 +378,42 @@ export default function SchemaGeneratorPage() {
                   <input
                     type="text"
                     value={businessProfile.address?.street}
-                    onChange={(e) => setBusinessProfile(prev => ({ 
-                      ...prev, 
-                      address: { ...prev.address!, street: e.target.value }
-                    }))}
+                    onChange={(e) =>
+                      setBusinessProfile((prev) => ({
+                        ...prev,
+                        address: { ...prev.address!, street: e.target.value },
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      City
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
                     <input
                       type="text"
                       value={businessProfile.address?.city}
-                      onChange={(e) => setBusinessProfile(prev => ({ 
-                        ...prev, 
-                        address: { ...prev.address!, city: e.target.value }
-                      }))}
+                      onChange={(e) =>
+                        setBusinessProfile((prev) => ({
+                          ...prev,
+                          address: { ...prev.address!, city: e.target.value },
+                        }))
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      State
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
                     <input
                       type="text"
                       value={businessProfile.address?.state}
-                      onChange={(e) => setBusinessProfile(prev => ({ 
-                        ...prev, 
-                        address: { ...prev.address!, state: e.target.value }
-                      }))}
+                      onChange={(e) =>
+                        setBusinessProfile((prev) => ({
+                          ...prev,
+                          address: { ...prev.address!, state: e.target.value },
+                        }))
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -447,7 +459,7 @@ export default function SchemaGeneratorPage() {
                       </button>
                     )}
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -461,11 +473,9 @@ export default function SchemaGeneratorPage() {
                         placeholder="Enter your question..."
                       />
                     </div>
-                    
+
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Answer
-                      </label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Answer</label>
                       <textarea
                         value={faq.answer}
                         onChange={(e) => updateFaqQuestion(index, 'answer', e.target.value)}
@@ -500,27 +510,29 @@ export default function SchemaGeneratorPage() {
         {activeTab === 'options' && (
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">Schema Generation Options</h2>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <h3 className="font-medium text-gray-900">Include Schema Types</h3>
-                  
+
                   {[
                     { key: 'includeLocalBusiness', label: 'Local Business' },
                     { key: 'includeServices', label: 'Services' },
                     { key: 'includeFAQ', label: 'FAQ Page' },
                     { key: 'includeWebsite', label: 'Website' },
-                    { key: 'includeOrganization', label: 'Organization' }
+                    { key: 'includeOrganization', label: 'Organization' },
                   ].map((option) => (
                     <label key={option.key} className="flex items-center">
                       <input
                         type="checkbox"
                         checked={options[option.key as keyof SchemaGeneratorOptions] as boolean}
-                        onChange={(e) => setOptions(prev => ({ 
-                          ...prev, 
-                          [option.key]: e.target.checked 
-                        }))}
+                        onChange={(e) =>
+                          setOptions((prev) => ({
+                            ...prev,
+                            [option.key]: e.target.checked,
+                          }))
+                        }
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                       <span className="ml-2 text-sm text-gray-700">{option.label}</span>
@@ -530,15 +542,17 @@ export default function SchemaGeneratorPage() {
 
                 <div className="space-y-3">
                   <h3 className="font-medium text-gray-900">Output Options</h3>
-                  
+
                   <label className="flex items-center">
                     <input
                       type="checkbox"
                       checked={options.minifyOutput}
-                      onChange={(e) => setOptions(prev => ({ 
-                        ...prev, 
-                        minifyOutput: e.target.checked 
-                      }))}
+                      onChange={(e) =>
+                        setOptions((prev) => ({
+                          ...prev,
+                          minifyOutput: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Minify Output</span>
@@ -548,10 +562,12 @@ export default function SchemaGeneratorPage() {
                     <input
                       type="checkbox"
                       checked={options.validateSchema}
-                      onChange={(e) => setOptions(prev => ({ 
-                        ...prev, 
-                        validateSchema: e.target.checked 
-                      }))}
+                      onChange={(e) =>
+                        setOptions((prev) => ({
+                          ...prev,
+                          validateSchema: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Validate Schema</span>
@@ -564,10 +580,12 @@ export default function SchemaGeneratorPage() {
                     <input
                       type="text"
                       value={options.customBusinessType || ''}
-                      onChange={(e) => setOptions(prev => ({ 
-                        ...prev, 
-                        customBusinessType: e.target.value 
-                      }))}
+                      onChange={(e) =>
+                        setOptions((prev) => ({
+                          ...prev,
+                          customBusinessType: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., Restaurant, AutoRepair"
                     />
@@ -614,7 +632,9 @@ export default function SchemaGeneratorPage() {
                     Copy
                   </button>
                   <button
-                    onClick={() => downloadSchema(generatedSchemas.combined!, 'schema-complete.html')}
+                    onClick={() =>
+                      downloadSchema(generatedSchemas.combined!, 'schema-complete.html')
+                    }
                     className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm"
                   >
                     Download
@@ -629,10 +649,10 @@ export default function SchemaGeneratorPage() {
             {/* Individual Schemas */}
             {Object.entries(generatedSchemas).map(([key, schema]) => {
               if (key === 'combined' || !schema) return null;
-              
+
               const content = JSON.stringify(schema, null, 2);
               const title = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1');
-              
+
               return (
                 <div key={key} className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex justify-between items-center mb-4">

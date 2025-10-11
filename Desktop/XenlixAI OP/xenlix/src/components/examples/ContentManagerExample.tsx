@@ -17,20 +17,16 @@ export default function ContentManagerExample() {
   const [content, setContent] = useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
+
   // Get IndexNow trigger functions
-  const { 
-    onContentCreated, 
-    onContentUpdated, 
-    onContentDeleted,
-    flushPending 
-  } = useIndexNowTrigger();
+  const { onContentCreated, onContentUpdated, onContentDeleted, flushPending } =
+    useIndexNowTrigger();
 
   // Create new content
   const handleCreate = async (newContent: { url: string; title: string; content: string }) => {
     try {
       setIsLoading(true);
-      
+
       // TODO: Replace with actual API call
       const response = await fetch('/api/content/example', {
         method: 'POST',
@@ -38,27 +34,27 @@ export default function ContentManagerExample() {
         body: JSON.stringify({
           url: newContent.url,
           content: newContent.content,
-          type: 'page'
-        })
+          type: 'page',
+        }),
       });
 
       if (response.ok) {
         const result = await response.json();
-        
+
         // Update local state
         const newItem: ContentItem = {
           id: Date.now().toString(),
           url: newContent.url,
           title: newContent.title,
           content: newContent.content,
-          lastModified: new Date()
+          lastModified: new Date(),
         };
-        setContent(prev => [...prev, newItem]);
+        setContent((prev) => [...prev, newItem]);
 
         // Trigger IndexNow for new content (handled by API route)
         // But we can also trigger client-side if needed:
         // await onContentCreated(newContent.url);
-        
+
         console.log('Content created and IndexNow triggered');
       }
     } catch (error) {
@@ -72,8 +68,8 @@ export default function ContentManagerExample() {
   const handleUpdate = async (id: string, updatedData: Partial<ContentItem>) => {
     try {
       setIsLoading(true);
-      
-      const item = content.find(c => c.id === id);
+
+      const item = content.find((c) => c.id === id);
       if (!item) return;
 
       // TODO: Replace with actual API call
@@ -83,22 +79,20 @@ export default function ContentManagerExample() {
         body: JSON.stringify({
           url: item.url,
           content: updatedData.content,
-          type: 'page'
-        })
+          type: 'page',
+        }),
       });
 
       if (response.ok) {
         // Update local state
-        setContent(prev => prev.map(c => 
-          c.id === id 
-            ? { ...c, ...updatedData, lastModified: new Date() }
-            : c
-        ));
+        setContent((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, ...updatedData, lastModified: new Date() } : c))
+        );
 
         // Trigger IndexNow for updated content (handled by API route)
         // But we can also trigger client-side:
         // await onContentUpdated(item.url);
-        
+
         setEditingId(null);
         console.log('Content updated and IndexNow triggered');
       }
@@ -113,23 +107,23 @@ export default function ContentManagerExample() {
   const handleDelete = async (id: string) => {
     try {
       setIsLoading(true);
-      
-      const item = content.find(c => c.id === id);
+
+      const item = content.find((c) => c.id === id);
       if (!item) return;
 
       // TODO: Replace with actual API call
       const response = await fetch(`/api/content/example?url=${encodeURIComponent(item.url)}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
 
       if (response.ok) {
         // Update local state
-        setContent(prev => prev.filter(c => c.id !== id));
+        setContent((prev) => prev.filter((c) => c.id !== id));
 
         // Trigger IndexNow for deleted content (handled by API route)
         // But we can also trigger client-side:
         // await onContentDeleted(item.url);
-        
+
         console.log('Content deleted and IndexNow triggered');
       }
     } catch (error) {
@@ -141,14 +135,14 @@ export default function ContentManagerExample() {
 
   // Manual schema update (e.g., when changing structured data)
   const handleSchemaUpdate = async (id: string) => {
-    const item = content.find(c => c.id === id);
+    const item = content.find((c) => c.id === id);
     if (!item) return;
 
     try {
       // Client-side schema change trigger
       // This would be useful when updating structured data without changing content
       // await onSchemaChange(item.url);
-      
+
       console.log('Schema updated and IndexNow triggered for:', item.url);
     } catch (error) {
       console.error('Failed to trigger schema update:', error);
@@ -183,7 +177,7 @@ export default function ContentManagerExample() {
               handleCreate({
                 url: `/demo-page-${Date.now()}`,
                 title: 'Demo Page',
-                content: 'This is a demo page created at ' + new Date().toLocaleString()
+                content: 'This is a demo page created at ' + new Date().toLocaleString(),
               });
             }}
             disabled={isLoading}
@@ -203,7 +197,10 @@ export default function ContentManagerExample() {
           </div>
         ) : (
           content.map((item) => (
-            <div key={item.id} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600/50">
+            <div
+              key={item.id}
+              className="bg-slate-700/50 rounded-lg p-4 border border-slate-600/50"
+            >
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <h3 className="text-lg font-semibold text-white">{item.title}</h3>
@@ -241,9 +238,9 @@ export default function ContentManagerExample() {
                   <textarea
                     value={item.content}
                     onChange={(e) => {
-                      setContent(prev => prev.map(c => 
-                        c.id === item.id ? { ...c, content: e.target.value } : c
-                      ));
+                      setContent((prev) =>
+                        prev.map((c) => (c.id === item.id ? { ...c, content: e.target.value } : c))
+                      );
                     }}
                     className="w-full p-3 bg-slate-600 border border-slate-500 rounded text-white resize-vertical min-h-[100px]"
                     placeholder="Content..."
@@ -271,11 +268,21 @@ export default function ContentManagerExample() {
       <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
         <h3 className="text-lg font-semibold text-white mb-3">IndexNow Auto-Triggers</h3>
         <div className="space-y-2 text-sm text-gray-300">
-          <p>• <strong>Create Content:</strong> Immediate high-priority submission</p>
-          <p>• <strong>Update Content:</strong> Batched normal-priority submission</p>
-          <p>• <strong>Delete Content:</strong> Immediate normal-priority submission</p>
-          <p>• <strong>Schema Changes:</strong> Immediate high-priority submission</p>
-          <p>• <strong>Batch Processing:</strong> Groups updates over 5 seconds to avoid rate limits</p>
+          <p>
+            • <strong>Create Content:</strong> Immediate high-priority submission
+          </p>
+          <p>
+            • <strong>Update Content:</strong> Batched normal-priority submission
+          </p>
+          <p>
+            • <strong>Delete Content:</strong> Immediate normal-priority submission
+          </p>
+          <p>
+            • <strong>Schema Changes:</strong> Immediate high-priority submission
+          </p>
+          <p>
+            • <strong>Batch Processing:</strong> Groups updates over 5 seconds to avoid rate limits
+          </p>
         </div>
       </div>
 

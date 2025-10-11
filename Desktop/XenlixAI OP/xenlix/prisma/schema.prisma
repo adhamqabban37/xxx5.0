@@ -30,6 +30,20 @@ model User {
   seoJsonLds    SeoJsonLd[]
   aeoAudits     AeoAudit[]
   seoAudits     SeoAudit[]
+  
+  // AI Visibility relations
+  brands        Brand[]
+  prompts       Prompt[]
+  alertConfigs  AlertConfig[]
+  apiKeys       ApiKey[]
+  auditLogs     AuditLog[]
+  
+  // Premium AEO Dashboard
+  companies     Company[]
+  aeoValidations AeoValidation[]
+  
+  // Google integrations
+  googleTokens  GoogleTokens?
 }
 
 model Guidance {
@@ -180,17 +194,780 @@ model AlertThreshold {
 
 model AlertEvent {
   id           String   @id @default(cuid())
-  thresholdId  String
-  threshold    AlertThreshold @relation(fields: [thresholdId], references: [id])
-  url          String
-  metricType   String
-  currentValue Float
-  thresholdValue Float
-  severity     String   // 'low', 'medium', 'high', 'critical'
+  thresholdId  String?  // For legacy threshold alerts
+  threshold    AlertThreshold? @relation(fields: [thresholdId], references: [id])
+  configId     String?  // For new AI visibility alerts
+  config       AlertConfig?    @relation(fields: [configId], references: [id], onDelete: Cascade)
+  url          String?  // For legacy alerts
+  metricType   String?  // For legacy alerts
+  type         String?  // For new AI visibility alerts
+  currentValue Float?
+  thresholdValue Float?
+  data         Json?    // Event-specific data for AI visibility alerts
+  severity     String   @default("medium") // 'low', 'medium', 'high', 'critical'
   sent         Boolean  @default(false)
   sentAt       DateTime?
   createdAt    DateTime @default(now())
   
   @@index([url, createdAt])
   @@index([sent, createdAt])
+  @@index([configId, sent])
+  @@index([type, createdAt])
+}
+
+// AI Visibility System Models
+model Brand {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  domain     String?  // Primary domain for citation matching
+  userId     String?  // Owner of this brand (for multi-tenant)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  // Relations
+  aliases         BrandAlias[]
+  mentions        AnswerMention[]
+  negativeTerms   BrandNegativeTerm[]
+  visibilityMetrics AIVisibilityMetric[]
+  insights        InsightGap[]
+  outreachTargets InsightOutreach[]
+  
+  @@index([userId])
+}
+
+model BrandAlias {
+  id       String @id @default(cuid())
+  brandId  String
+  brand    Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  alias    String
+  locale   String @default("en-US") // Locale-specific aliases
+  
+  @@index([brandId])
+  @@index([locale])
+}
+
+// Precision control for brand detection
+model BrandNegativeTerm {
+  id       String @id @default(cuid())
+  brandId  String
+  brand    Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  term     String // Terms that should NOT trigger brand detection
+  locale   String @default("en-US")
+  
+  @@index([brandId])
+  @@index([locale])
+}
+
+model Prompt {
+  id             String   @id @default(cuid())
+  text           String   // The actual prompt/query text
+  topic          String?  // Optional categorization
+  locale         String   @default("en-US")
+  active         Boolean  @default(true)
+  priority       String   @default("medium") // high, medium, low - affects collection frequency
+  volatility     String   @default("stable") // volatile, stable - affects adaptive frequency
+  brandId        String?  // Optional brand association
+  userId         String?  // Owner of this prompt (for multi-tenant)
+  user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  lastCollected  DateTime?
+  
+  // Relations
+  answers        Answer[]
+  keywords       PromptKeyword[]
+  candidates     PromptCandidate[] @relation("ParentPrompt")
+  candidateOf    PromptCandidate[] @relation("CandidatePrompt") 
+  gaps          InsightGap[]
+  driftReports  VisibilityDrift[]
+  
+  @@index([active, locale])
+  @@index([priority, volatility])
+  @@index([userId])
+  @@index([brandId])
+}
+
+// Keyword junction table
+model PromptKeyword {
+  id            String  @id @default(cuid())
+  prompt        Prompt  @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  promptId      String
+  keyword       String
+  createdAt     DateTime @default(now())
+
+  @@unique([promptId, keyword])
+}
+
+// Prompt Discovery System
+model PromptCandidate {
+  id         String   @id @default(cuid())
+  promptId   String   // Generated candidate prompt
+  prompt     Prompt   @relation("CandidatePrompt", fields: [promptId], references: [id], onDelete: Cascade)
+  parentId   String   // Original prompt it was derived from
+  parent     Prompt   @relation("ParentPrompt", fields: [parentId], references: [id], onDelete: Cascade)
+  locale     String   @default("en-US")
+  score      Float    // Relevance/quality score
+  status     String   @default("candidate") // candidate, promoted, rejected
+  source     String   // synonym, longtail, ai-generated
+  createdAt  DateTime @default(now())
+  promotedAt DateTime?
+  
+  @@index([parentId, score])
+  @@index([status, locale])
+}
+
+model Run {
+  id        String   @id @default(cuid())
+  engine    String   // 'perplexity', 'chatgpt', etc.
+  locale    String   @default("en-US")
+  startedAt DateTime @default(now())
+  
+  // Relations
+  answers   Answer[]
+  
+  @@index([engine, startedAt])
+}
+
+model Answer {
+  id               String   @id @default(cuid())
+  runId            String
+  run              Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
+  promptId         String
+  prompt           Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  engine           String   // 'perplexity', 'chatgpt', etc.
+  answerText       String?  // The AI's answer text
+  htmlHash         String?  // Hash of HTML content for freshness detection
+  responseTimeMs   Int?     // Response time in milliseconds
+  wordCount        Int?     // Answer word count
+  locale           String   @default("en-US")
+  cached           Boolean  @default(false) // Whether this was served from cache
+  collectedAt      DateTime @default(now())
+  rawPayloadJson   String?  // JSON string of raw response
+  htmlSnapshotPath String?  // Path to saved HTML snapshot
+  
+  // Relations
+  mentions   AnswerMention[]
+  citations  AnswerCitation[]
+  
+  @@index([runId])
+  @@index([promptId, engine])
+  @@index([collectedAt])
+  @@index([htmlHash]) // For deduplication
+  @@index([locale])
+}
+
+model AnswerMention {
+  id          String  @id @default(cuid())
+  answerId    String
+  answer      Answer  @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  brandId     String
+  brand       Brand   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  position    Int?    // Position in ranked list (if applicable)
+  sentiment   Float?  // -1 to 1 (negative to positive) - more granular than int
+  context     String? // Surrounding text context
+  matchType   String? // exact, alias, fuzzy
+  confidence  Float?  // Detection confidence score
+  
+  @@index([answerId])
+  @@index([brandId])
+  @@index([sentiment])
+}
+
+model AnswerCitation {
+  id              String    @id @default(cuid())
+  answerId        String
+  answer          Answer    @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  rawCitation     String    // Original extracted citation text/format
+  normalizedUrl   String    // Fully normalized URL (protocol, lowercase domain, no fragments)
+  url             String    // Original URL as found
+  domain          String    // Extracted domain for matching
+  title           String?   // Page title (if available)
+  rank            Int?      // Citation order/rank in answer
+  authorityScore  Float?    // Domain authority score from OPR
+  confidenceScore Float?    // Citation extraction confidence (0-1)
+  citationType    String?   // 'url', 'footnote', 'inline', 'structured'
+  isLive          Boolean?  // Whether URL is accessible (from Lighthouse check)
+  isPrimary       Boolean   @default(false) // Whether this matches a brand's primary domain
+  lastChecked     DateTime? // Last time URL was validated
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([answerId])
+  @@index([domain])
+  @@index([isPrimary])
+  @@index([authorityScore])
+  @@index([citationType])
+  @@index([isLive])
+  @@index([lastChecked])
+  @@index([normalizedUrl])
+  @@unique([answerId, normalizedUrl])
+}
+
+model AIVisibilityMetric {
+  id                    String   @id @default(cuid())
+  brandId               String
+  brand                 Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  date                  String   // YYYY-MM-DD format
+  locale                String   @default("en-US")
+  aiVisibilityIndex     Float    // Main AI Visibility score (0-1)
+  aiCoverage            Float    // % of prompts where brand mentioned
+  aiSourceShare         Float    // % of answers citing brand domain
+  totalPrompts          Int      // Total prompts analyzed that day
+  mentionedPrompts      Int      // Prompts where brand was mentioned
+  citedPrompts          Int      // Prompts where brand domain was cited
+  averagePosition       Float?   // Average position when mentioned
+  averageSentiment      Float?   // Average sentiment score
+  competitorShare       Float?   // Share vs top competitors
+  createdAt             DateTime @default(now())
+  
+  @@unique([brandId, date, locale])
+  @@index([brandId, date])
+  @@index([date, locale])
+}
+
+// Insights System
+model InsightGap {
+  id           String   @id @default(cuid())
+  promptId     String
+  prompt       Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  brandId      String
+  brand        Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  competitors  InsightCompetitor[]
+  severity     String   @default("medium") // low, medium, high, critical
+  status       String   @default("open") // open, acknowledged, resolved
+  createdAt    DateTime @default(now())
+  resolvedAt   DateTime?
+  
+  @@index([brandId, status])
+  @@index([severity, createdAt])
+}
+
+model InsightCompetitor {
+  id            String      @id @default(cuid())
+  insight       InsightGap  @relation(fields: [insightId], references: [id], onDelete: Cascade)
+  insightId     String
+  competitor    String
+  createdAt     DateTime    @default(now())
+
+  @@unique([insightId, competitor])
+}
+
+model InsightSource {
+  id             String   @id @default(cuid())
+  domain         String   @unique
+  totalCitations Int      @default(0)
+  authorityScore Float?
+  lastSeen       DateTime @default(now())
+  brandsMentioned SourceBrand[]
+  contactEmail   String?  // Found contact information
+  contactName    String?
+  
+  @@index([totalCitations])
+  @@index([authorityScore])
+}
+
+model SourceBrand {
+  id         String        @id @default(cuid())
+  source     InsightSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  sourceId   String
+  brandId    String
+  createdAt  DateTime      @default(now())
+
+  @@unique([sourceId, brandId])
+}
+
+model InsightRecommendation {
+  id          String   @id @default(cuid())
+  brandId     String
+  type        String   // coverage_low, no_citations, competitor_ahead, etc.
+  title       String
+  description String
+  actionItems RecommendationAction[]
+  priority    String   @default("medium") // low, medium, high
+  status      String   @default("pending") // pending, in_progress, completed, dismissed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([brandId, status])
+  @@index([priority, createdAt])
+}
+
+model RecommendationAction {
+  id               String                 @id @default(cuid())
+  recommendation   InsightRecommendation  @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  recommendationId String
+  action           String
+  createdAt        DateTime               @default(now())
+
+  @@unique([recommendationId, action])
+}
+
+// Outreach Generator
+model InsightOutreach {
+  id            String   @id @default(cuid())
+  brandId       String
+  brand         Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  targetDomain  String
+  contactName   String?
+  contactEmail  String?
+  contactRole   String?
+  pitchTemplate String   // Suggested outreach message
+  pageReference String?  // Specific page/content to reference
+  status        String   @default("prospect") // prospect, contacted, responded, closed
+  createdAt     DateTime @default(now())
+  contactedAt   DateTime?
+  
+  @@index([brandId, status])
+  @@index([targetDomain])
+}
+
+// Why-Not-You Analyzer
+model PageAnalysis {
+  id               String   @id @default(cuid())
+  url              String   @unique
+  wordCount        Int?
+  lastModified     DateTime?
+  schemaTypes      PageSchema[]
+  outboundLinks    Int?
+  readabilityScore Float?
+  authorityScore   Float?
+  contentFreshness String?  // fresh, stale, outdated
+  analyzedAt       DateTime @default(now())
+  
+  @@index([authorityScore])
+  @@index([contentFreshness])
+}
+
+model PageSchema {
+  id         String       @id @default(cuid())
+  page       PageAnalysis @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId     String
+  schemaType String      // FAQ, HowTo, Article, etc.
+  createdAt  DateTime    @default(now())
+
+  @@unique([pageId, schemaType])
+}
+
+// Freshness & Drift Detection
+model VisibilityDrift {
+  id                String   @id @default(cuid())
+  promptId          String
+  prompt            Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  engine            String
+  weekStarting      String   // YYYY-MM-DD format
+  brandVisibility   Json     // { brandId: score } mapping
+  deltaFromPrevious Json     // { brandId: delta } mapping
+  significantChanges DriftChange[]
+  createdAt         DateTime @default(now())
+  
+  @@unique([promptId, engine, weekStarting])
+  @@index([weekStarting])
+}
+
+model DriftChange {
+  id         String          @id @default(cuid())
+  drift      VisibilityDrift @relation(fields: [driftId], references: [id], onDelete: Cascade)
+  driftId    String
+  brandId    String
+  createdAt  DateTime        @default(now())
+
+  @@unique([driftId, brandId])
+}
+
+// Budget & Engine Management
+model EngineBudget {
+  id              String   @id @default(cuid())
+  engine          String   @unique
+  dailyLimit      Int      // Max requests per day
+  monthlyLimit    Int      // Max requests per month  
+  currentDaily    Int      @default(0)
+  currentMonthly  Int      @default(0)
+  costPerRequest  Float?   // Cost tracking
+  resetDaily      DateTime // When daily counter resets
+  resetMonthly    DateTime // When monthly counter resets
+  
+  @@index([engine])
+}
+
+// Caching System
+model AnswerCache {
+  id           String   @id @default(cuid())
+  promptHash   String   // Hash of prompt + engine + locale
+  responseHash String   // Hash of response content
+  answerText   String
+  citations    Json     // Cached citation data
+  mentions     Json     // Cached mention data
+  engine       String
+  locale       String   @default("en-US")
+  hitCount     Int      @default(1)
+  lastUsed     DateTime @default(now())
+  expiresAt    DateTime
+  
+  @@unique([promptHash, engine])
+  @@index([expiresAt])
+  @@index([lastUsed])
+}
+
+// Alerts & Webhooks
+model AlertConfig {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String   // visibility_drop, new_gap, source_shift, competitor_ahead
+  brandId     String?  // Optional brand filter
+  threshold   Float?   // Threshold value for numeric alerts
+  channels    AlertChannel[]
+  webhookUrl  String?
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  events      AlertEvent[]
+  
+  @@index([userId, enabled])
+  @@index([type, enabled])
+}
+
+model AlertChannel {
+  id        String      @id @default(cuid())
+  alert     AlertConfig @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  alertId   String
+  channel   String      // email, slack, webhook
+  createdAt DateTime    @default(now())
+
+  @@unique([alertId, channel])
+}
+
+// API Keys & Tenant Management
+model ApiKey {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String   // Human-readable name
+  key         String   @unique // The actual API key
+  permissions KeyPermission[]
+  rateLimit   Int      @default(1000) // Requests per hour
+  enabled     Boolean  @default(true)
+  lastUsed    DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  usage       ApiUsage[]
+  
+  @@index([userId])
+  @@index([key])
+}
+
+model KeyPermission {
+  id         String @id @default(cuid())
+  apiKey     ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  apiKeyId   String
+  permission String // visibility:read, insights:write, etc.
+  createdAt  DateTime @default(now())
+
+  @@unique([apiKeyId, permission])
+}
+
+model ApiUsage {
+  id        String   @id @default(cuid())
+  apiKeyId  String
+  apiKey    ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  endpoint  String
+  method    String
+  timestamp DateTime @default(now())
+  responseTime Int?  // Response time in ms
+  statusCode Int
+  
+  @@index([apiKeyId, timestamp])
+  @@index([timestamp])
+}
+
+// Audit Logs
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String   // create_brand, update_prompt, delete_insight, etc.
+  resource  String   // brand:123, prompt:456, etc.
+  details   Json?    // Additional context
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime @default(now())
+  
+  @@index([userId, timestamp])
+  @@index([action, timestamp])
+  @@index([timestamp])
+}
+
+// Premium AEO Intelligence Dashboard Models
+model Company {
+  id               String   @id @default(cuid())
+  userId           String   // Owner of this company analysis
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  domain           String   @unique
+  industry         String?
+  description      String?
+  
+  // Company Info JSON Schema compliant data
+  companyInfoJson  Json     // Full company-info.schema.json document
+  
+  // Extracted key metrics for quick queries
+  visibilityScore  Float?   // 0-100 AI Visibility Score
+  lastScanAt       DateTime?
+  nextScanAt       DateTime?
+  
+  // Status tracking
+  status           String   @default("pending") // pending, scanning, completed, failed
+  scanProgress     Float    @default(0) // 0-100% completion
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  queryResults     QueryResult[]
+  citations        CompanyCitation[]
+  competitors      CompanyCompetitor[]
+  scores           CompanyScore[]
+  recommendations  CompanyRecommendation[]
+  scanJobs         CompanyScanJob[]
+  
+  @@index([userId])
+  @@index([domain])
+  @@index([visibilityScore])
+  @@index([lastScanAt])
+  @@index([status])
+}
+
+model QueryResult {
+  id           String   @id @default(cuid())
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  query        String   // The search query/prompt
+  engine       String   // chatgpt, gemini, claude, perplexity
+  region       String   @default("US")
+  questionType String?  // FAQ, list, Q&A, how-to
+  
+  // Results
+  mentioned    Boolean  @default(false) // Company appears in answer
+  position     Int?     // Position in ranked list (if applicable)
+  sentiment    Float?   // -1 to 1 sentiment score
+  context      String?  // Surrounding text where mentioned
+  answerText   String?  // Full AI answer for analysis
+  
+  // Metadata
+  fetchedAt    DateTime @default(now())
+  cached       Boolean  @default(false)
+  
+  @@index([companyId])
+  @@index([engine, region])
+  @@index([mentioned])
+  @@index([fetchedAt])
+}
+
+model CompanyCitation {
+  id               String   @id @default(cuid())
+  companyId        String
+  company          Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // Citation details
+  url              String
+  domain           String
+  title            String?
+  pageRank         Float?   // From OPR API
+  authorityScore   Float?   // Normalized 0-100 score
+  
+  // Source tracking
+  source           String   // "page" or "ai-answer"
+  engine           String?  // If from AI answer
+  query            String?  // Query that generated citation
+  
+  // Status
+  isLive           Boolean? // URL accessibility check
+  isTrusted        Boolean  @default(false) // High authority domain
+  isPrimary        Boolean  @default(false) // Company's own domain
+  
+  lastChecked      DateTime?
+  createdAt        DateTime @default(now())
+  
+  @@index([companyId])
+  @@index([domain])
+  @@index([authorityScore])
+  @@index([source])
+  @@index([isTrusted])
+}
+
+model CompanyCompetitor {
+  id               String   @id @default(cuid())
+  companyId        String
+  company          Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  competitorName   String
+  competitorDomain String?
+  industry         String?
+  
+  // Competitive metrics
+  visibilityScore  Float?   // Competitor's AI visibility score
+  brandMentions    Int      @default(0)
+  citationCount    Int      @default(0)
+  aeoScore         Float?   // Answer Engine Optimization score
+  
+  // Gap analysis
+  appearsInQueries Json?    // Queries where competitor appears but company doesn't
+  citationGaps     Json?    // Domains citing competitor but not company
+  
+  lastAnalyzed     DateTime?
+  createdAt        DateTime @default(now())
+  
+  @@index([companyId])
+  @@index([competitorDomain])
+  @@index([visibilityScore])
+}
+
+model CompanyScore {
+  id               String   @id @default(cuid())
+  companyId        String
+  company          Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  date             String   // YYYY-MM-DD format for trending
+  
+  // AEO Scores (0-100)
+  visibilityIndex  Float    // Overall AI Visibility Score
+  coveragePct      Float    // % of queries where company appears
+  sourceSharePct   Float    // % of citations from company domain
+  schemaScore      Float?   // Schema markup optimization
+  contentScore     Float?   // Content optimization for AEO
+  technicalScore   Float?   // Technical SEO score
+  
+  // Industry comparison
+  industryAvg      Float?   // Industry average visibility
+  percentile       Float?   // Company's percentile ranking
+  
+  createdAt        DateTime @default(now())
+  
+  @@unique([companyId, date])
+  @@index([companyId, date])
+  @@index([visibilityIndex])
+}
+
+model CompanyRecommendation {
+  id            String   @id @default(cuid())
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  title         String
+  description   String
+  priority      String   // high, medium, low
+  impact        String   // high, medium, low
+  category      String   // schema, content, technical, citations
+  
+  // Action items
+  actionItems   Json     // Array of specific steps to take
+  
+  // Status tracking
+  status        String   @default("open") // open, in-progress, completed, dismissed
+  completedAt   DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([companyId, status])
+  @@index([priority, impact])
+}
+
+// Background job tracking for company scans
+model CompanyScanJob {
+  id            String   @id @default(cuid())
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  jobType       String   // full-scan, competitor-analysis, citation-check
+  status        String   // queued, running, completed, failed
+  progress      Float    @default(0) // 0-100%
+  
+  // Job details
+  startedAt     DateTime?
+  completedAt   DateTime?
+  errorMessage  String?
+  resultData    Json?    // Job-specific result data
+  
+  createdAt     DateTime @default(now())
+  
+  @@index([companyId, status])
+  @@index([jobType, status])
+}
+
+model AeoValidation {
+  id                     String   @id @default(cuid())
+  userId                 String?  // Optional - allows anonymous validations
+  user                   User?    @relation(fields: [userId], references: [id])
+  
+  // Website details
+  websiteUrl             String
+  businessName           String?
+  businessType           String?
+  
+  // Validation results
+  validationResults      Json     // Complete validation results from UnifiedAEOValidator
+  overallScore          Float    // Overall AEO score (0-100)
+  issueCount            Int      // Total number of issues found
+  criticalIssues        Json     // Array of critical issues
+  recommendations       Json     // Array of recommendations
+  
+  // Payment and premium features
+  paymentStatus         String   @default("unpaid") // unpaid, paid, processing
+  stripePaymentIntentId String?  // For tracking payment
+  premiumUnlockedAt     DateTime?
+  
+  // Authority scoring
+  authorityScore        Float?   // Target domain OPR score (0-100)
+  competitorAuthority   Json?    // Array of {domain, rank, rank100} for competitors
+  
+  // PageSpeed Insights results
+  psiMobile            Json?    // Mobile PSI audit results
+  psiDesktop           Json?    // Desktop PSI audit results  
+  psiPerf              Float?   // Performance score (mobile-first)
+  psiSeo               Float?   // SEO score (mobile-first)
+  psiAccessibility     Float?   // Accessibility score (mobile-first)
+  psiBestPractices     Float?   // Best practices score (mobile-first)
+  
+  // Google Search Console data
+  gscSummary           Json?    // GSC analytics summary for verified sites
+  gscConnected         Boolean  @default(false) // Whether user has GSC connected
+  
+  // Post-payment deliverables
+  optimizedSchemas      Json?    // Generated JSON-LD schemas
+  implementationGuide   Json?    // Step-by-step implementation guide
+  competitorAnalysis    Json?    // Competitor AEO analysis
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([paymentStatus])
+}
+
+model GoogleTokens {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  
+  // Encrypted OAuth tokens
+  encryptedAccessToken  String?  // AES-GCM encrypted access token
+  encryptedRefreshToken String?  // AES-GCM encrypted refresh token
+  tokenExpiresAt       DateTime? // When access token expires
+  
+  // Token scopes and verification
+  grantedScopes        String?  // Space-separated scopes granted
+  verifiedSites        Json?    // Array of verified GSC site URLs
+  
+  // Connection metadata
+  connectedAt          DateTime @default(now())
+  lastUsedAt           DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  
+  @@index([userId])
 }

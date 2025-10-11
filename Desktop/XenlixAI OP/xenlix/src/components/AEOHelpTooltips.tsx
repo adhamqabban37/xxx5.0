@@ -18,57 +18,60 @@ interface AEOStepInfo {
 const AEO_STEPS: Record<string, AEOStepInfo> = {
   'schema-analysis': {
     title: 'Schema Markup Analysis',
-    description: 'We analyze your website\'s structured data to help search engines understand your business better.',
+    description:
+      "We analyze your website's structured data to help search engines understand your business better.",
     benefits: [
       'Improves rich snippet appearance in search results',
       'Helps Google understand your business type and services',
       'Increases click-through rates by 20-30%',
-      'Better local search visibility'
+      'Better local search visibility',
     ],
     impact: 'High - Essential for AEO and voice search optimization',
     actionItems: [
       'Add LocalBusiness schema with complete business info',
       'Include FAQ schema for common customer questions',
       'Add Service schema for each service you offer',
-      'Implement Organization schema with social profiles'
+      'Implement Organization schema with social profiles',
     ],
-    icon: Code2
+    icon: Code2,
   },
   'content-optimization': {
     title: 'Content Optimization',
-    description: 'We analyze your content for AEO-friendly language patterns and question-answer structures.',
+    description:
+      'We analyze your content for AEO-friendly language patterns and question-answer structures.',
     benefits: [
       'Increases chances of appearing in voice search results',
       'Improves featured snippet opportunities',
       'Better matches natural language queries',
-      'Enhances user engagement and time on page'
+      'Enhances user engagement and time on page',
     ],
     impact: 'Very High - Core factor for voice search and AEO rankings',
     actionItems: [
       'Create FAQ sections answering common questions',
       'Use conversational, natural language',
       'Structure content with clear headings',
-      'Include location-specific information'
+      'Include location-specific information',
     ],
-    icon: Users
+    icon: Users,
   },
   'technical-seo': {
     title: 'Technical SEO Assessment',
-    description: 'We evaluate your website\'s technical foundation to ensure optimal AEO performance.',
+    description:
+      "We evaluate your website's technical foundation to ensure optimal AEO performance.",
     benefits: [
       'Faster page load speeds improve voice search rankings',
       'Mobile optimization captures mobile voice searches',
       'HTTPS security builds trust with search engines',
-      'Clean URLs enhance crawlability'
+      'Clean URLs enhance crawlability',
     ],
     impact: 'High - Technical foundation enables AEO success',
     actionItems: [
       'Optimize page speed (aim for <3 seconds)',
       'Ensure mobile-first responsive design',
       'Fix broken links and 404 errors',
-      'Implement proper URL structure'
+      'Implement proper URL structure',
     ],
-    icon: TrendingUp
+    icon: TrendingUp,
   },
   'local-seo': {
     title: 'Local SEO Optimization',
@@ -77,35 +80,36 @@ const AEO_STEPS: Record<string, AEOStepInfo> = {
       'Captures 46% of Google searches that have local intent',
       'Voice searches are 3x more likely to be local',
       'Improves Google My Business visibility',
-      'Increases foot traffic and phone calls'
+      'Increases foot traffic and phone calls',
     ],
     impact: 'Critical - Most voice searches have local intent',
     actionItems: [
       'Complete and optimize Google My Business profile',
       'Add location pages for each service area',
       'Include local keywords naturally in content',
-      'Encourage and respond to customer reviews'
+      'Encourage and respond to customer reviews',
     ],
-    icon: Search
+    icon: Search,
   },
   'voice-readiness': {
     title: 'Voice Search Readiness',
-    description: 'We assess how well your content matches voice search query patterns and conversational AI.',
+    description:
+      'We assess how well your content matches voice search query patterns and conversational AI.',
     benefits: [
       'Captures the growing voice search market (50% of adults use daily)',
       'Positions you for future AI-powered search',
       'Improves natural language processing compatibility',
-      'Better smart speaker and mobile assistant visibility'
+      'Better smart speaker and mobile assistant visibility',
     ],
     impact: 'Future-Critical - Voice search growing 35% annually',
     actionItems: [
       'Create content answering "who, what, when, where, why" questions',
       'Use long-tail, conversational keywords',
       'Optimize for featured snippets',
-      'Include local business information consistently'
+      'Include local business information consistently',
     ],
-    icon: Lightbulb
-  }
+    icon: Lightbulb,
+  },
 };
 
 interface AEOTooltipProps {
@@ -126,10 +130,7 @@ export const AEOTooltip: React.FC<AEOTooltipProps> = ({ stepKey, children, class
 
   return (
     <div className={`relative inline-block ${className}`}>
-      <div 
-        className="flex items-center gap-2 cursor-help"
-        onClick={() => setIsOpen(true)}
-      >
+      <div className="flex items-center gap-2 cursor-help" onClick={() => setIsOpen(true)}>
         {children}
         <HelpCircle className="w-4 h-4 text-blue-500 hover:text-blue-600 transition-colors" />
       </div>
@@ -224,7 +225,7 @@ export const AEOProgressCard: React.FC<AEOProgressCardProps> = ({
   title,
   score,
   status,
-  children
+  children,
 }) => {
   const getStatusColor = () => {
     switch (status) {
@@ -251,11 +252,9 @@ export const AEOProgressCard: React.FC<AEOProgressCardProps> = ({
         <AEOTooltip stepKey={stepKey}>
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
         </AEOTooltip>
-        
+
         <div className="text-right">
-          <div className={`text-2xl font-bold ${getScoreColor()}`}>
-            {score}%
-          </div>
+          <div className={`text-2xl font-bold ${getScoreColor()}`}>{score}%</div>
           <div className="text-sm text-gray-500 capitalize">{status}</div>
         </div>
       </div>
@@ -278,19 +277,32 @@ export const AEOProgressCard: React.FC<AEOProgressCardProps> = ({
 // Usage examples component for demonstration
 export const AEODashboardExample: React.FC = () => {
   const mockSteps = [
-    { key: 'schema-analysis', title: 'Schema Markup', score: 45, status: 'needs-attention' as const },
-    { key: 'content-optimization', title: 'Content Optimization', score: 78, status: 'analyzing' as const },
+    {
+      key: 'schema-analysis',
+      title: 'Schema Markup',
+      score: 45,
+      status: 'needs-attention' as const,
+    },
+    {
+      key: 'content-optimization',
+      title: 'Content Optimization',
+      score: 78,
+      status: 'analyzing' as const,
+    },
     { key: 'technical-seo', title: 'Technical SEO', score: 92, status: 'completed' as const },
     { key: 'local-seo', title: 'Local SEO', score: 67, status: 'analyzing' as const },
-    { key: 'voice-readiness', title: 'Voice Search Ready', score: 23, status: 'needs-attention' as const }
+    {
+      key: 'voice-readiness',
+      title: 'Voice Search Ready',
+      score: 23,
+      status: 'needs-attention' as const,
+    },
   ];
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        AEO Optimization Progress
-      </h2>
-      
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">AEO Optimization Progress</h2>
+
       {mockSteps.map((step) => (
         <AEOProgressCard
           key={step.key}

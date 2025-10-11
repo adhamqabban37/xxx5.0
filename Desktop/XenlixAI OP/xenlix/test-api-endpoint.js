@@ -3,7 +3,7 @@ const http = require('http');
 
 function testAPIEndpoint() {
   const data = JSON.stringify({
-    url: 'https://example.com'
+    url: 'https://example.com',
   });
 
   const options = {
@@ -13,8 +13,8 @@ function testAPIEndpoint() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Content-Length': data.length
-    }
+      'Content-Length': data.length,
+    },
   };
 
   console.log('🧪 Testing API endpoint with https://example.com...');
@@ -31,7 +31,7 @@ function testAPIEndpoint() {
 
     res.on('end', () => {
       console.timeEnd('API Response Time');
-      
+
       try {
         const response = JSON.parse(body);
         console.log('\n✅ API Response Structure:');
@@ -45,13 +45,14 @@ function testAPIEndpoint() {
         console.log('- OpenAI Score:', response.aiEngineOptimization?.openAI?.score);
         console.log('- Anthropic Score:', response.aiEngineOptimization?.anthropic?.score);
         console.log('- Perplexity Score:', response.aiEngineOptimization?.perplexity?.score);
-        
+
         // Check if it's real data (not mock)
-        const isRealData = response.wordCount > 0 && 
-                          response.title && 
-                          response.title !== 'Mock Title' &&
-                          response.contentLength > 0;
-        
+        const isRealData =
+          response.wordCount > 0 &&
+          response.title &&
+          response.title !== 'Mock Title' &&
+          response.contentLength > 0;
+
         console.log('\n🔍 Data Analysis:');
         console.log('- Is Real Data:', isRealData ? '✅ YES' : '❌ NO (Still using mock data)');
         console.log('- Content Length:', response.contentLength);
@@ -59,7 +60,6 @@ function testAPIEndpoint() {
         console.log('- Total Images:', response.technicalSeo?.totalImages);
         console.log('- Internal Links:', response.technicalSeo?.internalLinks);
         console.log('- External Links:', response.technicalSeo?.externalLinks);
-        
       } catch (error) {
         console.error('❌ Error parsing response:', error);
         console.log('Raw response:', body);
@@ -84,7 +84,7 @@ function testAPIEndpoint() {
 // Test invalid URL handling
 function testInvalidURL() {
   const data = JSON.stringify({
-    url: 'invalid-url-test'
+    url: 'invalid-url-test',
   });
 
   const options = {
@@ -94,8 +94,8 @@ function testInvalidURL() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Content-Length': data.length
-    }
+      'Content-Length': data.length,
+    },
   };
 
   console.log('\n🧪 Testing invalid URL handling...');

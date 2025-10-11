@@ -9,7 +9,7 @@ export default function CheckoutSuccessPage() {
 
   const planNames = {
     premium: 'Premium SEO + AEO',
-    enterprise: 'Enterprise'
+    enterprise: 'Enterprise',
   };
 
   const planName = planNames[plan as keyof typeof planNames] || 'Premium SEO + AEO';
@@ -22,18 +22,14 @@ export default function CheckoutSuccessPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full mb-6">
             <CheckCircle className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome to XenlixAI Premium!
-          </h1>
-          <p className="text-xl text-gray-600">
-            Your {planName} subscription is now active
-          </p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to XenlixAI Premium!</h1>
+          <p className="text-xl text-gray-600">Your {planName} subscription is now active</p>
         </div>
 
         {/* Next Steps */}
         <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">What Happens Next?</h2>
-          
+
           <div className="space-y-6">
             <div className="flex items-start gap-4">
               <div className="flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full text-sm font-bold">
@@ -42,9 +38,10 @@ export default function CheckoutSuccessPage() {
               <div>
                 <h3 className="font-semibold text-lg mb-2">Instant Access to Your Dashboard</h3>
                 <p className="text-gray-600 mb-3">
-                  Your premium dashboard is ready with detailed SEO + AEO reports, implementation guides, and tracking tools.
+                  Your premium dashboard is ready with detailed SEO + AEO reports, implementation
+                  guides, and tracking tools.
                 </p>
-                <a 
+                <a
                   href="/dashboard"
                   className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
@@ -58,9 +55,12 @@ export default function CheckoutSuccessPage() {
                 2
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-2">Welcome Email with Implementation Guide</h3>
+                <h3 className="font-semibold text-lg mb-2">
+                  Welcome Email with Implementation Guide
+                </h3>
                 <p className="text-gray-600">
-                  Check your inbox for a comprehensive implementation roadmap and priority action items.
+                  Check your inbox for a comprehensive implementation roadmap and priority action
+                  items.
                 </p>
               </div>
             </div>
@@ -72,7 +72,8 @@ export default function CheckoutSuccessPage() {
               <div>
                 <h3 className="font-semibold text-lg mb-2">AI-Generated Quick Fixes</h3>
                 <p className="text-gray-600">
-                  Ready-to-implement code snippets, schema markup, and technical fixes for the issues we detected.
+                  Ready-to-implement code snippets, schema markup, and technical fixes for the
+                  issues we detected.
                 </p>
               </div>
             </div>
@@ -85,7 +86,8 @@ export default function CheckoutSuccessPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Dedicated SEO Specialist Contact</h3>
                   <p className="text-gray-600">
-                    Your dedicated specialist will reach out within 24 hours to schedule your first strategy call.
+                    Your dedicated specialist will reach out within 24 hours to schedule your first
+                    strategy call.
                   </p>
                 </div>
               </div>
@@ -96,7 +98,7 @@ export default function CheckoutSuccessPage() {
         {/* What You Get Access To */}
         <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Premium Features</h2>
-          
+
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
@@ -120,7 +122,7 @@ export default function CheckoutSuccessPage() {
                 <span>Google My Business optimization</span>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-green-500" />
@@ -149,7 +151,7 @@ export default function CheckoutSuccessPage() {
         {/* Expected Results */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg p-8 mb-8">
           <h2 className="text-2xl font-bold mb-6">Expected Results Timeline</h2>
-          
+
           <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center">
               <Calendar className="h-8 w-8 mx-auto mb-3" />
@@ -173,18 +175,19 @@ export default function CheckoutSuccessPage() {
         <div className="bg-white rounded-lg shadow-lg p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Need Help Getting Started?</h2>
           <p className="text-gray-600 mb-6">
-            Our team is here to ensure your success. Don't hesitate to reach out if you have any questions.
+            Our team is here to ensure your success. Don't hesitate to reach out if you have any
+            questions.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4">
-            <a 
+            <a
               href="mailto:support@xenlix.ai"
               className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Mail className="h-4 w-4" />
               Email Support
             </a>
-            <a 
+            <a
               href="/dashboard"
               className="inline-flex items-center gap-2 border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors"
             >

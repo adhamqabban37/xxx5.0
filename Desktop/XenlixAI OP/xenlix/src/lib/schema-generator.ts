@@ -13,7 +13,7 @@ import {
   OpeningHours,
   AggregateRating,
   Review,
-  BUSINESS_TYPE_MAPPINGS
+  BUSINESS_TYPE_MAPPINGS,
 } from '@/types/schema';
 
 export class SchemaGenerator {
@@ -28,7 +28,7 @@ export class SchemaGenerator {
       includeOrganization: false,
       minifyOutput: false,
       validateSchema: true,
-      ...options
+      ...options,
     };
   }
 
@@ -72,13 +72,13 @@ export class SchemaGenerator {
    */
   private generateLocalBusinessSchema(profile: BusinessProfileForSchema): LocalBusiness {
     const businessType = this.getBusinessType(profile.industry);
-    
+
     const schema: LocalBusiness = {
-      "@context": "https://schema.org",
-      "@type": businessType,
+      '@context': 'https://schema.org',
+      '@type': businessType,
       name: profile.businessName,
       description: profile.description,
-      url: profile.contact?.website
+      url: profile.contact?.website,
     };
 
     // Add contact information
@@ -97,9 +97,9 @@ export class SchemaGenerator {
     // Add geo coordinates
     if (profile.coordinates) {
       schema.geo = {
-        "@type": "GeoCoordinates",
+        '@type': 'GeoCoordinates',
         latitude: profile.coordinates.latitude,
-        longitude: profile.coordinates.longitude
+        longitude: profile.coordinates.longitude,
       };
     }
 
@@ -150,8 +150,8 @@ export class SchemaGenerator {
     }
     if (profile.founder) {
       schema.founder = {
-        "@type": "Person",
-        name: profile.founder
+        '@type': 'Person',
+        name: profile.founder,
       };
     }
     if (profile.employeeCount) {
@@ -168,17 +168,17 @@ export class SchemaGenerator {
    * Generate Service schemas
    */
   private generateServiceSchemas(profile: BusinessProfileForSchema): Service[] {
-    return profile.services!.map(serviceName => {
+    return profile.services!.map((serviceName) => {
       const service: Service = {
-        "@context": "https://schema.org",
-        "@type": "Service",
+        '@context': 'https://schema.org',
+        '@type': 'Service',
         name: serviceName,
         description: `Professional ${serviceName.toLowerCase()} services provided by ${profile.businessName}`,
         provider: {
-          "@type": "LocalBusiness",
+          '@type': 'LocalBusiness',
           name: profile.businessName,
-          url: profile.contact?.website
-        }
+          url: profile.contact?.website,
+        },
       };
 
       // Add area served
@@ -194,12 +194,14 @@ export class SchemaGenerator {
 
       // Add offers if pricing is available
       if (profile.pricing) {
-        service.offers = [{
-          "@type": "Offer",
-          description: `${serviceName} service`,
-          priceCurrency: profile.pricing.currency || "USD",
-          availability: "https://schema.org/InStock"
-        }];
+        service.offers = [
+          {
+            '@type': 'Offer',
+            description: `${serviceName} service`,
+            priceCurrency: profile.pricing.currency || 'USD',
+            availability: 'https://schema.org/InStock',
+          },
+        ];
       }
 
       // Add rating if available
@@ -216,16 +218,16 @@ export class SchemaGenerator {
    */
   private generateFAQSchema(faqData: FAQData): FAQPage {
     return {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: faqData.questions.map(faq => ({
-        "@type": "Question",
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqData.questions.map((faq) => ({
+        '@type': 'Question',
         name: faq.question,
         acceptedAnswer: {
-          "@type": "Answer",
-          text: faq.answer
-        }
-      }))
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
     };
   }
 
@@ -234,19 +236,19 @@ export class SchemaGenerator {
    */
   private generateWebsiteSchema(profile: BusinessProfileForSchema): WebSite {
     const schema: WebSite = {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
       name: profile.businessName,
       url: profile.contact!.website!,
-      description: profile.description
+      description: profile.description,
     };
 
     // Add search action if it's an e-commerce site
     if (profile.industry === 'ecommerce' || profile.industry === 'retail') {
       schema.potentialAction = {
-        "@type": "SearchAction",
+        '@type': 'SearchAction',
         target: `${profile.contact!.website}/search?q={search_term_string}`,
-        "query-input": "required name=search_term_string"
+        'query-input': 'required name=search_term_string',
       };
     }
 
@@ -263,11 +265,11 @@ export class SchemaGenerator {
    */
   private generateOrganizationSchema(profile: BusinessProfileForSchema): Organization {
     const schema: Organization = {
-      "@context": "https://schema.org",
-      "@type": "Organization",
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
       name: profile.businessName,
       description: profile.description,
-      url: profile.contact?.website
+      url: profile.contact?.website,
     };
 
     // Add logo (first image if available)
@@ -297,8 +299,8 @@ export class SchemaGenerator {
     }
     if (profile.founder) {
       schema.founder = {
-        "@type": "Person",
-        name: profile.founder
+        '@type': 'Person',
+        name: profile.founder,
       };
     }
 
@@ -310,21 +312,23 @@ export class SchemaGenerator {
    */
   private getBusinessType(industry?: string): string {
     if (!industry) return BUSINESS_TYPE_MAPPINGS.default;
-    
+
     const normalizedIndustry = industry.toLowerCase();
-    return BUSINESS_TYPE_MAPPINGS[normalizedIndustry] || 
-           this.options.customBusinessType || 
-           BUSINESS_TYPE_MAPPINGS.default;
+    return (
+      BUSINESS_TYPE_MAPPINGS[normalizedIndustry] ||
+      this.options.customBusinessType ||
+      BUSINESS_TYPE_MAPPINGS.default
+    );
   }
 
   private generateAddressSchema(address: BusinessProfileForSchema['address']): Address {
     return {
-      "@type": "PostalAddress",
+      '@type': 'PostalAddress',
       streetAddress: address?.street,
       addressLocality: address?.city,
       addressRegion: address?.state,
       postalCode: address?.zipCode,
-      addressCountry: address?.country || "US"
+      addressCountry: address?.country || 'US',
     };
   }
 
@@ -333,17 +337,17 @@ export class SchemaGenerator {
 
     if (contact?.phone) {
       contactPoints.push({
-        "@type": "ContactPoint",
+        '@type': 'ContactPoint',
         telephone: contact.phone,
-        contactType: "customer service"
+        contactType: 'customer service',
       });
     }
 
     if (contact?.email) {
       contactPoints.push({
-        "@type": "ContactPoint",
+        '@type': 'ContactPoint',
         email: contact.email,
-        contactType: "customer service"
+        contactType: 'customer service',
       });
     }
 
@@ -353,22 +357,22 @@ export class SchemaGenerator {
   private generateOpeningHoursSchema(hours: BusinessProfileForSchema['hours']): OpeningHours[] {
     const openingHours: OpeningHours[] = [];
     const daysMap: Record<string, string> = {
-      monday: "Monday",
-      tuesday: "Tuesday", 
-      wednesday: "Wednesday",
-      thursday: "Thursday",
-      friday: "Friday",
-      saturday: "Saturday",
-      sunday: "Sunday"
+      monday: 'Monday',
+      tuesday: 'Tuesday',
+      wednesday: 'Wednesday',
+      thursday: 'Thursday',
+      friday: 'Friday',
+      saturday: 'Saturday',
+      sunday: 'Sunday',
     };
 
     Object.entries(hours!).forEach(([day, times]) => {
       if (times?.open && times?.close) {
         openingHours.push({
-          "@type": "OpeningHoursSpecification",
+          '@type': 'OpeningHoursSpecification',
           dayOfWeek: [daysMap[day]],
           opens: times.open,
-          closes: times.close
+          closes: times.close,
         });
       }
     });
@@ -376,30 +380,34 @@ export class SchemaGenerator {
     return openingHours;
   }
 
-  private generateAggregateRatingSchema(rating: BusinessProfileForSchema['rating']): AggregateRating {
+  private generateAggregateRatingSchema(
+    rating: BusinessProfileForSchema['rating']
+  ): AggregateRating {
     return {
-      "@type": "AggregateRating",
+      '@type': 'AggregateRating',
       ratingValue: rating!.value,
       reviewCount: rating!.count,
       bestRating: 5,
-      worstRating: 1
+      worstRating: 1,
     };
   }
 
-  private generateReviewSchemas(reviews: NonNullable<BusinessProfileForSchema['rating']>['reviews']): Review[] {
-    return reviews!.map(review => ({
-      "@type": "Review",
+  private generateReviewSchemas(
+    reviews: NonNullable<BusinessProfileForSchema['rating']>['reviews']
+  ): Review[] {
+    return reviews!.map((review) => ({
+      '@type': 'Review',
       author: {
-        "@type": "Person",
-        name: review.author
+        '@type': 'Person',
+        name: review.author,
       },
       reviewRating: {
-        "@type": "Rating",
+        '@type': 'Rating',
         ratingValue: review.rating,
-        bestRating: 5
+        bestRating: 5,
       },
       reviewBody: review.text,
-      datePublished: review.date
+      datePublished: review.date,
     }));
   }
 
@@ -422,9 +430,10 @@ export class SchemaGenerator {
     if (schemas.website) allSchemas.push(schemas.website);
     if (schemas.organization) allSchemas.push(schemas.organization);
 
-    const scriptContent = allSchemas.length === 1 
-      ? JSON.stringify(allSchemas[0], null, this.options.minifyOutput ? 0 : 2)
-      : JSON.stringify(allSchemas, null, this.options.minifyOutput ? 0 : 2);
+    const scriptContent =
+      allSchemas.length === 1
+        ? JSON.stringify(allSchemas[0], null, this.options.minifyOutput ? 0 : 2)
+        : JSON.stringify(allSchemas, null, this.options.minifyOutput ? 0 : 2);
 
     return `<script type="application/ld+json">
 ${scriptContent}
@@ -438,20 +447,20 @@ ${scriptContent}
     const errors: string[] = [];
 
     if (!schema['@context']) {
-      errors.push("Missing @context property");
+      errors.push('Missing @context property');
     }
 
     if (!schema['@type']) {
-      errors.push("Missing @type property");
+      errors.push('Missing @type property');
     }
 
     if (schema['@type'] === 'LocalBusiness' && !schema.name) {
-      errors.push("LocalBusiness schema requires a name property");
+      errors.push('LocalBusiness schema requires a name property');
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -461,12 +470,12 @@ ${scriptContent}
   public generateRestaurantSchema(profile: BusinessProfileForSchema): LocalBusiness {
     const schema = this.generateLocalBusinessSchema(profile);
     schema['@type'] = 'Restaurant';
-    
+
     // Add restaurant-specific properties
     if (profile.pricing?.range) {
       schema.priceRange = profile.pricing.range;
     }
-    
+
     return schema;
   }
 

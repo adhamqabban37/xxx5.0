@@ -37,12 +37,12 @@ export async function exampleBasicQuestionGapAnalysis() {
 
   const $ = cheerio.load(htmlContent);
   const result = await analyzeQuestionGaps($, 'AEO optimization');
-  
+
   console.log('=== Basic Question Gap Analysis ===');
   console.log('Answered Questions:', result.answeredQuestions);
   console.log('Missing Questions:', result.missingQuestions);
   console.log('Analysis Metrics:', result.analysisMetrics);
-  
+
   return result;
 }
 
@@ -78,12 +78,12 @@ export async function exampleMarketingBlogAnalysis() {
 
   const $ = cheerio.load(htmlContent);
   const result = await analyzeQuestionGaps($, 'digital marketing');
-  
+
   console.log('=== Marketing Blog Analysis ===');
   console.log('Coverage Percentage:', result.analysisMetrics.coveragePercentage + '%');
   console.log('Opportunity Score:', result.analysisMetrics.opportunityScore);
   console.log('Top Missing Questions:', result.missingQuestions.slice(0, 5));
-  
+
   return result;
 }
 
@@ -125,13 +125,13 @@ export async function exampleComprehensiveFAQAnalysis() {
 
   const $ = cheerio.load(htmlContent);
   const result = await analyzeQuestionGaps($, 'business growth');
-  
+
   console.log('=== Comprehensive FAQ Analysis ===');
   console.log('Total Answered:', result.analysisMetrics.totalAnsweredQuestions);
   console.log('Total Missing:', result.analysisMetrics.totalMissingQuestions);
   console.log('Coverage:', result.analysisMetrics.coveragePercentage + '%');
   console.log('Remaining Opportunities:', result.missingQuestions);
-  
+
   return result;
 }
 
@@ -157,19 +157,19 @@ export async function exampleKeywordVariationTesting() {
   for (const keyword of keywords) {
     const $ = cheerio.load(basicHTML);
     const result = await analyzeQuestionGaps($, keyword);
-    
+
     results.push({
       keyword,
       answeredCount: result.analysisMetrics.totalAnsweredQuestions,
       missingCount: result.analysisMetrics.totalMissingQuestions,
       coveragePercentage: result.analysisMetrics.coveragePercentage,
       opportunityScore: result.analysisMetrics.opportunityScore,
-      topMissingQuestions: result.missingQuestions.slice(0, 3)
+      topMissingQuestions: result.missingQuestions.slice(0, 3),
     });
   }
 
   console.log('=== Keyword Variation Testing ===');
-  results.forEach(result => {
+  results.forEach((result) => {
     console.log(`\nKeyword: ${result.keyword}`);
     console.log(`Coverage: ${result.coveragePercentage}%`);
     console.log(`Opportunity Score: ${result.opportunityScore}`);
@@ -187,7 +187,7 @@ export async function exampleAPIIntegration(url: string) {
     // This would typically be called from within the /api/analyze-content route
     // const response = await fetch(url);
     // const html = await response.text();
-    
+
     // For demo purposes, using sample content
     const html = `
       <html>
@@ -200,35 +200,35 @@ export async function exampleAPIIntegration(url: string) {
       </body>
       </html>
     `;
-    
+
     const $ = cheerio.load(html);
     const primaryKeyword = 'business planning'; // This would be extracted from content
-    
+
     const questionGaps = await analyzeQuestionGaps($, primaryKeyword);
-    
+
     // Return in API response format
     return {
       url,
       questionGaps: {
         answeredQuestions: questionGaps.answeredQuestions,
         missingQuestions: questionGaps.missingQuestions,
-        analysisMetrics: questionGaps.analysisMetrics
+        analysisMetrics: questionGaps.analysisMetrics,
       },
       contentOptimizationSuggestions: [
-        ...questionGaps.missingQuestions.slice(0, 5).map(question => 
-          `Consider adding a section answering: "${question}"`
-        ),
-        questionGaps.analysisMetrics.opportunityScore > 70 
+        ...questionGaps.missingQuestions
+          .slice(0, 5)
+          .map((question) => `Consider adding a section answering: "${question}"`),
+        questionGaps.analysisMetrics.opportunityScore > 70
           ? 'High opportunity for content expansion with question-focused sections'
-          : 'Good question coverage, focus on optimizing existing content'
-      ]
+          : 'Good question coverage, focus on optimizing existing content',
+      ],
     };
   } catch (error) {
     console.error('Error in API integration example:', error);
     return {
       url,
       questionGaps: null,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -239,12 +239,12 @@ export async function exampleAPIIntegration(url: string) {
 export async function examplePerformanceTesting() {
   const generateHTML = (questionCount: number) => {
     let html = '<html><body><h1>Test Content</h1>';
-    
+
     for (let i = 1; i <= questionCount; i++) {
       html += `<h2>Question ${i}: What is topic ${i}?</h2>`;
       html += `<p>Answer to question ${i} about topic ${i}.</p>`;
     }
-    
+
     html += '</body></html>';
     return html;
   };
@@ -254,11 +254,11 @@ export async function examplePerformanceTesting() {
 
   for (const size of testSizes) {
     const startTime = Date.now();
-    
+
     const html = generateHTML(size);
     const $ = cheerio.load(html);
     const result = await analyzeQuestionGaps($, 'test topic');
-    
+
     const endTime = Date.now();
     const duration = endTime - startTime;
 
@@ -267,13 +267,15 @@ export async function examplePerformanceTesting() {
       processingTime: duration,
       answeredQuestions: result.analysisMetrics.totalAnsweredQuestions,
       missingQuestions: result.analysisMetrics.totalMissingQuestions,
-      coveragePercentage: result.analysisMetrics.coveragePercentage
+      coveragePercentage: result.analysisMetrics.coveragePercentage,
     });
   }
 
   console.log('=== Performance Testing Results ===');
-  performanceResults.forEach(result => {
-    console.log(`Questions: ${result.questionCount}, Time: ${result.processingTime}ms, Coverage: ${result.coveragePercentage}%`);
+  performanceResults.forEach((result) => {
+    console.log(
+      `Questions: ${result.questionCount}, Time: ${result.processingTime}ms, Coverage: ${result.coveragePercentage}%`
+    );
   });
 
   return performanceResults;
@@ -286,5 +288,5 @@ export const questionGapExamples = {
   comprehensive: exampleComprehensiveFAQAnalysis,
   keywordVariation: exampleKeywordVariationTesting,
   apiIntegration: exampleAPIIntegration,
-  performance: examplePerformanceTesting
+  performance: examplePerformanceTesting,
 };

@@ -41,21 +41,21 @@ export async function getBusinessProfileFromUrl(url: string): Promise<BusinessPr
       googleReviewCount: null,
       googleRating: null,
       logoUrl: null,
-      socialProfiles: {}
+      socialProfiles: {},
     };
 
     // Step 1: Scrape the website directly
     console.log(`🔍 Scraping website: ${url}`);
     const websiteData = await scrapeWebsiteData(url);
-    
+
     // Step 2: Extract domain for Google search
     const domain = extractDomain(url);
     console.log(`🌐 Extracted domain: ${domain}`);
-    
+
     // Step 3: Search Google for business profile
     console.log(`🔍 Searching Google for: ${domain}`);
     const googleData = await searchGoogleBusinessProfile(domain);
-    
+
     // Step 4: Synthesize data (prioritize Google data for accuracy)
     profile.businessName = googleData.businessName || websiteData.businessName;
     profile.address = googleData.address || websiteData.address;
@@ -70,10 +70,9 @@ export async function getBusinessProfileFromUrl(url: string): Promise<BusinessPr
 
     console.log(`✅ Profile extraction complete for ${domain}`);
     return profile;
-
   } catch (error) {
     console.error(`❌ Error extracting business profile:`, error);
-    
+
     // Return null profile on error
     return {
       businessName: null,
@@ -85,7 +84,7 @@ export async function getBusinessProfileFromUrl(url: string): Promise<BusinessPr
       googleReviewCount: null,
       googleRating: null,
       logoUrl: null,
-      socialProfiles: {}
+      socialProfiles: {},
     };
   }
 }
@@ -102,21 +101,22 @@ async function scrapeWebsiteData(url: string) {
     website: url,
     hours: null as string | null,
     logoUrl: null as string | null,
-    socialProfiles: {} as Record<string, string>
+    socialProfiles: {} as Record<string, string>,
   };
 
   try {
     // Fetch HTML content with better headers
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
         'Accept-Encoding': 'gzip, deflate, br',
-        'DNT': '1',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1'
-      }
+        DNT: '1',
+        Connection: 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+      },
     });
 
     if (!response.ok) {
@@ -163,7 +163,6 @@ async function scrapeWebsiteData(url: string) {
     data.phone = cleanPhoneNumber(data.phone);
 
     return data;
-
   } catch (error) {
     console.error(`Error scraping website ${url}:`, error);
     return data;
@@ -176,26 +175,27 @@ async function scrapeWebsiteData(url: string) {
 function extractJsonLdData($: cheerio.CheerioAPI) {
   try {
     const jsonLdScripts = $('script[type="application/ld+json"]');
-    
+
     for (let i = 0; i < jsonLdScripts.length; i++) {
       const scriptContent = $(jsonLdScripts[i]).html();
       if (!scriptContent) continue;
 
       const jsonData = JSON.parse(scriptContent);
-      
+
       // Handle both single objects and arrays
       const data = Array.isArray(jsonData) ? jsonData[0] : jsonData;
-      
+
       // Look for Organization, LocalBusiness, or similar schema types
-      if (data['@type'] && (
-        data['@type'].includes('Organization') || 
-        data['@type'].includes('LocalBusiness') ||
-        data['@type'].includes('Corporation')
-      )) {
+      if (
+        data['@type'] &&
+        (data['@type'].includes('Organization') ||
+          data['@type'].includes('LocalBusiness') ||
+          data['@type'].includes('Corporation'))
+      ) {
         return data;
       }
     }
-    
+
     return null;
   } catch (error) {
     console.error('Error parsing JSON-LD:', error);
@@ -208,20 +208,20 @@ function extractJsonLdData($: cheerio.CheerioAPI) {
  */
 function formatAddress(address: any): string | null {
   if (!address) return null;
-  
+
   if (typeof address === 'string') return address;
-  
+
   if (typeof address === 'object') {
     const parts = [
       address.streetAddress,
       address.addressLocality,
       address.addressRegion,
-      address.postalCode
+      address.postalCode,
     ].filter(Boolean);
-    
+
     return parts.length > 0 ? parts.join(', ') : null;
   }
-  
+
   return null;
 }
 
@@ -250,7 +250,7 @@ function extractLogoUrl($: cheerio.CheerioAPI, baseUrl: string): string | null {
     'img[id*="logo" i]',
     '.logo img',
     '#logo img',
-    'header img:first-of-type'
+    'header img:first-of-type',
   ];
 
   for (const selector of logoSelectors) {
@@ -271,16 +271,18 @@ function extractLogoUrl($: cheerio.CheerioAPI, baseUrl: string): string | null {
  */
 function extractSocialProfiles($: cheerio.CheerioAPI): Record<string, string> {
   const profiles: Record<string, string> = {};
-  
+
   const socialPatterns = {
     facebook: /facebook\.com\/[^\/\s\?"']+/i,
     twitter: /(?:twitter|x)\.com\/[^\/\s\?"']+/i,
     linkedin: /linkedin\.com\/(?:company|in)\/[^\/\s\?"']+/i,
     instagram: /instagram\.com\/[^\/\s\?"']+/i,
-    youtube: /youtube\.com\/(?:channel|user|c)\/[^\/\s\?"']+/i
+    youtube: /youtube\.com\/(?:channel|user|c)\/[^\/\s\?"']+/i,
   };
 
-  $('a[href*="facebook"], a[href*="twitter"], a[href*="linkedin"], a[href*="instagram"], a[href*="youtube"], a[href*="x.com"]').each((_, el) => {
+  $(
+    'a[href*="facebook"], a[href*="twitter"], a[href*="linkedin"], a[href*="instagram"], a[href*="youtube"], a[href*="x.com"]'
+  ).each((_, el) => {
     const href = $(el).attr('href');
     if (!href) return;
 
@@ -304,7 +306,7 @@ function extractFromMetaTags($: cheerio.CheerioAPI): string | null {
     'meta[property="og:title"]',
     'meta[name="twitter:title"]',
     'meta[name="application-name"]',
-    'meta[name="apple-mobile-web-app-title"]'
+    'meta[name="apple-mobile-web-app-title"]',
   ];
 
   for (const selector of metaSelectors) {
@@ -327,32 +329,32 @@ function extractBusinessNameFromHtml($: cheerio.CheerioAPI): string | null {
     '.company-name, .business-name, .brand-name, .site-title',
     'header h1, header .logo-text, header .brand',
     '.navbar-brand, .header-brand, .site-brand',
-    
+
     // Semantic HTML
     'h1[data-role="title"], h1[data-type="business-name"]',
-    
+
     // Common CSS classes
     '.name, .title, .company, .business',
-    
+
     // Fallback to first H1
     'h1',
-    
+
     // Last resort: title tag (cleaned)
-    'title'
+    'title',
   ];
 
   for (const selector of nameSelectors) {
     const elements = $(selector);
-    
+
     for (let i = 0; i < elements.length; i++) {
       const text = $(elements[i]).text().trim();
-      
+
       if (text) {
         // Clean the title tag specifically
         if (selector === 'title') {
           return text.replace(/\s*[\|\-–—]\s*.*$/, '').trim();
         }
-        
+
         // Skip generic or too-long text
         if (text.length > 5 && text.length < 100 && !isGenericText(text)) {
           return text;
@@ -372,10 +374,10 @@ function isGenericText(text: string): boolean {
     /^(home|about|contact|services|products|welcome|hello)$/i,
     /^(menu|navigation|header|footer|sidebar)$/i,
     /^(click|here|more|read|learn|get|find)$/i,
-    /^(page|website|site|blog|news)$/i
+    /^(page|website|site|blog|news)$/i,
   ];
 
-  return genericPatterns.some(pattern => pattern.test(text.trim()));
+  return genericPatterns.some((pattern) => pattern.test(text.trim()));
 }
 
 /**
@@ -386,18 +388,18 @@ function extractContactInfo($: cheerio.CheerioAPI, html: string) {
     address: null as string | null,
     phone: null as string | null,
     email: null as string | null,
-    hours: null as string | null
+    hours: null as string | null,
   };
 
   // Phone extraction with multiple strategies
   contactInfo.phone = extractPhoneNumber($, html);
-  
+
   // Address extraction with multiple strategies
   contactInfo.address = extractAddress($, html);
-  
+
   // Email extraction
   contactInfo.email = extractEmail($, html);
-  
+
   // Hours extraction
   contactInfo.hours = extractBusinessHours($, html);
 
@@ -455,7 +457,7 @@ function extractPhoneFromText(text: string): string | null {
     // Spaced format: 555 123 4567
     /([0-9]{3})\s([0-9]{3})\s([0-9]{4})/,
     // Compact format: 5551234567
-    /([0-9]{10})/
+    /([0-9]{10})/,
   ];
 
   for (const pattern of phonePatterns) {
@@ -506,12 +508,12 @@ function extractAddressFromText(text: string): string | null {
   const addressPatterns = [
     // Street address with state and zip: 123 Main St, City, ST 12345
     /\d+\s+[A-Za-z0-9\s]+(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Place|Pl|Circle|Cir|Parkway|Pkwy)[^,\n]*(?:,\s*[A-Za-z\s]+)*(?:,\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?)/gi,
-    
+
     // PO Box addresses
     /P\.?O\.?\s*Box\s+\d+[^,\n]*(?:,\s*[A-Za-z\s]+)*(?:,\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?)/gi,
-    
+
     // International addresses (more flexible)
-    /\d+\s+[A-Za-z0-9\s,.-]+(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Place|Pl)[^,\n]*(?:,\s*[A-Za-z\s,.-]+){1,3}/gi
+    /\d+\s+[A-Za-z0-9\s,.-]+(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Place|Pl)[^,\n]*(?:,\s*[A-Za-z\s,.-]+){1,3}/gi,
   ];
 
   for (const pattern of addressPatterns) {
@@ -538,11 +540,12 @@ function isValidAddress(address: string): boolean {
   }
 
   // Must contain street indicators
-  const streetIndicators = /\b(?:street|st|avenue|ave|road|rd|boulevard|blvd|drive|dr|lane|ln|way|court|ct|place|pl|circle|cir|parkway|pkwy|box)\b/i;
-  
+  const streetIndicators =
+    /\b(?:street|st|avenue|ave|road|rd|boulevard|blvd|drive|dr|lane|ln|way|court|ct|place|pl|circle|cir|parkway|pkwy|box)\b/i;
+
   // Must contain numbers
   const hasNumbers = /\d/;
-  
+
   return streetIndicators.test(address) && hasNumbers.test(address);
 }
 
@@ -600,7 +603,9 @@ function extractBusinessHours($: cheerio.CheerioAPI, html: string): string | nul
   }
 
   // Strategy 2: Look for hours elements
-  const hoursElements = $('[class*="hours"], [class*="schedule"], [id*="hours"], .opening-hours, .business-hours');
+  const hoursElements = $(
+    '[class*="hours"], [class*="schedule"], [id*="hours"], .opening-hours, .business-hours'
+  );
   for (let i = 0; i < hoursElements.length; i++) {
     const text = $(hoursElements[i]).text().trim();
     if (text && text.length > 10 && text.length < 500) {
@@ -627,7 +632,7 @@ function extractHoursFromText(text: string): string | null {
   const hourPatterns = [
     /(?:monday|mon|tuesday|tue|wednesday|wed|thursday|thu|friday|fri|saturday|sat|sunday|sun)[\s\w-:,]*(?:am|pm|closed)/gi,
     /(?:open|hours?)[\s\w-:,]*(?:am|pm|closed)/gi,
-    /\d{1,2}:\d{2}\s*(?:am|pm)\s*[-–—to]\s*\d{1,2}:\d{2}\s*(?:am|pm)/gi
+    /\d{1,2}:\d{2}\s*(?:am|pm)\s*[-–—to]\s*\d{1,2}:\d{2}\s*(?:am|pm)/gi,
   ];
 
   for (const pattern of hourPatterns) {
@@ -645,7 +650,7 @@ function extractHoursFromText(text: string): string | null {
  */
 function cleanBusinessName(name: string | null): string | null {
   if (!name) return null;
-  
+
   return name
     .trim()
     .replace(/\s+/g, ' ') // Normalize whitespace
@@ -659,7 +664,7 @@ function cleanBusinessName(name: string | null): string | null {
  */
 function cleanAddress(address: string | null): string | null {
   if (!address) return null;
-  
+
   return address
     .trim()
     .replace(/\s+/g, ' ') // Normalize whitespace
@@ -674,23 +679,23 @@ function cleanAddress(address: string | null): string | null {
  */
 function cleanPhoneNumber(phone: string | null): string | null {
   if (!phone) return null;
-  
+
   // Remove all non-digits first
   const digits = phone.replace(/\D/g, '');
-  
+
   // Must be at least 10 digits for US numbers
   if (digits.length < 10) return null;
-  
+
   // Format as (XXX) XXX-XXXX for US numbers
   if (digits.length === 10) {
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
   }
-  
+
   // Format as +1 (XXX) XXX-XXXX for US numbers with country code
   if (digits.length === 11 && digits.startsWith('1')) {
     return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
   }
-  
+
   // Return original cleaned format for international numbers
   return digits.length > 11 ? `+${digits}` : digits;
 }
@@ -704,7 +709,10 @@ function extractDomain(url: string): string {
     return urlObj.hostname.replace(/^www\./, '');
   } catch (error) {
     console.error('Error extracting domain:', error);
-    return url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+    return url
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .split('/')[0];
   }
 }
 
@@ -717,11 +725,11 @@ async function searchGoogleBusinessProfile(domain: string) {
     address: null as string | null,
     phone: null as string | null,
     reviewCount: null as number | null,
-    rating: null as number | null
+    rating: null as number | null,
   };
 
   let browser;
-  
+
   try {
     // Launch browser with stealth settings
     browser = await puppeteer.launch({
@@ -734,48 +742,54 @@ async function searchGoogleBusinessProfile(domain: string) {
         '--no-first-run',
         '--no-zygote',
         '--single-process',
-        '--disable-gpu'
-      ]
+        '--disable-gpu',
+      ],
     });
 
     const page = await browser.newPage();
-    
+
     // Set user agent to avoid detection
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-    
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    );
+
     // Search Google for the domain
     const searchQuery = `"${domain}" site:google.com/maps OR site:google.com/search`;
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
-    
+
     await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 10000 });
-    
+
     // Wait a bit for JavaScript to load
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     // Try to extract business information from Google search results
     const businessInfo = await page.evaluate(() => {
       // Look for Google Business Profile information
-      const businessNameEl = document.querySelector('[data-attrid="title"]') || 
-                            document.querySelector('h3');
-      
-      const addressEl = document.querySelector('[data-attrid="kc:/location/location:address"]') ||
-                       document.querySelector('[data-local-attribute="d3adr"]');
-      
-      const phoneEl = document.querySelector('[data-attrid="kc:/location/location:phone"]') ||
-                     document.querySelector('span[data-phone]');
-      
-      const ratingEl = document.querySelector('[data-attrid="kc:/location/location:rating"]') ||
-                      document.querySelector('.z3HNkc');
-      
-      const reviewCountEl = document.querySelector('[data-attrid="kc:/location/location:num_reviews"]') ||
-                           document.querySelector('.hqzQac');
+      const businessNameEl =
+        document.querySelector('[data-attrid="title"]') || document.querySelector('h3');
+
+      const addressEl =
+        document.querySelector('[data-attrid="kc:/location/location:address"]') ||
+        document.querySelector('[data-local-attribute="d3adr"]');
+
+      const phoneEl =
+        document.querySelector('[data-attrid="kc:/location/location:phone"]') ||
+        document.querySelector('span[data-phone]');
+
+      const ratingEl =
+        document.querySelector('[data-attrid="kc:/location/location:rating"]') ||
+        document.querySelector('.z3HNkc');
+
+      const reviewCountEl =
+        document.querySelector('[data-attrid="kc:/location/location:num_reviews"]') ||
+        document.querySelector('.hqzQac');
 
       return {
         businessName: businessNameEl?.textContent?.trim() || null,
         address: addressEl?.textContent?.trim() || null,
         phone: phoneEl?.textContent?.trim() || null,
         rating: ratingEl?.textContent?.trim() || null,
-        reviewCount: reviewCountEl?.textContent?.trim() || null
+        reviewCount: reviewCountEl?.textContent?.trim() || null,
       };
     });
 
@@ -795,7 +809,6 @@ async function searchGoogleBusinessProfile(domain: string) {
     data.phone = businessInfo.phone;
 
     return data;
-
   } catch (error) {
     console.error('Error searching Google Business Profile:', error);
     return data;

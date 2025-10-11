@@ -9,9 +9,9 @@ console.log('Starting Next.js development server...');
 
 try {
   // Start the development server
-  execSync('npx next dev --port 3002', { 
+  execSync('npx next dev --port 3002', {
     stdio: 'inherit',
-    cwd: process.cwd()
+    cwd: process.cwd(),
   });
 } catch (error) {
   console.error('Error starting server:', error.message);

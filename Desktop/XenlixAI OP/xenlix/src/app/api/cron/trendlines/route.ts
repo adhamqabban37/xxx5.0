@@ -9,9 +9,17 @@ import { z } from 'zod';
 const trendlineSchema = z.object({
   url: z.string().url(),
   metricType: z.enum([
-    'psi_performance', 'psi_accessibility', 'psi_seo', 'psi_lcp', 'psi_cls',
-    'opr_clicks', 'opr_impressions', 'opr_ctr', 'opr_position',
-    'schema_errors', 'schema_total'
+    'psi_performance',
+    'psi_accessibility',
+    'psi_seo',
+    'psi_lcp',
+    'psi_cls',
+    'opr_clicks',
+    'opr_impressions',
+    'opr_ctr',
+    'opr_position',
+    'schema_errors',
+    'schema_total',
   ]),
   days: z.number().min(1).max(90).optional().default(30),
   granularity: z.enum(['daily', 'weekly']).optional().default('daily'),
@@ -48,10 +56,7 @@ export async function GET(request: NextRequest) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -70,7 +75,7 @@ export async function GET(request: NextRequest) {
 
     if (!validation.success) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid parameters',
           details: validation.error.issues,
         },
@@ -78,22 +83,28 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { url: validUrl, metricType: validMetricType, days: validDays, granularity: validGranularity } = validation.data;
+    const {
+      url: validUrl,
+      metricType: validMetricType,
+      days: validDays,
+      granularity: validGranularity,
+    } = validation.data;
 
     // Get trendline data
-    const trendlineData = await getTrendlineData(validUrl, validMetricType, validDays, validGranularity);
+    const trendlineData = await getTrendlineData(
+      validUrl,
+      validMetricType,
+      validDays,
+      validGranularity
+    );
 
     return NextResponse.json({
       success: true,
       data: trendlineData,
     });
-
   } catch (error) {
     console.error('Trendline endpoint error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -103,20 +114,14 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const body = await request.json();
     const { urls, metricTypes, days = 30, granularity = 'daily' } = body;
 
     if (!Array.isArray(urls) || !Array.isArray(metricTypes)) {
-      return NextResponse.json(
-        { error: 'URLs and metricTypes must be arrays' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'URLs and metricTypes must be arrays' }, { status: 400 });
     }
 
     if (urls.length > 10 || metricTypes.length > 5) {
@@ -128,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     // Generate trendlines for all URL/metric combinations
     const results = [];
-    
+
     for (const url of urls) {
       for (const metricType of metricTypes) {
         try {
@@ -172,17 +177,13 @@ export async function POST(request: NextRequest) {
       metadata: {
         totalRequested: urls.length * metricTypes.length,
         totalReturned: results.length,
-        successful: results.filter(r => !r.error).length,
-        failed: results.filter(r => r.error).length,
+        successful: results.filter((r) => !('error' in r)).length,
+        failed: results.filter((r) => 'error' in r).length,
       },
     });
-
   } catch (error) {
     console.error('Bulk trendline endpoint error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -194,26 +195,26 @@ async function getTrendlineData(
   granularity: string
 ): Promise<TrendlineResponse> {
   const snapshotWriter = new SnapshotWriter();
-  
+
   try {
     let rawDataPoints: Array<{ date: Date; value: number }> = [];
 
     // Get raw data based on metric type
     if (metricType.startsWith('psi_')) {
       const psiSnapshots = await snapshotWriter.getPSITrend(url, days);
-      rawDataPoints = psiSnapshots.map(snapshot => ({
+      rawDataPoints = psiSnapshots.map((snapshot) => ({
         date: snapshot.timestamp,
         value: getMetricValue(snapshot, metricType),
       }));
     } else if (metricType.startsWith('opr_')) {
       const oprSnapshots = await snapshotWriter.getOPRTrend(url, days);
-      rawDataPoints = oprSnapshots.map(snapshot => ({
+      rawDataPoints = oprSnapshots.map((snapshot) => ({
         date: snapshot.timestamp,
         value: getMetricValue(snapshot, metricType),
       }));
     } else if (metricType.startsWith('schema_')) {
       const schemaSnapshots = await snapshotWriter.getSchemaTrend(url, days);
-      rawDataPoints = schemaSnapshots.map(snapshot => ({
+      rawDataPoints = schemaSnapshots.map((snapshot) => ({
         date: snapshot.timestamp,
         value: getMetricValue(snapshot, metricType),
       }));
@@ -221,19 +222,19 @@ async function getTrendlineData(
 
     // Process data points based on granularity
     const processedDataPoints = processDataPoints(rawDataPoints, granularity);
-    
+
     // Calculate summary statistics
     const summary = calculateSummary(processedDataPoints);
-    
+
     // Generate sparkline data (simplified for visualization)
-    const sparklineData = processedDataPoints.map(point => point.value);
+    const sparklineData = processedDataPoints.map((point) => point.value);
 
     return {
       url,
       metricType,
       days,
       granularity,
-      dataPoints: processedDataPoints.map(point => ({
+      dataPoints: processedDataPoints.map((point) => ({
         date: point.date.toISOString().split('T')[0],
         value: point.value,
         change: point.change,
@@ -242,10 +243,9 @@ async function getTrendlineData(
       summary,
       sparklineData,
     };
-
   } catch (error) {
     console.error(`Failed to get trendline data for ${url} - ${metricType}:`, error);
-    
+
     // Return empty trendline data on error
     return {
       url,
@@ -271,18 +271,30 @@ async function getTrendlineData(
 // Extract metric value from snapshot based on metric type
 function getMetricValue(snapshot: any, metricType: string): number {
   switch (metricType) {
-    case 'psi_performance': return snapshot.performance || 0;
-    case 'psi_accessibility': return snapshot.accessibility || 0;
-    case 'psi_seo': return snapshot.seo || 0;
-    case 'psi_lcp': return snapshot.lcp || 0;
-    case 'psi_cls': return snapshot.cls || 0;
-    case 'opr_clicks': return snapshot.totalClicks || 0;
-    case 'opr_impressions': return snapshot.totalImpressions || 0;
-    case 'opr_ctr': return snapshot.averageCTR || 0;
-    case 'opr_position': return snapshot.averagePosition || 0;
-    case 'schema_errors': return snapshot.invalidSchemas || 0;
-    case 'schema_total': return snapshot.schemasFound || 0;
-    default: return 0;
+    case 'psi_performance':
+      return snapshot.performance || 0;
+    case 'psi_accessibility':
+      return snapshot.accessibility || 0;
+    case 'psi_seo':
+      return snapshot.seo || 0;
+    case 'psi_lcp':
+      return snapshot.lcp || 0;
+    case 'psi_cls':
+      return snapshot.cls || 0;
+    case 'opr_clicks':
+      return snapshot.totalClicks || 0;
+    case 'opr_impressions':
+      return snapshot.totalImpressions || 0;
+    case 'opr_ctr':
+      return snapshot.averageCTR || 0;
+    case 'opr_position':
+      return snapshot.averagePosition || 0;
+    case 'schema_errors':
+      return snapshot.invalidSchemas || 0;
+    case 'schema_total':
+      return snapshot.schemasFound || 0;
+    default:
+      return 0;
   }
 }
 
@@ -296,16 +308,21 @@ function processDataPoints(
   // Sort by date
   rawDataPoints.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  let processedPoints: Array<{ date: Date; value: number; change?: number; changePercent?: number }>;
+  let processedPoints: Array<{
+    date: Date;
+    value: number;
+    change?: number;
+    changePercent?: number;
+  }>;
 
   if (granularity === 'weekly') {
     // Group by week and average
     const weeklyGroups = new Map<string, Array<{ date: Date; value: number }>>();
-    
-    rawDataPoints.forEach(point => {
+
+    rawDataPoints.forEach((point) => {
       const weekStart = getWeekStart(point.date);
       const weekKey = weekStart.toISOString().split('T')[0];
-      
+
       if (!weeklyGroups.has(weekKey)) {
         weeklyGroups.set(weekKey, []);
       }
@@ -321,25 +338,25 @@ function processDataPoints(
     });
   } else {
     // Daily granularity - use raw points
-    processedPoints = rawDataPoints.map(point => ({ ...point }));
+    processedPoints = rawDataPoints.map((point) => ({ ...point }));
   }
 
   // Calculate changes
   for (let i = 1; i < processedPoints.length; i++) {
     const current = processedPoints[i];
     const previous = processedPoints[i - 1];
-    
+
     current.change = current.value - previous.value;
-    current.changePercent = previous.value !== 0 
-      ? (current.change / previous.value) * 100 
-      : 0;
+    current.changePercent = previous.value !== 0 ? (current.change / previous.value) * 100 : 0;
   }
 
   return processedPoints;
 }
 
 // Calculate summary statistics
-function calculateSummary(dataPoints: Array<{ date: Date; value: number; change?: number; changePercent?: number }>): {
+function calculateSummary(
+  dataPoints: Array<{ date: Date; value: number; change?: number; changePercent?: number }>
+): {
   current: number | null;
   previous: number | null;
   change: number | null;
@@ -362,7 +379,7 @@ function calculateSummary(dataPoints: Array<{ date: Date; value: number; change?
     };
   }
 
-  const values = dataPoints.map(p => p.value);
+  const values = dataPoints.map((p) => p.value);
   const current = values[values.length - 1];
   const previous = values.length > 1 ? values[values.length - 2] : null;
   const change = previous !== null ? current - previous : null;

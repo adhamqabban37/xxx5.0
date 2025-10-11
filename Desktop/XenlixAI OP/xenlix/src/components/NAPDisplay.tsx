@@ -23,52 +23,49 @@ interface NAPDisplayProps {
 
 // Default/placeholder NAP data - should be updated with actual business information
 const DEFAULT_NAP: NAPData = {
-  name: "XenlixAI",
-  streetAddress: "TBD - Contact for Address",
-  city: "Dallas",
-  state: "TX",
-  postalCode: "TBD",
-  country: "US",
-  phone: "+1-TBD-TBD-TBDD",
-  email: "info@xenlixai.com",
-  hours: [
-    "Monday - Friday: 9:00 AM - 5:00 PM CST",
-    "Saturday - Sunday: Closed"
-  ],
-  googleBusinessUrl: "https://business.google.com/[TO-BE-UPDATED]"
+  name: 'XenlixAI',
+  streetAddress: 'TBD - Contact for Address',
+  city: 'Dallas',
+  state: 'TX',
+  postalCode: 'TBD',
+  country: 'US',
+  phone: '+1-TBD-TBD-TBDD',
+  email: 'info@xenlixai.com',
+  hours: ['Monday - Friday: 9:00 AM - 5:00 PM CST', 'Saturday - Sunday: Closed'],
+  googleBusinessUrl: 'https://business.google.com/[TO-BE-UPDATED]',
 };
 
-export function NAPDisplay({ 
-  data = {}, 
-  variant = 'full', 
-  showSchema = true, 
-  className = "" 
+export function NAPDisplay({
+  data = {},
+  variant = 'full',
+  showSchema = true,
+  className = '',
 }: NAPDisplayProps) {
   const napData = { ...DEFAULT_NAP, ...data };
-  
+
   const fullAddress = `${napData.streetAddress}, ${napData.city}, ${napData.state} ${napData.postalCode}`;
   const phoneLink = `tel:${napData.phone.replace(/[^+\d]/g, '')}`;
   const emailLink = `mailto:${napData.email}`;
-  
+
   // Schema markup for local business
-  const localBusinessSchema = showSchema ? {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": napData.name,
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": napData.streetAddress,
-      "addressLocality": napData.city,
-      "addressRegion": napData.state,
-      "postalCode": napData.postalCode,
-      "addressCountry": napData.country
-    },
-    "telephone": napData.phone,
-    "email": napData.email,
-    "openingHours": [
-      "Mo-Fr 09:00-17:00"
-    ]
-  } : null;
+  const localBusinessSchema = showSchema
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'LocalBusiness',
+        name: napData.name,
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: napData.streetAddress,
+          addressLocality: napData.city,
+          addressRegion: napData.state,
+          postalCode: napData.postalCode,
+          addressCountry: napData.country,
+        },
+        telephone: napData.phone,
+        email: napData.email,
+        openingHours: ['Mo-Fr 09:00-17:00'],
+      }
+    : null;
 
   if (variant === 'compact') {
     return (
@@ -83,7 +80,9 @@ export function NAPDisplay({
         )}
         <div className="flex items-center space-x-2 text-sm">
           <MapPin className="w-4 h-4 text-gray-600" />
-          <span>{napData.city}, {napData.state}</span>
+          <span>
+            {napData.city}, {napData.state}
+          </span>
         </div>
         <div className="flex items-center space-x-2 text-sm">
           <Phone className="w-4 h-4 text-gray-600" />
@@ -107,23 +106,25 @@ export function NAPDisplay({
           />
         )}
         <h3 className="text-lg font-semibold text-white">{napData.name}</h3>
-        
+
         <div className="space-y-2 text-sm text-gray-300">
           <div className="flex items-start space-x-2">
             <MapPin className="w-4 h-4 mt-0.5 text-gray-400 flex-shrink-0" />
             <div>
               <div>{napData.streetAddress}</div>
-              <div>{napData.city}, {napData.state} {napData.postalCode}</div>
+              <div>
+                {napData.city}, {napData.state} {napData.postalCode}
+              </div>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Phone className="w-4 h-4 text-gray-400" />
             <a href={phoneLink} className="hover:text-white transition-colors">
               {napData.phone}
             </a>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Mail className="w-4 h-4 text-gray-400" />
             <a href={emailLink} className="hover:text-white transition-colors">
@@ -146,9 +147,9 @@ export function NAPDisplay({
           }}
         />
       )}
-      
+
       <h3 className="text-xl font-bold text-gray-900 mb-4">{napData.name}</h3>
-      
+
       <div className="space-y-4">
         {/* Address */}
         <div className="flex items-start space-x-3">
@@ -157,20 +158,23 @@ export function NAPDisplay({
             <div className="font-medium text-gray-900">Address</div>
             <div className="text-gray-600">
               <div>{napData.streetAddress}</div>
-              <div>{napData.city}, {napData.state} {napData.postalCode}</div>
+              <div>
+                {napData.city}, {napData.state} {napData.postalCode}
+              </div>
               <div>{napData.country}</div>
             </div>
-            {napData.googleBusinessUrl && napData.googleBusinessUrl !== "https://business.google.com/[TO-BE-UPDATED]" && (
-              <a
-                href={napData.googleBusinessUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-700 text-sm mt-1"
-              >
-                <ExternalLink className="w-3 h-3" />
-                <span>View on Google Maps</span>
-              </a>
-            )}
+            {napData.googleBusinessUrl &&
+              napData.googleBusinessUrl !== 'https://business.google.com/[TO-BE-UPDATED]' && (
+                <a
+                  href={napData.googleBusinessUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-700 text-sm mt-1"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span>View on Google Maps</span>
+                </a>
+              )}
           </div>
         </div>
 
@@ -179,10 +183,7 @@ export function NAPDisplay({
           <Phone className="w-5 h-5 text-green-600 mt-1 flex-shrink-0" />
           <div>
             <div className="font-medium text-gray-900">Phone</div>
-            <a 
-              href={phoneLink} 
-              className="text-gray-600 hover:text-green-600 transition-colors"
-            >
+            <a href={phoneLink} className="text-gray-600 hover:text-green-600 transition-colors">
               {napData.phone}
             </a>
           </div>
@@ -193,10 +194,7 @@ export function NAPDisplay({
           <Mail className="w-5 h-5 text-purple-600 mt-1 flex-shrink-0" />
           <div>
             <div className="font-medium text-gray-900">Email</div>
-            <a 
-              href={emailLink} 
-              className="text-gray-600 hover:text-purple-600 transition-colors"
-            >
+            <a href={emailLink} className="text-gray-600 hover:text-purple-600 transition-colors">
               {napData.email}
             </a>
           </div>
@@ -240,27 +238,25 @@ export function formatPhoneNumber(phone: string): string {
 // Utility function for creating structured data
 export function createLocalBusinessSchema(napData: NAPData) {
   return {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": napData.name,
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": napData.streetAddress,
-      "addressLocality": napData.city,
-      "addressRegion": napData.state,
-      "postalCode": napData.postalCode,
-      "addressCountry": napData.country
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: napData.name,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: napData.streetAddress,
+      addressLocality: napData.city,
+      addressRegion: napData.state,
+      postalCode: napData.postalCode,
+      addressCountry: napData.country,
     },
-    "telephone": napData.phone,
-    "email": napData.email,
-    "url": "https://www.xenlixai.com",
-    "openingHours": [
-      "Mo-Fr 09:00-17:00"
-    ],
-    "sameAs": [
+    telephone: napData.phone,
+    email: napData.email,
+    url: 'https://www.xenlixai.com',
+    openingHours: ['Mo-Fr 09:00-17:00'],
+    sameAs: [
       napData.googleBusinessUrl,
-      "https://x.com/xenlixai",
-      "https://www.linkedin.com/company/xenlixai"
-    ].filter(url => url && !url.includes('[TO-BE-UPDATED]'))
+      'https://x.com/xenlixai',
+      'https://www.linkedin.com/company/xenlixai',
+    ].filter((url) => url && !url.includes('[TO-BE-UPDATED]')),
   };
 }

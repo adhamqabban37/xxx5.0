@@ -1,0 +1,25 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "testMatch": ["**/tests/**/*.test.ts", "**/tests/**/*.spec.ts"],
+  "setupFilesAfterEnv": ["<rootDir>/tests/setup.ts"],
+  "moduleNameMapping": {
+    "^@/(.*)$": "<rootDir>/src/$1"
+  },
+  "testTimeout": 30000,
+  "verbose": true,
+  "collectCoverage": false,
+  "transform": {
+    "^.+\\.(ts|tsx)$": [
+      "ts-jest",
+      {
+        "tsconfig": {
+          "jsx": "react-jsx",
+          "esModuleInterop": true,
+          "allowSyntheticDefaultImports": true
+        }
+      }
+    ]
+  },
+  "transformIgnorePatterns": ["node_modules/(?!(.*\\.(mjs|esm?\\.js)))"]
+}

@@ -1,0 +1,5 @@
+
+> xenlix@0.1.0 test C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix
+> jest "--silent"
+
+ΓÇëELIFECYCLEΓÇë Test failed. See above for more details.

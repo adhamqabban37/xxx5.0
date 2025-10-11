@@ -342,10 +342,12 @@ export type SeoChecklistItem = {
   status?: 'complete' | 'pending' | 'needs-attention';
 };
 
-export type ExtractionResult = {
-  ok: true;
-  data: Partial<NormalizedBusiness> & { faqs?: { q: string; a: string }[] };
-} | {
-  ok: false;
-  reason: 'FETCH_OR_PARSE_FAILED';
-};
+export type ExtractionResult =
+  | {
+      ok: true;
+      data: Partial<NormalizedBusiness> & { faqs?: { q: string; a: string }[] };
+    }
+  | {
+      ok: false;
+      reason: 'FETCH_OR_PARSE_FAILED';
+    };

@@ -2,15 +2,15 @@ interface KpiProps {
   title: string;
   value: string | number;
   helpText?: string;
-  trend?: "up" | "down" | "neutral";
+  trend?: 'up' | 'down' | 'neutral';
 }
 
 export default function Kpi({ title, value, helpText, trend }: KpiProps) {
   const getTrendIcon = () => {
     switch (trend) {
-      case "up":
+      case 'up':
         return <span className="text-green-500">↗</span>;
-      case "down":
+      case 'down':
         return <span className="text-red-500">↘</span>;
       default:
         return null;
@@ -25,9 +25,7 @@ export default function Kpi({ title, value, helpText, trend }: KpiProps) {
       </div>
       <div className="mt-2">
         <div className="text-2xl font-bold text-gray-900">{value}</div>
-        {helpText && (
-          <div className="text-xs text-gray-500 mt-1">{helpText}</div>
-        )}
+        {helpText && <div className="text-xs text-gray-500 mt-1">{helpText}</div>}
       </div>
     </div>
   );

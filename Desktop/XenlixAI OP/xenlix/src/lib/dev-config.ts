@@ -21,9 +21,15 @@ export interface DevConfig {
 
 export const devConfig: DevConfig = {
   mockServices: {
-    crawl4ai: process.env.NODE_ENV === 'development' && !process.env.CRAWL4AI_SERVICE_URL?.includes('production'),
-    redis: process.env.NODE_ENV === 'development' && !process.env.UPSTASH_REDIS_REST_URL?.includes('upstash'),
-    firebase: process.env.NODE_ENV === 'development' && !process.env.FIREBASE_PROJECT_ID?.includes('production'),
+    crawl4ai:
+      process.env.NODE_ENV === 'development' &&
+      !process.env.CRAWL4AI_SERVICE_URL?.includes('production'),
+    redis:
+      process.env.NODE_ENV === 'development' &&
+      !process.env.UPSTASH_REDIS_REST_URL?.includes('upstash'),
+    firebase:
+      process.env.NODE_ENV === 'development' &&
+      !process.env.FIREBASE_PROJECT_ID?.includes('production'),
   },
   fallbackData: {
     useLocalStorage: process.env.NODE_ENV === 'development',
@@ -32,7 +38,7 @@ export const devConfig: DevConfig = {
   logging: {
     level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
     enableRequestLogging: process.env.NODE_ENV === 'development',
-  }
+  },
 };
 
 // Mock Redis implementation for development
@@ -68,17 +74,17 @@ export class MockRateLimit {
   async check(limit: number, identifier: string) {
     const now = Date.now();
     const windowMs = 60 * 1000; // 1 minute window
-    
+
     const attempt = this.attempts.get(identifier);
     if (!attempt || now > attempt.resetTime) {
       this.attempts.set(identifier, { count: 1, resetTime: now + windowMs });
       return { success: true, remaining: limit - 1 };
     }
-    
+
     if (attempt.count >= limit) {
       throw new Error('Rate limit exceeded');
     }
-    
+
     attempt.count++;
     return { success: true, remaining: limit - attempt.count };
   }
@@ -86,7 +92,7 @@ export class MockRateLimit {
 
 export const createMockKV = () => new MockRedisKV();
 export const createMockRateLimit = () => ({
-  check: (identifier: string) => new MockRateLimit().check(10, identifier)
+  check: (identifier: string) => new MockRateLimit().check(10, identifier),
 });
 
 export default devConfig;

@@ -15,7 +15,7 @@ const DashboardAnalysisRequestSchema = z.object({
   url: z.string().url(),
   includeBusinessExtraction: z.boolean().default(true),
   includeSchemaGeneration: z.boolean().default(true),
-  includeAEOAnalysis: z.boolean().default(true)
+  includeAEOAnalysis: z.boolean().default(true),
 });
 
 export async function POST(request: NextRequest) {
@@ -23,21 +23,18 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     // Parse and validate request
     const body = await request.json();
-    const { url, includeBusinessExtraction, includeSchemaGeneration, includeAEOAnalysis } = 
+    const { url, includeBusinessExtraction, includeSchemaGeneration, includeAEOAnalysis } =
       DashboardAnalysisRequestSchema.parse(body);
 
     const results: any = {
       url,
       timestamp: new Date().toISOString(),
-      userId: session.user.email
+      userId: session.user.email,
     };
 
     // Step 1: Extract business information from URL
@@ -45,7 +42,7 @@ export async function POST(request: NextRequest) {
     if (includeBusinessExtraction) {
       console.log(`Extracting business information for: ${url}`);
       const businessExtractor = new BusinessExtractor();
-      
+
       try {
         businessInfo = await businessExtractor.extractBusinessInfo(url);
         results.businessInfo = businessInfo;
@@ -62,7 +59,7 @@ export async function POST(request: NextRequest) {
     if (includeSchemaGeneration && businessInfo) {
       console.log('Generating comprehensive business schemas');
       const schemaGenerator = new BusinessSchemaGenerator();
-      
+
       try {
         generatedSchemas = schemaGenerator.generateBusinessSchema(businessInfo, {
           includeReviews: true,
@@ -71,15 +68,15 @@ export async function POST(request: NextRequest) {
           includeLocalBusiness: true,
           includeOrganization: true,
           includeBreadcrumbs: true,
-          includeWebsite: true
+          includeWebsite: true,
         });
-        
+
         results.generatedSchemas = generatedSchemas;
         results.schemaGenerationStatus = 'success';
         results.schemaStats = {
           totalSchemas: generatedSchemas.length,
-          schemaTypes: generatedSchemas.map(schema => schema['@type']),
-          estimatedSEOImprovement: calculateSEOImprovement(generatedSchemas)
+          schemaTypes: generatedSchemas.map((schema) => schema['@type']),
+          estimatedSEOImprovement: calculateSEOImprovement(generatedSchemas),
         };
       } catch (error) {
         console.error('Schema generation failed:', error);
@@ -92,7 +89,7 @@ export async function POST(request: NextRequest) {
     let aeoAnalysis = null;
     if (includeAEOAnalysis && businessInfo) {
       console.log('Performing AEO analysis with business context');
-      
+
       try {
         aeoAnalysis = await performAEOAnalysis(businessInfo, url);
         results.aeoAnalysis = aeoAnalysis;
@@ -114,8 +111,8 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           url,
           categories: ['performance', 'seo', 'accessibility'],
-          device: 'desktop'
-        })
+          device: 'desktop',
+        }),
       });
 
       if (lighthouseResponse.ok) {
@@ -134,29 +131,40 @@ export async function POST(request: NextRequest) {
 
     // Step 5: Generate actionable recommendations
     if (businessInfo && aeoAnalysis) {
-      results.recommendations = generateActionableRecommendations(businessInfo, aeoAnalysis, lighthouseResults);
+      results.recommendations = generateActionableRecommendations(
+        businessInfo,
+        aeoAnalysis,
+        lighthouseResults
+      );
     }
 
     // Step 6: Calculate overall optimization score
-    results.optimizationScore = calculateOptimizationScore(businessInfo, aeoAnalysis, generatedSchemas || [], lighthouseResults);
+    results.optimizationScore = calculateOptimizationScore(
+      businessInfo,
+      aeoAnalysis,
+      generatedSchemas || [],
+      lighthouseResults
+    );
 
     return NextResponse.json({
       success: true,
-      data: results
+      data: results,
     });
-
   } catch (error) {
     console.error('Dashboard analysis error:', error);
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request format', details: error.issues },
         { status: 400 }
       );
     }
-    
+
     return NextResponse.json(
-      { error: 'Analysis failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: 'Analysis failed',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }
@@ -167,44 +175,44 @@ export async function POST(request: NextRequest) {
  */
 async function performAEOAnalysis(businessInfo: any, url: string) {
   const hf = new HuggingFaceClient();
-  
+
   const analysis = {
     schemaOptimization: {
       score: 0,
       recommendations: [] as string[],
-      missingSchemas: [] as string[]
+      missingSchemas: [] as string[],
     },
     contentOptimization: {
       score: 0,
       voiceSearchReadiness: 0,
       conversationalLanguage: 0,
       questionAnswerPairs: 0,
-      recommendations: [] as string[]
+      recommendations: [] as string[],
     },
     localSEO: {
       score: 0,
       googleMyBusinessOptimization: 0,
       localKeywordUsage: 0,
       locationConsistency: 0,
-      recommendations: [] as string[]
+      recommendations: [] as string[],
     },
     technicalSEO: {
       score: 0,
       pageSpeed: 0,
       mobileOptimization: 0,
       structuredData: 0,
-      recommendations: [] as string[]
+      recommendations: [] as string[],
     },
     competitiveAnalysis: {
       industryBenchmark: 0,
       competitiveAdvantages: [] as string[],
-      opportunityAreas: [] as string[]
-    }
+      opportunityAreas: [] as string[],
+    },
   };
 
   // Analyze schema optimization
   analysis.schemaOptimization = analyzeSchemaOptimization(businessInfo);
-  
+
   // Analyze content for AEO readiness
   try {
     const contentAnalysis = await analyzeContentForAEO(businessInfo, hf);
@@ -212,10 +220,10 @@ async function performAEOAnalysis(businessInfo: any, url: string) {
   } catch (error) {
     console.warn('Content analysis failed:', error);
   }
-  
+
   // Analyze local SEO factors
   analysis.localSEO = analyzeLocalSEO(businessInfo);
-  
+
   // Technical SEO analysis would require actual website crawling
   analysis.technicalSEO = {
     score: 75, // Mock score
@@ -225,8 +233,8 @@ async function performAEOAnalysis(businessInfo: any, url: string) {
     recommendations: [
       'Optimize page loading speed',
       'Add more structured data',
-      'Improve mobile user experience'
-    ]
+      'Improve mobile user experience',
+    ],
   };
 
   // Industry competitive analysis
@@ -242,7 +250,7 @@ function analyzeSchemaOptimization(businessInfo: any) {
   const analysis = {
     score: 0,
     recommendations: [] as string[],
-    missingSchemas: [] as string[]
+    missingSchemas: [] as string[],
   };
 
   let score = 0;
@@ -307,7 +315,7 @@ async function analyzeContentForAEO(businessInfo: any, hf: HuggingFaceClient) {
     voiceSearchReadiness: 0,
     conversationalLanguage: 0,
     questionAnswerPairs: 0,
-    recommendations: [] as string[]
+    recommendations: [] as string[],
   };
 
   const recommendations: string[] = [];
@@ -316,13 +324,16 @@ async function analyzeContentForAEO(businessInfo: any, hf: HuggingFaceClient) {
   // Analyze service descriptions for conversational language
   if (businessInfo.services?.length > 0) {
     const serviceText = businessInfo.services.join(' ');
-    
+
     try {
       // Real sentiment analysis using HuggingFace
       const sentiment = await hf.analyzeSentiment(serviceText);
-      
+
       // Use sentiment analysis and text characteristics for conversational tone
-      if (serviceText.length > 100 && (serviceText.includes('you') || serviceText.includes('your') || sentiment.confidence > 0.7)) {
+      if (
+        serviceText.length > 100 &&
+        (serviceText.includes('you') || serviceText.includes('your') || sentiment.confidence > 0.7)
+      ) {
         analysis.conversationalLanguage = Math.round(sentiment.confidence * 100);
         totalScore += 20;
       } else {
@@ -337,8 +348,8 @@ async function analyzeContentForAEO(businessInfo: any, hf: HuggingFaceClient) {
   // Check for question-answer structure opportunities
   const questionKeywords = ['what', 'how', 'why', 'when', 'where', 'who'];
   const businessText = `${businessInfo.businessName} ${businessInfo.services?.join(' ') || ''}`;
-  
-  const hasQuestions = questionKeywords.some(keyword => 
+
+  const hasQuestions = questionKeywords.some((keyword) =>
     businessText.toLowerCase().includes(keyword)
   );
 
@@ -383,7 +394,7 @@ function analyzeLocalSEO(businessInfo: any) {
     googleMyBusinessOptimization: 0,
     localKeywordUsage: 0,
     locationConsistency: 100,
-    recommendations: [] as string[]
+    recommendations: [] as string[],
   };
 
   let score = 0;
@@ -410,7 +421,9 @@ function analyzeLocalSEO(businessInfo: any) {
     score += 20;
   } else {
     analysis.localKeywordUsage = 30;
-    recommendations.push(`Include "${businessInfo.location?.address?.city}" in service descriptions`);
+    recommendations.push(
+      `Include "${businessInfo.location?.address?.city}" in service descriptions`
+    );
   }
 
   // Service area optimization
@@ -443,7 +456,7 @@ async function performCompetitiveAnalysis(businessInfo: any, hf: HuggingFaceClie
   const analysis = {
     industryBenchmark: 75, // Mock benchmark
     competitiveAdvantages: [] as string[],
-    opportunityAreas: [] as string[]
+    opportunityAreas: [] as string[],
   };
 
   // Industry-specific competitive advantages
@@ -463,7 +476,10 @@ async function performCompetitiveAnalysis(businessInfo: any, hf: HuggingFaceClie
     opportunities.push('Expand service descriptions and specialties');
   }
 
-  if (businessInfo.socialMedia && Object.values(businessInfo.socialMedia).filter(Boolean).length > 2) {
+  if (
+    businessInfo.socialMedia &&
+    Object.values(businessInfo.socialMedia).filter(Boolean).length > 2
+  ) {
     advantages.push('Strong social media presence');
   } else {
     opportunities.push('Develop stronger social media presence');
@@ -487,54 +503,75 @@ async function performCompetitiveAnalysis(businessInfo: any, hf: HuggingFaceClie
  */
 function getIndustryAEORecommendations(industry: string): string[] {
   const industryRecommendations: Record<string, string[]> = {
-    'healthcare': [
+    healthcare: [
       'Create content answering common health questions',
       'Include doctor credentials and specializations',
       'Add appointment booking schema',
-      'Optimize for symptom-based voice searches'
+      'Optimize for symptom-based voice searches',
     ],
     'legal services': [
       'Create FAQ content for common legal questions',
       'Include practice area specializations',
       'Add lawyer/attorney schema with bar admissions',
-      'Optimize for "lawyer near me" searches'
+      'Optimize for "lawyer near me" searches',
     ],
     'real estate': [
       'Create neighborhood and market analysis content',
       'Add property listing schemas',
       'Include market statistics and trends',
-      'Optimize for "homes for sale near me" searches'
+      'Optimize for "homes for sale near me" searches',
     ],
-    'restaurant': [
+    restaurant: [
       'Add menu schema with prices',
       'Include dietary options and restrictions',
       'Create content about cuisine and specialties',
-      'Optimize for "restaurants near me" searches'
+      'Optimize for "restaurants near me" searches',
     ],
-    'automotive': [
+    automotive: [
       'Add service schemas for auto repairs',
       'Include make and model specializations',
       'Create troubleshooting and maintenance content',
-      'Optimize for "auto repair near me" searches'
-    ]
+      'Optimize for "auto repair near me" searches',
+    ],
   };
 
-  return industryRecommendations[industry?.toLowerCase()] || [
-    'Create industry-specific FAQ content',
-    'Optimize for local voice searches',
-    'Include service-specific schema markup'
-  ];
+  return (
+    industryRecommendations[industry?.toLowerCase()] || [
+      'Create industry-specific FAQ content',
+      'Optimize for local voice searches',
+      'Include service-specific schema markup',
+    ]
+  );
 }
 
 /**
  * Generate actionable recommendations based on analysis
  */
-function generateActionableRecommendations(businessInfo: any, aeoAnalysis: any, lighthouseResults?: any) {
+function generateActionableRecommendations(
+  businessInfo: any,
+  aeoAnalysis: any,
+  lighthouseResults?: any
+) {
   const recommendations = {
-    immediate: [] as Array<{action: string; impact: string; timeRequired: string; difficulty: string}>, // Can be done today
-    shortTerm: [] as Array<{action: string; impact: string; timeRequired: string; difficulty: string}>, // Within 1 week
-    longTerm: [] as Array<{action: string; impact: string; timeRequired: string; difficulty: string}>, // Within 1 month
-    priority: 'high' // high, medium, low
+    immediate: [] as Array<{
+      action: string;
+      impact: string;
+      timeRequired: string;
+      difficulty: string;
+    }>, // Can be done today
+    shortTerm: [] as Array<{
+      action: string;
+      impact: string;
+      timeRequired: string;
+      difficulty: string;
+    }>, // Within 1 week
+    longTerm: [] as Array<{
+      action: string;
+      impact: string;
+      timeRequired: string;
+      difficulty: string;
+    }>, // Within 1 month
+    priority: 'high', // high, medium, low
   };
 
   // Immediate actions (can be done today)
@@ -543,7 +580,7 @@ function generateActionableRecommendations(businessInfo: any, aeoAnalysis: any, 
       action: 'Add LocalBusiness schema to homepage',
       impact: 'High',
       timeRequired: '30 minutes',
-      difficulty: 'Easy'
+      difficulty: 'Easy',
     });
   }
 
@@ -552,7 +589,7 @@ function generateActionableRecommendations(businessInfo: any, aeoAnalysis: any, 
       action: 'Add phone number to website footer and contact page',
       impact: 'High',
       timeRequired: '15 minutes',
-      difficulty: 'Easy'
+      difficulty: 'Easy',
     });
   }
 
@@ -562,7 +599,7 @@ function generateActionableRecommendations(businessInfo: any, aeoAnalysis: any, 
       action: 'Create FAQ page with industry-specific questions',
       impact: 'High',
       timeRequired: '2-4 hours',
-      difficulty: 'Medium'
+      difficulty: 'Medium',
     });
   }
 
@@ -571,7 +608,7 @@ function generateActionableRecommendations(businessInfo: any, aeoAnalysis: any, 
       action: 'Complete Google My Business profile optimization',
       impact: 'Very High',
       timeRequired: '1-2 hours',
-      difficulty: 'Easy'
+      difficulty: 'Easy',
     });
   }
 
@@ -581,7 +618,7 @@ function generateActionableRecommendations(businessInfo: any, aeoAnalysis: any, 
       action: 'Create dedicated pages for each service area',
       impact: 'High',
       timeRequired: '1-2 weeks',
-      difficulty: 'Medium'
+      difficulty: 'Medium',
     });
   }
 
@@ -589,7 +626,7 @@ function generateActionableRecommendations(businessInfo: any, aeoAnalysis: any, 
     action: 'Implement comprehensive review management system',
     impact: 'High',
     timeRequired: '2-3 weeks',
-    difficulty: 'Hard'
+    difficulty: 'Hard',
   });
 
   return recommendations;
@@ -600,8 +637,8 @@ function generateActionableRecommendations(businessInfo: any, aeoAnalysis: any, 
  */
 function calculateSEOImprovement(schemas: any[]): number {
   let improvement = 0;
-  
-  schemas.forEach(schema => {
+
+  schemas.forEach((schema) => {
     switch (schema['@type']) {
       case 'LocalBusiness':
         improvement += 25;
@@ -626,14 +663,19 @@ function calculateSEOImprovement(schemas: any[]): number {
 /**
  * Calculate overall optimization score
  */
-function calculateOptimizationScore(businessInfo: any, aeoAnalysis: any, schemas: any[], lighthouseResults?: any) {
+function calculateOptimizationScore(
+  businessInfo: any,
+  aeoAnalysis: any,
+  schemas: any[],
+  lighthouseResults?: any
+) {
   if (!businessInfo || !aeoAnalysis) return 0;
 
   const weights = {
     businessInfo: 0.2,
     schemaOptimization: 0.25,
     contentOptimization: 0.25,
-    localSEO: 0.3
+    localSEO: 0.3,
   };
 
   let score = 0;
@@ -665,7 +707,7 @@ function calculateBusinessCompleteness(businessInfo: any): number {
     'contact.email',
     'location.address.street',
     'location.address.city',
-    'services'
+    'services',
   ];
 
   const optionalFields = [
@@ -673,14 +715,14 @@ function calculateBusinessCompleteness(businessInfo: any): number {
     'socialMedia',
     'specialties',
     'attributes.yearEstablished',
-    'location.serviceArea'
+    'location.serviceArea',
   ];
 
   let score = 0;
   const totalPossibleScore = requiredFields.length * 10 + optionalFields.length * 5;
 
   // Check required fields (10 points each)
-  requiredFields.forEach(field => {
+  requiredFields.forEach((field) => {
     const value = getNestedValue(businessInfo, field);
     if (value && (Array.isArray(value) ? value.length > 0 : value.toString().trim())) {
       score += 10;
@@ -688,7 +730,7 @@ function calculateBusinessCompleteness(businessInfo: any): number {
   });
 
   // Check optional fields (5 points each)
-  optionalFields.forEach(field => {
+  optionalFields.forEach((field) => {
     const value = getNestedValue(businessInfo, field);
     if (value && (Array.isArray(value) ? value.length > 0 : value.toString().trim())) {
       score += 5;

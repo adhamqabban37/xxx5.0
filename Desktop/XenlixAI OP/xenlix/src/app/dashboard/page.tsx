@@ -1,22 +1,24 @@
 'use client';
 
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { SignOutButton } from "./_components/SignOutButton";
-import { Suspense } from "react";
-import { 
-  CheckCircle, 
-  AlertTriangle, 
-  XCircle, 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
+import { SignOutButton } from './_components/SignOutButton';
+import { Suspense } from 'react';
+import {
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  TrendingUp,
+  TrendingDown,
+  Users,
   Calendar,
   Download,
   Code,
   Search,
   Globe,
-  Zap
+  Zap,
+  BarChart3,
 } from 'lucide-react';
 import GSCDashboard from '@/components/GSCDashboard';
 import { DashboardCardWithSparkline, MiniSparkline } from '@/components/Sparkline';
@@ -30,19 +32,19 @@ import QuickReputationMonitor from '@/components/QuickReputationMonitor';
 export default function DashboardPage() {
   // Client-side authentication check
   const { data: session, status } = useSession();
-  
+
   if (status === 'loading') {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
-  
+
   if (!session?.user?.email) {
-    redirect("/signin");
+    redirect('/signin');
     return null;
   }
 
   // Mock user for demo
   const user = {
-    email: session.user.email
+    email: session.user.email,
   };
 
   // Mock comprehensive audit data for premium dashboard
@@ -79,7 +81,7 @@ export default function DashboardPage() {
     competitorAnalysis: [
       { competitor: 'competitor1.com', score: 72, gap: 14 },
       { competitor: 'competitor2.com', score: 68, gap: 10 },
-      { competitor: 'competitor3.com', score: 65, gap: 7 }
+      { competitor: 'competitor3.com', score: 65, gap: 7 },
     ],
     priorityFixes: [
       {
@@ -103,7 +105,7 @@ export default function DashboardPage() {
   }
 }
 </script>`,
-        status: 'pending'
+        status: 'pending',
       },
       {
         id: 2,
@@ -126,7 +128,7 @@ export default function DashboardPage() {
   }]
 }
 </script>`,
-        status: 'pending'
+        status: 'pending',
       },
       {
         id: 3,
@@ -136,16 +138,16 @@ export default function DashboardPage() {
         effort: 'Low',
         description: 'Add compelling meta descriptions to improve CTR',
         code: `<meta name="description" content="Professional [Service] in [City]. Get [Benefit] with our expert team. Call (555) 123-4567 for a free consultation.">`,
-        status: 'pending'
-      }
+        status: 'pending',
+      },
     ],
     categoryBreakdown: [
       { category: 'Technical SEO', score: 45, issues: 12, color: 'red' },
       { category: 'Content Quality', score: 62, issues: 8, color: 'yellow' },
       { category: 'Local SEO', score: 71, issues: 5, color: 'green' },
       { category: 'AEO Optimization', score: 38, issues: 15, color: 'red' },
-      { category: 'Site Performance', score: 55, issues: 10, color: 'yellow' }
-    ]
+      { category: 'Site Performance', score: 55, issues: 10, color: 'yellow' },
+    ],
   };
 
   const getScoreColor = (score: number) => {
@@ -170,11 +172,44 @@ export default function DashboardPage() {
       <nav className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-white">XenlixAI Dashboard</h1>
-              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                Premium
-              </span>
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-4">
+                <h1 className="text-2xl font-bold text-white">XenlixAI Dashboard</h1>
+                <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  Premium
+                </span>
+              </div>
+              {/* Navigation Links */}
+              <nav className="hidden md:flex items-center space-x-4">
+                <Link
+                  href="/dashboard/premium-aeo"
+                  className="text-purple-300 hover:text-purple-100 transition-colors flex items-center gap-2 text-sm font-medium"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  AEO Intelligence
+                </Link>
+                <Link
+                  href="/dashboard/enhanced"
+                  className="text-green-300 hover:text-green-100 transition-colors flex items-center gap-2 text-sm font-medium"
+                >
+                  <Globe className="w-4 h-4" />
+                  Enhanced Dashboard
+                </Link>
+                <Link
+                  href="/analytics"
+                  className="text-blue-300 hover:text-blue-100 transition-colors flex items-center gap-2 text-sm font-medium"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  Analytics
+                </Link>
+              </nav>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-300">{user.email}</span>
@@ -185,6 +220,52 @@ export default function DashboardPage() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Premium AEO Intelligence Dashboard */}
+        <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400 rounded-xl p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="bg-purple-600 rounded-full p-2">
+                <svg
+                  className="w-8 h-8 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white mb-1">
+                  ⚡ Premium AEO Intelligence Dashboard
+                </h2>
+                <p className="text-purple-100 text-sm">
+                  Company visibility tracking • Competitor analysis • Citation authority • AI
+                  visibility scores • Action roadmaps
+                </p>
+              </div>
+            </div>
+            <a
+              href="/dashboard/premium-aeo"
+              className="px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+              Launch AEO Dashboard
+            </a>
+          </div>
+        </div>
+
         {/* Enhanced Dashboard Promotion Banner */}
         <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 border border-green-400 rounded-xl p-6 mb-6">
           <div className="flex items-center justify-between">
@@ -195,7 +276,8 @@ export default function DashboardPage() {
                   🚀 New Enhanced AEO Intelligence Dashboard
                 </h2>
                 <p className="text-green-100 text-sm">
-                  AI-powered business extraction • Interactive AEO tooltips • Auto schema generation • Smart questionnaires
+                  AI-powered business extraction • Interactive AEO tooltips • Auto schema generation
+                  • Smart questionnaires
                 </p>
               </div>
             </div>
@@ -214,7 +296,9 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xl font-bold text-white mb-2">✅ Premium Access Activated</h3>
-              <p className="text-green-400">You now have access to detailed SEO + AEO reports and priority fixes</p>
+              <p className="text-green-400">
+                You now have access to detailed SEO + AEO reports and priority fixes
+              </p>
             </div>
             <div className="text-green-400">
               <CheckCircle className="w-12 h-12" />
@@ -223,15 +307,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Performance Overview */}
-        <DashboardMetrics 
-          premiumAuditData={premiumAuditData}
-        />
+        <DashboardMetrics premiumAuditData={premiumAuditData} />
 
         {/* AI Intelligence Widgets */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <QuickCompanyPreview />
           <QuickAIRankTracker />
-          <QuickReputationMonitor 
+          <QuickReputationMonitor
             onViewDetails={() => window.open('/dashboard/enhanced', '_blank')}
           />
         </div>
@@ -267,7 +349,7 @@ export default function DashboardPage() {
               High Impact
             </span>
           </div>
-          
+
           <div className="space-y-6">
             {premiumAuditData.priorityFixes.map((fix) => (
               <div key={fix.id} className="border border-slate-600 rounded-lg p-6">
@@ -276,11 +358,15 @@ export default function DashboardPage() {
                     <div className="flex items-center space-x-3 mb-2">
                       {getStatusIcon(fix.status)}
                       <h3 className="text-lg font-semibold text-white">{fix.title}</h3>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        fix.impact === 'High' ? 'bg-red-600 text-white' : 
-                        fix.impact === 'Medium' ? 'bg-yellow-600 text-white' : 
-                        'bg-green-600 text-white'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-medium ${
+                          fix.impact === 'High'
+                            ? 'bg-red-600 text-white'
+                            : fix.impact === 'Medium'
+                              ? 'bg-yellow-600 text-white'
+                              : 'bg-green-600 text-white'
+                        }`}
+                      >
                         {fix.impact} Impact
                       </span>
                       <span className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium">
@@ -290,7 +376,9 @@ export default function DashboardPage() {
                     <p className="text-gray-300 mb-4">{fix.description}</p>
                     <div className="bg-slate-900 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-400">Copy & Paste This Code:</span>
+                        <span className="text-sm font-medium text-gray-400">
+                          Copy & Paste This Code:
+                        </span>
                         <CopyButton code={fix.code} />
                       </div>
                       <pre className="text-sm text-green-400 overflow-x-auto">
@@ -318,17 +406,17 @@ export default function DashboardPage() {
                         <span className={`font-bold ${getScoreColor(category.score)}`}>
                           {category.score}/100
                         </span>
-                        <span className="text-gray-400 text-sm">
-                          {category.issues} issues
-                        </span>
+                        <span className="text-gray-400 text-sm">{category.issues} issues</span>
                       </div>
                     </div>
                     <div className="w-full bg-slate-700 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full ${
-                          category.color === 'green' ? 'bg-green-500' :
-                          category.color === 'yellow' ? 'bg-yellow-500' :
-                          'bg-red-500'
+                          category.color === 'green'
+                            ? 'bg-green-500'
+                            : category.color === 'yellow'
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
                         }`}
                         style={{ width: `${category.score}%` }}
                       />
@@ -343,7 +431,10 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-bold text-white mb-6">Competitor Analysis</h2>
             <div className="space-y-4">
               {premiumAuditData.competitorAnalysis.map((competitor, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg"
+                >
                   <div>
                     <div className="text-white font-medium">{competitor.competitor}</div>
                     <div className="text-gray-400 text-sm">Score: {competitor.score}/100</div>
@@ -371,11 +462,13 @@ export default function DashboardPage() {
                   {week.score}/100
                 </div>
                 {index > 0 && (
-                  <div className={`text-sm ${
-                    week.score > premiumAuditData.weeklyProgress[index - 1].score 
-                      ? 'text-green-400' 
-                      : 'text-red-400'
-                  }`}>
+                  <div
+                    className={`text-sm ${
+                      week.score > premiumAuditData.weeklyProgress[index - 1].score
+                        ? 'text-green-400'
+                        : 'text-red-400'
+                    }`}
+                  >
                     {week.score > premiumAuditData.weeklyProgress[index - 1].score ? '+' : ''}
                     {week.score - premiumAuditData.weeklyProgress[index - 1].score} pts
                   </div>
@@ -391,9 +484,9 @@ export default function DashboardPage() {
             <Globe className="w-6 h-6 mr-3 text-cyan-400" />
             Google Search Console Analytics
           </h2>
-          <Suspense fallback={
-            <div className="text-gray-400 p-4">Loading Search Console data...</div>
-          }>
+          <Suspense
+            fallback={<div className="text-gray-400 p-4">Loading Search Console data...</div>}
+          >
             <GSCDashboard />
           </Suspense>
         </div>
@@ -402,7 +495,9 @@ export default function DashboardPage() {
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-white mb-2">📈 SEO & AEO Optimization Guide</h2>
-            <p className="text-gray-300">AI-powered recommendations to improve your search engine and answer engine visibility</p>
+            <p className="text-gray-300">
+              AI-powered recommendations to improve your search engine and answer engine visibility
+            </p>
           </div>
           <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
             <SEOGuidanceSection />

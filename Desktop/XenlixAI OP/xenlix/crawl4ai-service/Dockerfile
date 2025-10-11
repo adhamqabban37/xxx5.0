@@ -1,37 +1,36 @@
-# Crawl4AI Python Service
+# Lightweight Python image
 FROM python:3.11-slim
 
+# Set workdir
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies needed by crawl4ai/selenium
 RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    unzip \
-    curl \
-    xvfb \
-    && rm -rf /var/lib/apt/lists/*
+  build-essential g++ \
+  chromium-driver chromium \
+  libnss3 libatk1.0-0 libatk-bridge2.0-0 libdrm2 libxkbcommon0 libgbm1 libasound2 \
+  curl gnupg \
+  && rm -rf /var/lib/apt/lists/*
 
-# Install Chrome
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable \
-    && rm -rf /var/lib/apt/lists/*
+# Copy requirements and install
+COPY requirements.txt ./
+RUN python -m pip install --upgrade pip && \
+  pip install --no-cache-dir -r requirements.txt && \
+  python -m playwright install --with-deps chromium
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
+# Copy service
 COPY . .
 
-# Expose port
-EXPOSE 8000
+# Expose service port
+EXPOSE 8001
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+# Healthcheck to /health
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD curl -fsS http://localhost:8001/health || exit 1
 
-# Run the application
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Env defaults
+ENV CRAWL4AI_HOST=0.0.0.0
+ENV CRAWL4AI_PORT=8001
+
+# Run
+CMD ["python", "main.py"]

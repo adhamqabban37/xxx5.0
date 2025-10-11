@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import { X, Target, TrendingUp, Search, MapPin, FileText, Users } from 'lucide-react';
@@ -20,10 +20,7 @@ export default function SEOServicesModal({ isOpen, onClose }: SEOServicesModalPr
             <h2 className="text-2xl font-bold text-white">SEO Services</h2>
             <p className="text-gray-400 mt-1">Coming Soon - Advanced SEO Solutions</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -34,7 +31,9 @@ export default function SEOServicesModal({ isOpen, onClose }: SEOServicesModalPr
           <div className="mb-8">
             <h3 className="text-xl font-semibold text-white mb-4">What We're Building</h3>
             <p className="text-gray-300 text-lg leading-relaxed">
-              We're developing a comprehensive suite of SEO services powered by AI to help businesses dominate search results and get found by their ideal customers. Our services will combine cutting-edge technology with proven SEO strategies.
+              We're developing a comprehensive suite of SEO services powered by AI to help
+              businesses dominate search results and get found by their ideal customers. Our
+              services will combine cutting-edge technology with proven SEO strategies.
             </p>
           </div>
 
@@ -131,9 +130,7 @@ export default function SEOServicesModal({ isOpen, onClose }: SEOServicesModalPr
                 <Users className="w-8 h-8 text-cyan-400 mr-3" />
                 <h4 className="text-lg font-semibold text-white">Managed SEO Campaigns</h4>
               </div>
-              <p className="text-gray-300 mb-4">
-                Full-service SEO management by our expert team.
-              </p>
+              <p className="text-gray-300 mb-4">Full-service SEO management by our expert team.</p>
               <ul className="text-sm text-gray-400 space-y-2">
                 <li>• Dedicated SEO strategist</li>
                 <li>• Monthly strategy sessions</li>
@@ -147,13 +144,14 @@ export default function SEOServicesModal({ isOpen, onClose }: SEOServicesModalPr
           <div className="mt-8 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-6">
             <h3 className="text-xl font-semibold text-white mb-3">Get Early Access</h3>
             <p className="text-gray-300 mb-4">
-              Be the first to know when our SEO services launch. Join our waitlist for exclusive early-bird pricing and priority access.
+              Be the first to know when our SEO services launch. Join our waitlist for exclusive
+              early-bird pricing and priority access.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
                 Join Waitlist
               </button>
-              <button 
+              <button
                 onClick={onClose}
                 className="bg-slate-600 hover:bg-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
               >

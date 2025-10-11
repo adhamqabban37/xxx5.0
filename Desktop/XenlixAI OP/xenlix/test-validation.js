@@ -13,8 +13,8 @@ async function testValidationEndpoints() {
       body: JSON.stringify({
         name: 'John Doe',
         email: 'john@example.com',
-        message: 'This is a test message'
-      })
+        message: 'This is a test message',
+      }),
     });
     const data = await response.json();
     console.log('✅ Valid request:', data);
@@ -29,10 +29,10 @@ async function testValidationEndpoints() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: '',  // Invalid: empty name
-        email: 'not-an-email',  // Invalid: bad email format
+        name: '', // Invalid: empty name
+        email: 'not-an-email', // Invalid: bad email format
         // Missing message field
-      })
+      }),
     });
     const data = await response.json();
     console.log('✅ Validation caught errors:', data);
@@ -50,8 +50,8 @@ async function testValidationEndpoints() {
         businessName: 'Test Business',
         industry: 'technology',
         city: 'Austin',
-        services: ['web development', 'consulting']
-      })
+        services: ['web development', 'consulting'],
+      }),
     });
     const data = await response.json();
     console.log('✅ SEO recommendations generated:', data.success);
@@ -67,8 +67,8 @@ async function testValidationEndpoints() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         // Missing required businessName, industry, and city
-        services: []
-      })
+        services: [],
+      }),
     });
     const data = await response.json();
     console.log('✅ Validation caught missing fields:', data);
@@ -83,8 +83,8 @@ async function testValidationEndpoints() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        planId: 'pro'
-      })
+        planId: 'pro',
+      }),
     });
     const data = await response.json();
     console.log('✅ Sandbox checkout:', data);
@@ -99,8 +99,8 @@ async function testValidationEndpoints() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        planId: 'invalid-plan'  // Should fail validation
-      })
+        planId: 'invalid-plan', // Should fail validation
+      }),
     });
     const data = await response.json();
     console.log('✅ Validation caught invalid plan:', data);

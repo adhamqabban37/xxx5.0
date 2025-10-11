@@ -10,13 +10,13 @@ interface LeadEmailProps extends LeadData {
   submittedAt: string;
 }
 
-export function generateAdminNotificationEmail({ 
-  name, 
-  email, 
-  company, 
-  message, 
-  leadId, 
-  submittedAt 
+export function generateAdminNotificationEmail({
+  name,
+  email,
+  company,
+  message,
+  leadId,
+  submittedAt,
 }: LeadEmailProps): string {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">

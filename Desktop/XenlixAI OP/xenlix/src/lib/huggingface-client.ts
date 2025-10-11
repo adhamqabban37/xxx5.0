@@ -1,5 +1,5 @@
-import { HfInference } from '@huggingface/inference';
 import { getEnvironmentConfig } from './env-config';
+import { hfEmbeddings, hfSentiment, hfEntities, hfHealthCheck, getHfClient } from './hf';
 
 // HuggingFace configuration interface
 interface HuggingFaceConfig {
@@ -58,7 +58,6 @@ export interface SimilarityMatrix {
  */
 export class HuggingFaceClient {
   private static instance: HuggingFaceClient;
-  private hf: HfInference | null = null;
   private config: HuggingFaceConfig;
   private isInitialized = false;
   private lastHealthCheck: number = 0;
@@ -88,14 +87,17 @@ export class HuggingFaceClient {
   // Load configuration from environment
   private loadConfig(): HuggingFaceConfig {
     const env = getEnvironmentConfig();
-    
-    if (!env.ai?.huggingface?.token) {
-      throw new Error('HuggingFace API token not configured. Set HUGGINGFACE_API_TOKEN environment variable.');
+
+    const apiToken = env.ai?.huggingface?.token || '';
+    if (!apiToken) {
+      // We intentionally do not throw here to keep constructor side-effect free;
+      // healthCheck() and calls will surface a 401 with clear message.
+      console.warn('HUGGINGFACE_API_TOKEN is not set. Calls will fail with 401.');
     }
 
     return {
-      apiToken: env.ai.huggingface.token,
-      model: env.ai.huggingface.model || 'sentence-transformers/all-MiniLM-L6-v2',
+      apiToken: apiToken,
+      model: env.ai?.huggingface?.model || 'sentence-transformers/all-MiniLM-L6-v2',
       maxRetries: 3,
       timeoutMs: 30000, // 30 seconds
       baseDelayMs: 1000, // 1 second base delay
@@ -106,9 +108,9 @@ export class HuggingFaceClient {
   // Initialize HuggingFace client
   private initializeClient(): void {
     try {
-      this.hf = new HfInference(this.config.apiToken);
+      // Initialization is lightweight now; the underlying client is in hf.ts
+      console.log('✅ HuggingFace client wired to hf.ts helpers');
       this.isInitialized = true;
-      console.log('✅ HuggingFace client initialized successfully');
     } catch (error) {
       console.error('❌ Failed to initialize HuggingFace client:', error);
       throw new Error(`HuggingFace initialization failed: ${error}`);
@@ -117,10 +119,7 @@ export class HuggingFaceClient {
 
   // Exponential backoff delay calculation
   private calculateDelay(attempt: number): number {
-    const delay = Math.min(
-      this.config.baseDelayMs * Math.pow(2, attempt),
-      this.config.maxDelayMs
-    );
+    const delay = Math.min(this.config.baseDelayMs * Math.pow(2, attempt), this.config.maxDelayMs);
     // Add jitter (±25%)
     const jitter = delay * 0.25 * (Math.random() * 2 - 1);
     return Math.round(delay + jitter);
@@ -128,57 +127,53 @@ export class HuggingFaceClient {
 
   // Sleep utility for delays
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  // Simple hash function for consistent mock embeddings
+  private simpleHash(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
   }
 
   // Health check with comprehensive validation
   public async healthCheck(): Promise<HuggingFaceHealth> {
     const startTime = Date.now();
-    
+
     try {
-      if (!this.hf) {
-        throw new Error('HuggingFace client not initialized');
-      }
-
-      // Test with a simple embedding request
-      const testText = 'Health check test';
-      const response = await this.hf.featureExtraction({
-        model: this.config.model,
-        inputs: testText,
-      });
-
+      const res = await hfHealthCheck();
       const latency = Date.now() - startTime;
       this.lastHealthCheck = Date.now();
-      this.healthStatus = 'healthy';
-      this.consecutiveFailures = 0;
-
-      // Validate response format
-      if (!Array.isArray(response) || response.length === 0) {
-        throw new Error('Invalid response format from HuggingFace API');
+      if ((res as any).status === 'healthy') {
+        this.healthStatus = 'healthy';
+        this.consecutiveFailures = 0;
+        return {
+          status: 'healthy',
+          latency,
+          modelInfo: {
+            model: this.config.model,
+            dimensions: 384,
+            maxTokens: 512,
+          },
+          quota: {
+            remaining: this.metrics.quotaRemaining,
+            limit: 1000,
+          },
+        };
       }
-
-      const embeddings = Array.isArray(response[0]) ? response[0] : response;
-      
-      return {
-        status: 'healthy',
-        latency,
-        modelInfo: {
-          model: this.config.model,
-          dimensions: Array.isArray(embeddings) ? embeddings.length : 0,
-          maxTokens: 512, // all-MiniLM-L6-v2 max tokens
-        },
-        quota: {
-          remaining: this.metrics.quotaRemaining,
-          limit: 1000, // Default assumption, update from headers if available
-        },
-      };
+      throw new Error((res as any).error || 'HF health check failed');
     } catch (error) {
       const latency = Date.now() - startTime;
       this.consecutiveFailures++;
       this.healthStatus = this.consecutiveFailures > 5 ? 'unhealthy' : 'degraded';
-      
+
       console.error('❌ HuggingFace health check failed:', error);
-      
+
       return {
         status: this.healthStatus,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -193,26 +188,23 @@ export class HuggingFaceClient {
 
   // Generate embeddings with retry logic and error handling
   public async generateEmbeddings(texts: string[]): Promise<EmbeddingResponse> {
-    if (!this.hf) {
-      throw new Error('HuggingFace client not initialized');
-    }
-
     if (texts.length === 0) {
       throw new Error('No texts provided for embedding generation');
     }
 
     // Validate and clean input texts
-    const validTexts = texts
-      .map(text => text?.trim())
-      .filter(text => text && text.length > 0);
+    const validTexts = texts.map((text) => text?.trim()).filter((text) => text && text.length > 0);
 
     if (validTexts.length === 0) {
       throw new Error('No valid texts provided after filtering');
     }
 
+    // No more mock branch; delegate to hf.ts which supports HF_MOCK for tests
+
     // Truncate texts that are too long
-    const processedTexts = validTexts.map(text => {
-      if (text.length > 2000) { // Conservative limit for sentence transformers
+    const processedTexts = validTexts.map((text) => {
+      if (text.length > 2000) {
+        // Conservative limit for sentence transformers
         console.warn(`Text truncated from ${text.length} to 2000 characters`);
         return text.substring(0, 2000);
       }
@@ -224,44 +216,34 @@ export class HuggingFaceClient {
 
     for (let attempt = 0; attempt <= this.config.maxRetries; attempt++) {
       try {
-        console.log(`🧠 Generating embeddings for ${processedTexts.length} texts (attempt ${attempt + 1}/${this.config.maxRetries + 1})`);
-        
+        console.log(
+          `🧠 Generating embeddings for ${processedTexts.length} texts (attempt ${attempt + 1}/${this.config.maxRetries + 1})`
+        );
+
         this.metrics.totalRequests++;
 
         // Create timeout controller
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.config.timeoutMs);
 
-        // Make API request
-        const response = await this.hf.featureExtraction({
-          model: this.config.model,
-          inputs: processedTexts,
-        });
-
+        const response = await hfEmbeddings(processedTexts);
         clearTimeout(timeoutId);
-
-        // Process response
-        let embeddings: number[][];
-        if (processedTexts.length === 1) {
-          // Single text response - ensure we always have number[][] format
-          const rawResponse = response as any;
-          const singleResult = Array.isArray(rawResponse[0]) ? rawResponse[0] as number[] : rawResponse as number[];
-          embeddings = [singleResult];
-        } else {
-          // Multiple texts response
-          embeddings = response as number[][];
-        }
+        let embeddings: number[][] = response.embeddings as any;
 
         // Validate embeddings
         if (!Array.isArray(embeddings) || embeddings.length !== processedTexts.length) {
-          throw new Error(`Invalid embeddings response: expected ${processedTexts.length} embeddings, got ${embeddings.length}`);
+          throw new Error(
+            `Invalid embeddings response: expected ${processedTexts.length} embeddings, got ${embeddings.length}`
+          );
         }
 
         // Validate embedding dimensions
         const expectedDimensions = 384; // all-MiniLM-L6-v2 dimensions
         for (let i = 0; i < embeddings.length; i++) {
           if (!Array.isArray(embeddings[i]) || embeddings[i].length !== expectedDimensions) {
-            throw new Error(`Invalid embedding dimensions at index ${i}: expected ${expectedDimensions}, got ${embeddings[i]?.length}`);
+            throw new Error(
+              `Invalid embedding dimensions at index ${i}: expected ${expectedDimensions}, got ${embeddings[i]?.length}`
+            );
           }
         }
 
@@ -280,18 +262,19 @@ export class HuggingFaceClient {
             processingTimeMs: processingTime,
           },
         };
-
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
         this.metrics.failedRequests++;
         this.consecutiveFailures++;
-        
+
         console.error(`❌ Embedding generation attempt ${attempt + 1} failed:`, lastError.message);
 
         // Don't retry on certain errors
-        if (lastError.message.includes('authentication') || 
-            lastError.message.includes('quota') ||
-            lastError.message.includes('rate limit')) {
+        if (
+          lastError.message.includes('authentication') ||
+          lastError.message.includes('quota') ||
+          lastError.message.includes('rate limit')
+        ) {
           console.error('❌ Non-retryable error encountered, failing immediately');
           break;
         }
@@ -329,7 +312,7 @@ export class HuggingFaceClient {
 
     const denominator = Math.sqrt(normA) * Math.sqrt(normB);
     if (denominator === 0) return 0;
-    
+
     return dotProduct / denominator;
   }
 
@@ -341,7 +324,7 @@ export class HuggingFaceClient {
     contentEmbeddings: number[][]
   ): SimilarityMatrix {
     const similarities: number[][] = [];
-    
+
     // Calculate similarity matrix
     for (let i = 0; i < queryEmbeddings.length; i++) {
       similarities[i] = [];
@@ -352,7 +335,7 @@ export class HuggingFaceClient {
 
     // Find top matches for each query
     const topMatches: SimilarityMatrix['topMatches'] = [];
-    
+
     for (let i = 0; i < queries.length; i++) {
       const queryMatches = content.map((contentText, j) => ({
         queryIndex: i,
@@ -425,8 +408,11 @@ export class HuggingFaceClient {
         details.authentication = true;
         details.modelAccess = true;
         details.responseFormat = true;
-        details.quotaStatus = health.quota?.remaining ? 
-          (health.quota.remaining > 10 ? 'available' : 'limited') : 'unknown';
+        details.quotaStatus = health.quota?.remaining
+          ? health.quota.remaining > 10
+            ? 'available'
+            : 'limited'
+          : 'unknown';
 
         return {
           success: true,
@@ -442,7 +428,7 @@ export class HuggingFaceClient {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+
       // Analyze error to provide better diagnostics
       if (errorMessage.includes('401') || errorMessage.includes('authentication')) {
         details.authentication = false;
@@ -465,37 +451,23 @@ export class HuggingFaceClient {
 
   // Real sentiment analysis using HuggingFace inference
   public async analyzeSentiment(text: string): Promise<{ sentiment: string; confidence: number }> {
-    if (!this.hf) {
-      throw new Error('HuggingFace client not initialized');
-    }
-
-    const maxLength = 512; // Truncate to model limits
+    const maxLength = 512;
     const truncatedText = text.slice(0, maxLength);
-
     for (let attempt = 0; attempt < this.config.maxRetries; attempt++) {
       try {
         console.log(`🔍 Analyzing sentiment (attempt ${attempt + 1}/${this.config.maxRetries})`);
-        
-        const result = await this.hf.textClassification({
-          model: 'cardiffnlp/twitter-roberta-base-sentiment-latest',
-          inputs: truncatedText,
-        });
-
-        // HuggingFace returns array of classification results
-        const topResult = Array.isArray(result) ? result[0] : result;
-        
-        if (topResult && topResult.label && typeof topResult.score === 'number') {
+        const result = await hfSentiment(truncatedText);
+        if (result && result.label && typeof result.score === 'number') {
           return {
-            sentiment: topResult.label.toLowerCase(),
-            confidence: topResult.score
+            sentiment: result.label.toLowerCase(),
+            confidence: result.score,
           };
         }
 
         throw new Error('Invalid sentiment analysis response format');
-
       } catch (error) {
         console.warn(`⚠️ Sentiment analysis attempt ${attempt + 1} failed:`, error);
-        
+
         if (attempt === this.config.maxRetries - 1) {
           // Fallback to keyword-based analysis
           console.log('🔄 Falling back to keyword-based sentiment analysis');
@@ -511,32 +483,45 @@ export class HuggingFaceClient {
     return this.fallbackSentimentAnalysis(text);
   }
 
-  // Text classification for business industry detection
-  public async classifyText(text: string, labels: string[]): Promise<{ label: string; score: number }[]> {
-    if (!this.hf) {
-      throw new Error('HuggingFace client not initialized');
+  // Expose NER using HF helpers
+  public async extractEntities(
+    text: string
+  ): Promise<Array<{ entity: string; word: string; score: number }>> {
+    const maxLength = 1024;
+    const truncated = text.slice(0, maxLength);
+    try {
+      const res = await hfEntities(truncated);
+      return res as any;
+    } catch (error) {
+      console.warn('Entity extraction failed:', error);
+      return [];
     }
+  }
 
+  // Text classification for business industry detection
+  public async classifyText(
+    text: string,
+    labels: string[]
+  ): Promise<{ label: string; score: number }[]> {
     const maxLength = 512;
     const truncatedText = text.slice(0, maxLength);
 
     try {
-      const result = await this.hf.zeroShotClassification({
+      const result = await getHfClient().zeroShotClassification({
         model: 'facebook/bart-large-mnli',
         inputs: truncatedText,
-        parameters: { candidate_labels: labels }
+        parameters: { candidate_labels: labels },
       });
 
       if (result && 'labels' in result && 'scores' in result) {
         const typedResult = result as { labels: string[]; scores: number[] };
         return typedResult.labels.map((label: string, index: number) => ({
           label,
-          score: typedResult.scores[index]
+          score: typedResult.scores[index],
         }));
       }
 
       throw new Error('Invalid classification response format');
-
     } catch (error) {
       console.warn('Text classification failed, using fallback:', error);
       // Simple fallback based on keyword matching
@@ -547,30 +532,58 @@ export class HuggingFaceClient {
   // Fallback sentiment analysis using keywords
   private fallbackSentimentAnalysis(text: string): { sentiment: string; confidence: number } {
     const lowerText = text.toLowerCase();
-    const positiveWords = ['excellent', 'great', 'amazing', 'wonderful', 'best', 'professional', 'quality', 'recommended', 'friendly', 'satisfied', 'outstanding', 'fantastic'];
-    const negativeWords = ['bad', 'terrible', 'awful', 'worst', 'poor', 'horrible', 'disappointed', 'unprofessional', 'slow', 'expensive', 'rude'];
+    const positiveWords = [
+      'excellent',
+      'great',
+      'amazing',
+      'wonderful',
+      'best',
+      'professional',
+      'quality',
+      'recommended',
+      'friendly',
+      'satisfied',
+      'outstanding',
+      'fantastic',
+    ];
+    const negativeWords = [
+      'bad',
+      'terrible',
+      'awful',
+      'worst',
+      'poor',
+      'horrible',
+      'disappointed',
+      'unprofessional',
+      'slow',
+      'expensive',
+      'rude',
+    ];
 
-    const positiveCount = positiveWords.filter(word => lowerText.includes(word)).length;
-    const negativeCount = negativeWords.filter(word => lowerText.includes(word)).length;
+    const positiveCount = positiveWords.filter((word) => lowerText.includes(word)).length;
+    const negativeCount = negativeWords.filter((word) => lowerText.includes(word)).length;
 
     if (positiveCount > negativeCount) {
-      return { sentiment: 'positive', confidence: Math.min(0.8, 0.5 + (positiveCount * 0.1)) };
+      return { sentiment: 'positive', confidence: Math.min(0.8, 0.5 + positiveCount * 0.1) };
     } else if (negativeCount > positiveCount) {
-      return { sentiment: 'negative', confidence: Math.min(0.8, 0.5 + (negativeCount * 0.1)) };
+      return { sentiment: 'negative', confidence: Math.min(0.8, 0.5 + negativeCount * 0.1) };
     } else {
       return { sentiment: 'neutral', confidence: 0.6 };
     }
   }
 
   // Fallback text classification using keyword matching
-  private fallbackTextClassification(text: string, labels: string[]): { label: string; score: number }[] {
+  private fallbackTextClassification(
+    text: string,
+    labels: string[]
+  ): { label: string; score: number }[] {
     const lowerText = text.toLowerCase();
-    const labelScores = labels.map(label => {
+    const labelScores = labels.map((label) => {
       const keywords = label.toLowerCase().split(/[\s-_]+/);
-      const matchCount = keywords.filter(keyword => lowerText.includes(keyword)).length;
+      const matchCount = keywords.filter((keyword) => lowerText.includes(keyword)).length;
       return {
         label,
-        score: matchCount / keywords.length
+        score: matchCount / keywords.length,
       };
     });
 
@@ -584,10 +597,10 @@ export const huggingFaceClient = HuggingFaceClient.getInstance();
 // Export utility functions
 export function validateEmbeddingDimensions(embeddings: number[][]): boolean {
   if (!Array.isArray(embeddings) || embeddings.length === 0) return false;
-  
+
   const expectedDim = 384; // all-MiniLM-L6-v2
-  return embeddings.every(embedding => 
-    Array.isArray(embedding) && embedding.length === expectedDim
+  return embeddings.every(
+    (embedding) => Array.isArray(embedding) && embedding.length === expectedDim
   );
 }
 
@@ -599,11 +612,12 @@ export function calculateSimilarityScore(similarities: number[][]): {
 } {
   const allScores = similarities.flat();
   const threshold = 0.5; // Similarity threshold for "good" matches
-  
+
   return {
     averageScore: allScores.reduce((sum, score) => sum + score, 0) / allScores.length,
     maxScore: Math.max(...allScores),
     minScore: Math.min(...allScores),
-    coveragePercentage: (allScores.filter(score => score >= threshold).length / allScores.length) * 100,
+    coveragePercentage:
+      (allScores.filter((score) => score >= threshold).length / allScores.length) * 100,
   };
 }

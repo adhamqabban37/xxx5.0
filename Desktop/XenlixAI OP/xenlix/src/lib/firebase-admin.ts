@@ -43,7 +43,7 @@ export const COLLECTIONS = {
 // Firestore service class
 export class FirestoreService {
   private static instance: FirestoreService;
-  
+
   static getInstance(): FirestoreService {
     if (!FirestoreService.instance) {
       FirestoreService.instance = new FirestoreService();
@@ -100,15 +100,16 @@ export class FirestoreService {
     try {
       if (!db) return [];
 
-      const snapshot = await db.collection(COLLECTIONS.SCAN_RESULTS)
+      const snapshot = await db
+        .collection(COLLECTIONS.SCAN_RESULTS)
         .where('userId', '==', userId)
         .orderBy('createdAt', 'desc')
         .limit(limit)
         .get();
 
-      return snapshot.docs.map(doc => ({
+      return snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
     } catch (error) {
       console.error('Error getting user scan results:', error);
@@ -200,7 +201,8 @@ export class FirestoreService {
       if (!db) return null;
 
       const textHash = Buffer.from(text).toString('base64').substring(0, 50);
-      const snapshot = await db.collection(COLLECTIONS.EMBEDDINGS)
+      const snapshot = await db
+        .collection(COLLECTIONS.EMBEDDINGS)
         .where('textHash', '==', textHash)
         .where('model', '==', model)
         .limit(1)
@@ -305,12 +307,14 @@ export class FirestoreService {
   }
 
   // Bulk operations
-  async batchWrite(operations: Array<{
-    collection: string;
-    operation: 'set' | 'update' | 'delete';
-    docId?: string;
-    data?: any;
-  }>): Promise<boolean> {
+  async batchWrite(
+    operations: Array<{
+      collection: string;
+      operation: 'set' | 'update' | 'delete';
+      docId?: string;
+      data?: any;
+    }>
+  ): Promise<boolean> {
     try {
       if (!db) {
         console.warn('Firestore not available, batch write skipped');
@@ -319,8 +323,8 @@ export class FirestoreService {
 
       const batch = db.batch();
 
-      operations.forEach(op => {
-        const docRef = op.docId 
+      operations.forEach((op) => {
+        const docRef = op.docId
           ? db.collection(op.collection).doc(op.docId)
           : db.collection(op.collection).doc();
 

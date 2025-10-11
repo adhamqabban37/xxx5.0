@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { ReactNode } from "react";
+import Link from 'next/link';
+import { ReactNode } from 'react';
 
 interface EmptyProps {
   icon?: ReactNode;
@@ -12,15 +12,15 @@ interface EmptyProps {
   className?: string;
 }
 
-export default function Empty({ 
-  icon, 
-  title, 
-  description, 
+export default function Empty({
+  icon,
+  title,
+  description,
   actionLabel,
   actionHref,
-  ctaText, 
+  ctaText,
   ctaHref,
-  className = ""
+  className = '',
 }: EmptyProps) {
   // Use actionLabel/actionHref if provided, otherwise fall back to ctaText/ctaHref
   const buttonText = actionLabel || ctaText;

@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # Lighthouse audit service
+  lighthouse:
+    build:
+      context: .
+      dockerfile: Dockerfile.lighthouse
+      target: lighthouse
+    environment:
+      - TARGET_URL=${TARGET_URL:-http://app:3000}
+      - CHROME_PATH=/usr/bin/chromium
+      - LH_OUTPUT=json,html
+      - NODE_ENV=production
+    volumes:
+      - ./reports:/app/reports
+    networks:
+      - xenlix-network
+    depends_on:
+      app:
+        condition: service_healthy
+    profiles:
+      - audit
+      - full
+
+  # Main application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.lighthouse
+      target: app-with-lighthouse
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./dev.db
+    volumes:
+      - ./prisma:/app/prisma
+    networks:
+      - xenlix-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    profiles:
+      - app
+      - audit
+      - full
+
+  # Redis for caching (if needed)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - xenlix-network
+    profiles:
+      - cache
+      - full
+
+networks:
+  xenlix-network:
+    driver: bridge
+
+volumes:
+  lighthouse-reports:

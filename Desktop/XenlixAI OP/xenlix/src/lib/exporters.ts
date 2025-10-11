@@ -6,7 +6,7 @@ export function toJSON(bundle: AdDraftBundle): string {
 
 export function toCSV(bundle: AdDraftBundle): string {
   const rows: string[] = ['channel,field,variantIndex,text'];
-  
+
   // Google ads
   bundle.google.headlines.forEach((text, index) => {
     rows.push(`google,headline,${index + 1},"${text.replace(/"/g, '""')}"`);

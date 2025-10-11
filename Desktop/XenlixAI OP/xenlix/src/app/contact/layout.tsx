@@ -5,11 +5,14 @@ import ContentSchema from '../../components/ContentSchema';
 
 export const metadata: Metadata = {
   title: 'Contact XenlixAI | Get Expert Help with AEO & AI Marketing',
-  description: 'Get expert help with AI search optimization & marketing automation. Book a free consultation with our AEO specialists. Start your growth today!',
-  keywords: 'contact XenlixAI, AEO consultation, AI marketing help, answer engine optimization support, AI search optimization contact, book AEO demo',
+  description:
+    'Get expert help with AI search optimization & marketing automation. Book a free consultation with our AEO specialists. Start your growth today!',
+  keywords:
+    'contact XenlixAI, AEO consultation, AI marketing help, answer engine optimization support, AI search optimization contact, book AEO demo',
   openGraph: {
     title: 'Contact XenlixAI | Get Expert Help with AEO & AI Marketing',
-    description: 'Get expert help with Answer Engine Optimization (AEO), AI search visibility, and AI marketing automation. Book a free consultation with our AEO specialists.',
+    description:
+      'Get expert help with Answer Engine Optimization (AEO), AI search visibility, and AI marketing automation. Book a free consultation with our AEO specialists.',
     type: 'website',
     url: 'https://www.xenlixai.com/contact',
     siteName: 'XenlixAI',
@@ -25,7 +28,8 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Contact XenlixAI — Book Demo / Get in Touch',
-    description: 'Ready to transform your advertising with AI? Book a personalized demo or get in touch with our team.',
+    description:
+      'Ready to transform your advertising with AI? Book a personalized demo or get in touch with our team.',
     creator: '@XenlixAI',
     images: ['https://www.xenlixai.com/og-contact.jpg'],
   },
@@ -45,23 +49,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContactLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ContactLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       {/* BreadcrumbList + WebPage Schema */}
-      <BreadcrumbSchema 
+      <BreadcrumbSchema
         webPageProps={{
-          name: "Contact Us | XenlixAI",
-          description: "Get expert help with Answer Engine Optimization (AEO), AI search visibility, and AI marketing automation. Book a free consultation with our AEO specialists.",
+          name: 'Contact Us | XenlixAI',
+          description:
+            'Get expert help with Answer Engine Optimization (AEO), AI search visibility, and AI marketing automation. Book a free consultation with our AEO specialists.',
           dateModified: new Date().toISOString().split('T')[0],
           author: {
-            "@type": "Organization",
-            "@id": "https://xenlix.ai#organization"
-          }
+            '@type': 'Organization',
+            '@id': 'https://xenlix.ai#organization',
+          },
         }}
       />
 

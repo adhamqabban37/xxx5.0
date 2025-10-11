@@ -1,0 +1,2 @@
+undefined
+ΓÇëERR_PNPM_RECURSIVE_EXEC_FIRST_FAILΓÇë Command "tailwindcss" not found

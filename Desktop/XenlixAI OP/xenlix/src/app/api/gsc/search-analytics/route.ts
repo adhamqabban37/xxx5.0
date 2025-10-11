@@ -8,10 +8,19 @@ import { z } from 'zod';
 // Request validation schema
 const searchAnalyticsSchema = z.object({
   siteUrl: z.string().url(),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   days: z.number().min(1).max(90).optional().default(28),
-  dimensions: z.array(z.enum(['query', 'page', 'country', 'device', 'searchAppearance'])).optional().default(['query']),
+  dimensions: z
+    .array(z.enum(['query', 'page', 'country', 'device', 'searchAppearance']))
+    .optional()
+    .default(['query']),
   type: z.enum(['web', 'image', 'video']).optional().default('web'),
   rowLimit: z.number().min(1).max(25000).optional().default(100),
   startRow: z.number().min(0).optional().default(0),
@@ -22,16 +31,13 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     // Check for Google OAuth tokens
     if (!session.accessToken) {
       return NextResponse.json(
-        { 
+        {
           error: 'GSC_AUTH_REQUIRED',
           message: 'Google Search Console authentication required. Please sign in with Google.',
         },
@@ -42,12 +48,12 @@ export async function POST(request: NextRequest) {
     // Parse and validate request body
     const body = await request.json();
     const validation = searchAnalyticsSchema.safeParse(body);
-    
+
     if (!validation.success) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid request',
-          details: validation.error.issues.map(issue => ({
+          details: validation.error.issues.map((issue) => ({
             path: issue.path.join('.'),
             message: issue.message,
           })),
@@ -56,15 +62,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { 
-      siteUrl, 
-      startDate: requestStartDate, 
-      endDate: requestEndDate, 
+    const {
+      siteUrl,
+      startDate: requestStartDate,
+      endDate: requestEndDate,
       days,
       dimensions,
       type,
       rowLimit,
-      startRow 
+      startRow,
     } = validation.data;
 
     // Calculate date range
@@ -98,41 +104,51 @@ export async function POST(request: NextRequest) {
 
       // Process and enhance the data
       const rows = analyticsResponse.rows || [];
-      
+
       // Calculate totals and summary metrics
-      const totals = rows.reduce((acc, row) => ({
-        totalClicks: acc.totalClicks + row.clicks,
-        totalImpressions: acc.totalImpressions + row.impressions,
-        totalQueries: acc.totalQueries + (dimensions.includes('query') ? 1 : 0),
-        totalPages: acc.totalPages + (dimensions.includes('page') ? 1 : 0),
-      }), { totalClicks: 0, totalImpressions: 0, totalQueries: 0, totalPages: 0 });
+      const totals = rows.reduce(
+        (acc, row) => ({
+          totalClicks: acc.totalClicks + row.clicks,
+          totalImpressions: acc.totalImpressions + row.impressions,
+          totalQueries: acc.totalQueries + (dimensions.includes('query') ? 1 : 0),
+          totalPages: acc.totalPages + (dimensions.includes('page') ? 1 : 0),
+        }),
+        { totalClicks: 0, totalImpressions: 0, totalQueries: 0, totalPages: 0 }
+      );
 
-      const averageCTR = totals.totalImpressions > 0 
-        ? (totals.totalClicks / totals.totalImpressions) * 100 
-        : 0;
+      const averageCTR =
+        totals.totalImpressions > 0 ? (totals.totalClicks / totals.totalImpressions) * 100 : 0;
 
-      const averagePosition = rows.length > 0 
-        ? rows.reduce((sum, row) => sum + row.position * row.impressions, 0) / totals.totalImpressions
-        : 0;
+      const averagePosition =
+        rows.length > 0
+          ? rows.reduce((sum, row) => sum + row.position * row.impressions, 0) /
+            totals.totalImpressions
+          : 0;
 
       // Format rows with additional computed fields
       const enhancedRows = rows.map((row, index) => ({
         ...row,
         rank: startRow + index + 1,
-        ctrPercentage: (row.ctr * 100),
+        ctrPercentage: row.ctr * 100,
         clickShare: totals.totalClicks > 0 ? (row.clicks / totals.totalClicks) * 100 : 0,
-        impressionShare: totals.totalImpressions > 0 ? (row.impressions / totals.totalImpressions) * 100 : 0,
+        impressionShare:
+          totals.totalImpressions > 0 ? (row.impressions / totals.totalImpressions) * 100 : 0,
         // Format keys based on dimensions for easier display
-        dimensionValues: dimensions.reduce((acc, dimension, i) => {
-          acc[dimension] = row.keys[i] || '';
-          return acc;
-        }, {} as Record<string, string>),
+        dimensionValues: dimensions.reduce(
+          (acc, dimension, i) => {
+            acc[dimension] = row.keys[i] || '';
+            return acc;
+          },
+          {} as Record<string, string>
+        ),
       }));
 
       // Get comparison data for previous period if possible
       let previousPeriodData = null;
       try {
-        const daysDiff = Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24));
+        const daysDiff = Math.ceil(
+          (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
+        );
         const prevEndDate = new Date(startDate);
         prevEndDate.setDate(prevEndDate.getDate() - 1);
         const prevStartDate = new Date(prevEndDate);
@@ -155,7 +171,7 @@ export async function POST(request: NextRequest) {
             position: prevRow.position,
             clicksChange: totals.totalClicks - prevRow.clicks,
             impressionsChange: totals.totalImpressions - prevRow.impressions,
-            ctrChange: (averageCTR / 100) - prevRow.ctr,
+            ctrChange: averageCTR / 100 - prevRow.ctr,
             positionChange: averagePosition - prevRow.position,
           };
         }
@@ -191,23 +207,22 @@ export async function POST(request: NextRequest) {
           },
         },
       });
-
     } catch (error) {
       // Handle specific GSC API errors
       if (error instanceof Error) {
         if (error.message === 'GSC_AUTH_REQUIRED') {
           return NextResponse.json(
-            { 
+            {
               error: 'GSC_AUTH_REQUIRED',
               message: 'Google Search Console authentication has expired. Please re-authenticate.',
             },
             { status: 401 }
           );
         }
-        
+
         if (error.message === 'GSC_PERMISSION_DENIED') {
           return NextResponse.json(
-            { 
+            {
               error: 'GSC_PERMISSION_DENIED',
               message: 'Access denied to this Search Console property.',
             },
@@ -217,7 +232,7 @@ export async function POST(request: NextRequest) {
 
         if (error.message.includes('GSC API error')) {
           return NextResponse.json(
-            { 
+            {
               error: 'GSC_API_ERROR',
               message: 'Search Console API error. The requested data may not be available.',
               details: error.message,
@@ -229,20 +244,16 @@ export async function POST(request: NextRequest) {
 
       console.error('GSC search analytics API error:', error);
       return NextResponse.json(
-        { 
+        {
           error: 'GSC_API_ERROR',
           message: 'Failed to fetch search analytics data. Please try again later.',
         },
         { status: 500 }
       );
     }
-
   } catch (error) {
     console.error('Search analytics endpoint error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -252,10 +263,7 @@ export async function GET(request: NextRequest) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email || !session.accessToken) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -264,10 +272,7 @@ export async function GET(request: NextRequest) {
     const days = parseInt(searchParams.get('days') || '28');
 
     if (!siteUrl) {
-      return NextResponse.json(
-        { error: 'siteUrl parameter is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'siteUrl parameter is required' }, { status: 400 });
     }
 
     // Initialize GSC client
@@ -303,20 +308,12 @@ export async function GET(request: NextRequest) {
           days,
         },
       });
-
     } catch (error) {
       console.error('GSC quick analytics error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch analytics data' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch analytics data' }, { status: 500 });
     }
-
   } catch (error) {
     console.error('Search analytics GET endpoint error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

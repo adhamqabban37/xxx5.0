@@ -7,7 +7,10 @@ export default function Loading() {
         <p className="text-lg text-gray-600">Analyzing your website's performance...</p>
         <div className="mt-6 space-y-2">
           <div className="w-64 h-2 bg-gray-200 rounded-full mx-auto overflow-hidden">
-            <div className="h-full bg-green-500 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+            <div
+              className="h-full bg-green-500 rounded-full animate-pulse"
+              style={{ width: '60%' }}
+            ></div>
           </div>
           <p className="text-sm text-gray-500">Processing technical SEO factors</p>
         </div>

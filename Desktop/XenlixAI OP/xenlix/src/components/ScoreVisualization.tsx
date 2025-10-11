@@ -4,17 +4,17 @@
  */
 
 import React from 'react';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  CheckCircle,
   XCircle,
   BarChart3,
   Target,
   Brain,
   Globe,
-  MessageSquare
+  MessageSquare,
 } from 'lucide-react';
 
 interface ScoreData {
@@ -57,36 +57,37 @@ function getScoreColor(status: string): { color: string; bgColor: string } {
     excellent: { color: 'text-[#06B6D4]', bgColor: 'bg-[#06B6D4]/10' }, // Secondary - positive indicators
     good: { color: 'text-[#06B6D4]', bgColor: 'bg-[#06B6D4]/10' }, // Secondary - good scores
     fair: { color: 'text-[#F97316]', bgColor: 'bg-[#F97316]/10' }, // Accent - moderate performance
-    poor: { color: 'text-[#4F46E5]', bgColor: 'bg-[#4F46E5]/10' } // Primary - critical issues
+    poor: { color: 'text-[#4F46E5]', bgColor: 'bg-[#4F46E5]/10' }, // Primary - critical issues
   };
   return colors[status as keyof typeof colors] || colors.poor;
 }
 
-function CircularProgress({ score, size = 120, strokeWidth = 8 }: {
+function CircularProgress({
+  score,
+  size = 120,
+  strokeWidth = 8,
+}: {
   score: number;
   size?: number;
   strokeWidth?: number;
 }) {
   // Protect against NaN values
   const safeScore = isNaN(score) ? 0 : Math.max(0, Math.min(100, score));
-  
+
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const offset = circumference - (safeScore / 100) * circumference;  const getStrokeColor = (score: number) => {
+  const offset = circumference - (safeScore / 100) * circumference;
+  const getStrokeColor = (score: number) => {
     if (isNaN(score)) return '#e5e7eb'; // gray for invalid values
     if (score >= 80) return '#06B6D4'; // Secondary - positive indicators
-    if (score >= 60) return '#06B6D4'; // Secondary - good scores  
+    if (score >= 60) return '#06B6D4'; // Secondary - good scores
     if (score >= 40) return '#F97316'; // Accent - moderate performance
     return '#4F46E5'; // Primary - critical issues
   };
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
-      <svg
-        className="transform -rotate-90"
-        width={size}
-        height={size}
-      >
+      <svg className="transform -rotate-90" width={size} height={size}>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -118,7 +119,12 @@ function CircularProgress({ score, size = 120, strokeWidth = 8 }: {
   );
 }
 
-function ScoreBar({ score, maxScore = 100, label, color }: {
+function ScoreBar({
+  score,
+  maxScore = 100,
+  label,
+  color,
+}: {
   score: number;
   maxScore?: number;
   label: string;
@@ -128,12 +134,14 @@ function ScoreBar({ score, maxScore = 100, label, color }: {
   const safeScore = isNaN(score) ? 0 : score;
   const safeMaxScore = isNaN(maxScore) ? 100 : maxScore;
   const percentage = (safeScore / safeMaxScore) * 100;
-  
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
         <span className="text-sm font-medium text-gray-700">{label}</span>
-        <span className="text-sm font-bold text-gray-900">{safeScore}/{safeMaxScore}</span>
+        <span className="text-sm font-bold text-gray-900">
+          {safeScore}/{safeMaxScore}
+        </span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-3">
         <div
@@ -148,28 +156,28 @@ function ScoreBar({ score, maxScore = 100, label, color }: {
 export function OverallScoreDisplay({ score }: { score: number }) {
   const status = getScoreStatus(score);
   const { color } = getScoreColor(status);
-  
+
   const getScoreMessage = (score: number) => {
-    if (score >= 80) return "Excellent! Your site is well-optimized for AI search engines.";
-    if (score >= 60) return "Good foundation with significant room for improvement.";
-    if (score >= 40) return "Several opportunities to enhance your AI search visibility.";
-    return "Your site needs comprehensive optimization for AI search engines.";
+    if (score >= 80) return 'Excellent! Your site is well-optimized for AI search engines.';
+    if (score >= 60) return 'Good foundation with significant room for improvement.';
+    if (score >= 40) return 'Several opportunities to enhance your AI search visibility.';
+    return 'Your site needs comprehensive optimization for AI search engines.';
   };
 
   const getGradeColor = (score: number) => {
-    if (score >= 80) return "text-[#06B6D4] bg-[#06B6D4]/10"; // Secondary - excellent scores
-    if (score >= 60) return "text-[#06B6D4] bg-[#06B6D4]/10"; // Secondary - good scores
-    if (score >= 40) return "text-[#F97316] bg-[#F97316]/10"; // Accent - moderate performance
-    return "text-[#4F46E5] bg-[#4F46E5]/10"; // Primary - critical issues
+    if (score >= 80) return 'text-[#06B6D4] bg-[#06B6D4]/10'; // Secondary - excellent scores
+    if (score >= 60) return 'text-[#06B6D4] bg-[#06B6D4]/10'; // Secondary - good scores
+    if (score >= 40) return 'text-[#F97316] bg-[#F97316]/10'; // Accent - moderate performance
+    return 'text-[#4F46E5] bg-[#4F46E5]/10'; // Primary - critical issues
   };
 
   const getGrade = (score: number) => {
-    if (score >= 90) return "A+";
-    if (score >= 80) return "A";
-    if (score >= 70) return "B";
-    if (score >= 60) return "C";
-    if (score >= 50) return "D";
-    return "F";
+    if (score >= 90) return 'A+';
+    if (score >= 80) return 'A';
+    if (score >= 70) return 'B';
+    if (score >= 60) return 'C';
+    if (score >= 50) return 'D';
+    return 'F';
   };
 
   return (
@@ -177,15 +185,13 @@ export function OverallScoreDisplay({ score }: { score: number }) {
       <div className="flex items-center justify-center space-x-8 mb-6">
         <CircularProgress score={score} size={140} strokeWidth={10} />
         <div className="text-left">
-          <div className={`inline-block px-4 py-2 rounded-lg font-bold text-2xl ${getGradeColor(score)}`}>
+          <div
+            className={`inline-block px-4 py-2 rounded-lg font-bold text-2xl ${getGradeColor(score)}`}
+          >
             Grade: {getGrade(score)}
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mt-4 mb-2">
-            AEO Readiness Score
-          </h2>
-          <p className="text-gray-600 text-lg max-w-md">
-            {getScoreMessage(score)}
-          </p>
+          <h2 className="text-3xl font-bold text-gray-900 mt-4 mb-2">AEO Readiness Score</h2>
+          <p className="text-gray-600 text-lg max-w-md">{getScoreMessage(score)}</p>
         </div>
       </div>
     </div>
@@ -204,8 +210,8 @@ export function DetailedScoreBreakdown({ scores }: { scores: ScoreVisualizationP
       recommendations: [
         'Add more question-based headings',
         'Include FAQ sections',
-        'Optimize for voice search queries'
-      ]
+        'Optimize for voice search queries',
+      ],
     },
     {
       category: 'Answer Readiness',
@@ -217,8 +223,8 @@ export function DetailedScoreBreakdown({ scores }: { scores: ScoreVisualizationP
       recommendations: [
         'Provide direct, concise answers',
         'Use structured data markup',
-        'Add numbered lists and bullet points'
-      ]
+        'Add numbered lists and bullet points',
+      ],
     },
     {
       category: 'Conversational Tone',
@@ -230,8 +236,8 @@ export function DetailedScoreBreakdown({ scores }: { scores: ScoreVisualizationP
       recommendations: [
         'Use natural, conversational language',
         'Add personal pronouns (you, we, I)',
-        'Include contractions and casual phrases'
-      ]
+        'Include contractions and casual phrases',
+      ],
     },
     {
       category: 'Technical SEO',
@@ -243,8 +249,8 @@ export function DetailedScoreBreakdown({ scores }: { scores: ScoreVisualizationP
       recommendations: [
         'Improve page load speed',
         'Add missing alt tags',
-        'Implement structured data'
-      ]
+        'Implement structured data',
+      ],
     },
     {
       category: 'Content Readability',
@@ -256,9 +262,9 @@ export function DetailedScoreBreakdown({ scores }: { scores: ScoreVisualizationP
       recommendations: [
         'Simplify sentence structure',
         'Use shorter paragraphs',
-        'Add transition words'
-      ]
-    }
+        'Add transition words',
+      ],
+    },
   ];
 
   return (
@@ -272,9 +278,7 @@ export function DetailedScoreBreakdown({ scores }: { scores: ScoreVisualizationP
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className={`p-2 rounded-lg ${item.bgColor}`}>
-                  <div className={item.color}>
-                    {item.icon}
-                  </div>
+                  <div className={item.color}>{item.icon}</div>
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-900">{item.category}</h4>
@@ -288,16 +292,22 @@ export function DetailedScoreBreakdown({ scores }: { scores: ScoreVisualizationP
                 <div className="text-xs text-gray-500">out of {item.maxScore}</div>
               </div>
             </div>
-            
-            <ScoreBar 
-              score={isNaN(item.score) ? 0 : item.score} 
+
+            <ScoreBar
+              score={isNaN(item.score) ? 0 : item.score}
               maxScore={item.maxScore}
               label=""
-              color={item.status === 'excellent' ? 'bg-green-500' :
-                    item.status === 'good' ? 'bg-blue-500' :
-                    item.status === 'fair' ? 'bg-yellow-500' : 'bg-red-500'}
+              color={
+                item.status === 'excellent'
+                  ? 'bg-green-500'
+                  : item.status === 'good'
+                    ? 'bg-blue-500'
+                    : item.status === 'fair'
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
+              }
             />
-            
+
             {item.score < 70 && (
               <div className="bg-gray-50 rounded-lg p-3">
                 <p className="text-xs text-gray-600 mb-2 font-medium">Quick Wins:</p>
@@ -318,12 +328,16 @@ export function DetailedScoreBreakdown({ scores }: { scores: ScoreVisualizationP
   );
 }
 
-export function AIEngineScores({ scores }: { scores: ScoreVisualizationProps['scores']['aiEngineScores'] }) {
+export function AIEngineScores({
+  scores,
+}: {
+  scores: ScoreVisualizationProps['scores']['aiEngineScores'];
+}) {
   const engines = [
     { name: 'Google AI', score: scores.googleAI, icon: '🟢', color: 'bg-green-500' },
     { name: 'OpenAI', score: scores.openAI, icon: '🔵', color: 'bg-blue-500' },
     { name: 'Anthropic', score: scores.anthropic, icon: '🟠', color: 'bg-orange-500' },
-    { name: 'Perplexity', score: scores.perplexity, icon: '🟣', color: 'bg-purple-500' }
+    { name: 'Perplexity', score: scores.perplexity, icon: '🟣', color: 'bg-purple-500' },
   ];
 
   return (
@@ -342,12 +356,16 @@ export function AIEngineScores({ scores }: { scores: ScoreVisualizationProps['sc
               <CircularProgress score={engine.score} size={80} strokeWidth={6} />
             </div>
             <div className="mt-2">
-              <span className={`text-xs px-2 py-1 rounded-full text-white ${
-                engine.score >= 70 ? 'bg-green-500' :
-                engine.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-              }`}>
-                {engine.score >= 70 ? 'Optimized' :
-                 engine.score >= 50 ? 'Needs Work' : 'Critical'}
+              <span
+                className={`text-xs px-2 py-1 rounded-full text-white ${
+                  engine.score >= 70
+                    ? 'bg-green-500'
+                    : engine.score >= 50
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
+                }`}
+              >
+                {engine.score >= 70 ? 'Optimized' : engine.score >= 50 ? 'Needs Work' : 'Critical'}
               </span>
             </div>
           </div>

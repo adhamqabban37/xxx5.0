@@ -9,12 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Search, 
-  Code, 
-  FileText, 
-  CheckCircle, 
-  AlertTriangle, 
+import {
+  Search,
+  Code,
+  FileText,
+  CheckCircle,
+  AlertTriangle,
   XCircle,
   Copy,
   Download,
@@ -25,7 +25,7 @@ import {
   TrendingUp,
   Globe,
   MessageSquare,
-  Settings
+  Settings,
 } from 'lucide-react';
 
 interface AEOAnalysisProps {
@@ -97,13 +97,13 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
 
   const getPageTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      'home': 'bg-blue-100 text-blue-800',
-      'services': 'bg-green-100 text-green-800',
-      'contact': 'bg-purple-100 text-purple-800',
-      'about': 'bg-orange-100 text-orange-800',
-      'blog': 'bg-red-100 text-red-800',
-      'locations': 'bg-yellow-100 text-yellow-800',
-      'other': 'bg-gray-100 text-gray-800'
+      home: 'bg-blue-100 text-blue-800',
+      services: 'bg-green-100 text-green-800',
+      contact: 'bg-purple-100 text-purple-800',
+      about: 'bg-orange-100 text-orange-800',
+      blog: 'bg-red-100 text-red-800',
+      locations: 'bg-yellow-100 text-yellow-800',
+      other: 'bg-gray-100 text-gray-800',
     };
     return colors[type] || colors.other;
   };
@@ -126,7 +126,8 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
             Production AEO Analyzer
           </CardTitle>
           <CardDescription>
-            Generate production-ready LocalBusiness schemas, FAQs, and meta descriptions using real crawled content
+            Generate production-ready LocalBusiness schemas, FAQs, and meta descriptions using real
+            crawled content
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -142,7 +143,9 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                 onChange={(e) => setNewUrl(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && addUrl()}
               />
-              <Button onClick={addUrl} variant="outline">Add</Button>
+              <Button onClick={addUrl} variant="outline">
+                Add
+              </Button>
             </div>
           </div>
 
@@ -152,11 +155,14 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
               <Label>URLs to Analyze ({urls.length})</Label>
               <div className="space-y-1 max-h-32 overflow-y-auto">
                 {urls.map((url, index) => (
-                  <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-50 p-2 rounded"
+                  >
                     <span className="text-sm truncate flex-1">{url}</span>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => removeUrl(index)}
                       className="text-red-500 hover:text-red-700"
                     >
@@ -170,8 +176,8 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
 
           {/* Run Analysis */}
           <div className="flex gap-2">
-            <Button 
-              onClick={runAnalysis} 
+            <Button
+              onClick={runAnalysis}
               disabled={isAnalyzing || urls.length === 0}
               className="flex-1"
             >
@@ -212,10 +218,11 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Validation Results</span>
-                <Badge 
-                  className={results.validation.richResultsEligible ? 
-                    'bg-green-100 text-green-800' : 
-                    'bg-red-100 text-red-800'
+                <Badge
+                  className={
+                    results.validation.richResultsEligible
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
                   }
                 >
                   {results.validation.richResultsEligible ? 'Rich Results Ready' : 'Needs Fixes'}
@@ -239,7 +246,9 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-2">
                     <Code className="h-4 w-4 text-purple-500" />
-                    <span className="ml-2 font-semibold">{results.metadata.schemasGenerated} Schemas</span>
+                    <span className="ml-2 font-semibold">
+                      {results.metadata.schemasGenerated} Schemas
+                    </span>
                   </div>
                 </div>
               </div>
@@ -263,30 +272,34 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                   <h4 className="font-semibold mb-2">Rich Results Testing:</h4>
                   <div className="space-y-2">
                     <div className="grid gap-2">
-                      {results.validation.richResultsTestUrls.google.map((url: string, index: number) => (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => window.open(url, '_blank')}
-                          className="justify-start text-left"
-                        >
-                          <ExternalLink className="h-3 w-3 mr-2" />
-                          Test Schema #{index + 1}
-                        </Button>
-                      ))}
-                      {results.validation.richResultsTestUrls.testing.map((url: string, index: number) => (
-                        <Button
-                          key={`test-${index}`}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => window.open(url, '_blank')}
-                          className="justify-start text-left"
-                        >
-                          <Globe className="h-3 w-3 mr-2" />
-                          Rich Results Tester
-                        </Button>
-                      ))}
+                      {results.validation.richResultsTestUrls.google.map(
+                        (url: string, index: number) => (
+                          <Button
+                            key={index}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(url, '_blank')}
+                            className="justify-start text-left"
+                          >
+                            <ExternalLink className="h-3 w-3 mr-2" />
+                            Test Schema #{index + 1}
+                          </Button>
+                        )
+                      )}
+                      {results.validation.richResultsTestUrls.testing.map(
+                        (url: string, index: number) => (
+                          <Button
+                            key={`test-${index}`}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(url, '_blank')}
+                            className="justify-start text-left"
+                          >
+                            <Globe className="h-3 w-3 mr-2" />
+                            Rich Results Tester
+                          </Button>
+                        )
+                      )}
                     </div>
                   </div>
                 </div>
@@ -327,7 +340,9 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => copyToClipboard(JSON.stringify(results.localBusinessSchema, null, 2))}
+                          onClick={() =>
+                            copyToClipboard(JSON.stringify(results.localBusinessSchema, null, 2))
+                          }
                         >
                           <Copy className="h-4 w-4 mr-2" />
                           Copy JSON-LD
@@ -349,13 +364,13 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                     </div>
 
                     {/* Missing Data Warnings */}
-                    {(results.localBusinessSchema.name?.includes('TODO') || 
+                    {(results.localBusinessSchema.name?.includes('TODO') ||
                       results.localBusinessSchema.telephone?.includes('TODO')) && (
                       <Alert>
                         <AlertTriangle className="h-4 w-4" />
                         <AlertDescription>
-                          <strong>Action Required:</strong> Some business information contains TODO placeholders. 
-                          Update with real data for production use.
+                          <strong>Action Required:</strong> Some business information contains TODO
+                          placeholders. Update with real data for production use.
                         </AlertDescription>
                       </Alert>
                     )}
@@ -424,14 +439,23 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => copyToClipboard(results.nextjsIntegration.pageSchemas.find((p: any) => p.url === url)?.code || '')}
+                              onClick={() =>
+                                copyToClipboard(
+                                  results.nextjsIntegration.pageSchemas.find(
+                                    (p: any) => p.url === url
+                                  )?.code || ''
+                                )
+                              }
                             >
                               <Copy className="h-4 w-4 mr-2" />
                               Copy HTML
                             </Button>
                           </div>
                           <pre className="text-blue-300 text-xs overflow-x-auto max-h-48">
-                            <code>{results.nextjsIntegration.pageSchemas.find((p: any) => p.url === url)?.code || ''}</code>
+                            <code>
+                              {results.nextjsIntegration.pageSchemas.find((p: any) => p.url === url)
+                                ?.code || ''}
+                            </code>
                           </pre>
                         </div>
                       </div>
@@ -458,11 +482,15 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                         <div className="bg-blue-50 p-4 rounded-lg">
                           <div className="space-y-2">
                             <div>
-                              <span className="text-sm font-medium">Title ({meta.title.length} chars):</span>
+                              <span className="text-sm font-medium">
+                                Title ({meta.title.length} chars):
+                              </span>
                               <div className="font-semibold">{meta.title}</div>
                             </div>
                             <div>
-                              <span className="text-sm font-medium">Description ({meta.description.length} chars):</span>
+                              <span className="text-sm font-medium">
+                                Description ({meta.description.length} chars):
+                              </span>
                               <div className="text-gray-700">{meta.description}</div>
                             </div>
                           </div>
@@ -485,18 +513,28 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                         {/* Code */}
                         <div className="bg-gray-900 rounded-lg p-4">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-purple-400 text-sm font-mono">Next.js Metadata</span>
+                            <span className="text-purple-400 text-sm font-mono">
+                              Next.js Metadata
+                            </span>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => copyToClipboard(results.nextjsIntegration.metaTags.find((m: any) => m.url === url)?.code || '')}
+                              onClick={() =>
+                                copyToClipboard(
+                                  results.nextjsIntegration.metaTags.find((m: any) => m.url === url)
+                                    ?.code || ''
+                                )
+                              }
                             >
                               <Copy className="h-4 w-4 mr-2" />
                               Copy Code
                             </Button>
                           </div>
                           <pre className="text-purple-300 text-xs overflow-x-auto">
-                            <code>{results.nextjsIntegration.metaTags.find((m: any) => m.url === url)?.code || ''}</code>
+                            <code>
+                              {results.nextjsIntegration.metaTags.find((m: any) => m.url === url)
+                                ?.code || ''}
+                            </code>
                           </pre>
                         </div>
                       </div>
@@ -536,18 +574,20 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                     {/* Page Schemas */}
                     <div>
                       <h4 className="font-semibold mb-2">2. Page-Specific FAQ Schemas</h4>
-                      {results.nextjsIntegration.pageSchemas.map((pageSchema: any, index: number) => (
-                        <div key={index} className="mb-4">
-                          <div className="bg-gray-50 p-3 rounded text-sm mb-2">
-                            <strong>File:</strong> {pageSchema.filePath}
+                      {results.nextjsIntegration.pageSchemas.map(
+                        (pageSchema: any, index: number) => (
+                          <div key={index} className="mb-4">
+                            <div className="bg-gray-50 p-3 rounded text-sm mb-2">
+                              <strong>File:</strong> {pageSchema.filePath}
+                            </div>
+                            <div className="bg-gray-900 rounded-lg p-4">
+                              <pre className="text-blue-300 text-xs overflow-x-auto max-h-32">
+                                <code>{pageSchema.code}</code>
+                              </pre>
+                            </div>
                           </div>
-                          <div className="bg-gray-900 rounded-lg p-4">
-                            <pre className="text-blue-300 text-xs overflow-x-auto max-h-32">
-                              <code>{pageSchema.code}</code>
-                            </pre>
-                          </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
 
                     {/* Implementation Steps */}
@@ -575,9 +615,7 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                       <CardTitle className="flex items-center gap-2">
                         <Target className="h-5 w-5" />
                         Intent Analysis - {new URL(page.url).pathname}
-                        <Badge className={getPageTypeColor(page.pageType)}>
-                          {page.pageType}
-                        </Badge>
+                        <Badge className={getPageTypeColor(page.pageType)}>{page.pageType}</Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -594,14 +632,18 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                                 <div key={i} className="bg-green-50 p-3 rounded">
                                   <div className="flex items-center justify-between mb-1">
                                     <span className="font-medium text-sm">{intent.intent}</span>
-                                    <Badge variant="outline">{(intent.score * 100).toFixed(0)}%</Badge>
+                                    <Badge variant="outline">
+                                      {(intent.score * 100).toFixed(0)}%
+                                    </Badge>
                                   </div>
                                   <div className="text-xs text-gray-600">{intent.contentMatch}</div>
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <div className="text-gray-500 text-sm">No strong intent matches found</div>
+                            <div className="text-gray-500 text-sm">
+                              No strong intent matches found
+                            </div>
                           )}
                         </div>
 
@@ -622,7 +664,8 @@ const AEOAnalysis: React.FC<AEOAnalysisProps> = ({ initialUrls = [] }) => {
                                     </Badge>
                                   </div>
                                   <div className="text-xs text-gray-600 mt-2">
-                                    <strong>Recommended snippet:</strong> {intent.recommendedSnippet}
+                                    <strong>Recommended snippet:</strong>{' '}
+                                    {intent.recommendedSnippet}
                                   </div>
                                 </div>
                               ))}

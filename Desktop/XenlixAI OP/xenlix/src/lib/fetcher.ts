@@ -47,10 +47,7 @@ export function setToastFunction(fn: ToastFunction) {
 /**
  * Enhanced fetch wrapper with automatic error handling and toast notifications
  */
-export async function fetcher<T = any>(
-  url: string,
-  options: FetcherOptions = {}
-): Promise<T> {
+export async function fetcher<T = any>(url: string, options: FetcherOptions = {}): Promise<T> {
   const {
     showSuccessToast = false,
     successMessage = 'Operation completed successfully',
@@ -76,7 +73,7 @@ export async function fetcher<T = any>(
     // Handle different response types
     let data: any;
     const contentType = response.headers.get('content-type');
-    
+
     if (contentType?.includes('application/json')) {
       data = await response.json();
     } else {
@@ -96,16 +93,16 @@ export async function fetcher<T = any>(
       if (data && typeof data === 'object' && 'success' in data && data.success) {
         return (data as SuccessResponse<T>).data;
       }
-      
+
       return data;
     }
 
     // Handle error responses
     const errorResponse = data as ValidationErrorResponse;
-    
+
     // Create detailed error message
     let errorMessage = errorResponse?.error || `HTTP ${response.status}: ${response.statusText}`;
-    
+
     // Add field errors to message if available
     if (errorResponse?.fieldErrors) {
       const fieldErrorMessages = Object.entries(errorResponse.fieldErrors)
@@ -116,15 +113,16 @@ export async function fetcher<T = any>(
 
     // Show error toast if enabled
     if (showErrorToast && toastFn && !suppressErrors) {
-      const title = response.status >= 500 
-        ? 'Server Error' 
-        : response.status === 401 
-        ? 'Authentication Required'
-        : response.status === 403
-        ? 'Access Denied'
-        : response.status === 404
-        ? 'Not Found'
-        : 'Request Failed';
+      const title =
+        response.status >= 500
+          ? 'Server Error'
+          : response.status === 401
+            ? 'Authentication Required'
+            : response.status === 403
+              ? 'Access Denied'
+              : response.status === 404
+                ? 'Not Found'
+                : 'Request Failed';
 
       toastFn({
         type: 'error',
@@ -134,13 +132,7 @@ export async function fetcher<T = any>(
     }
 
     // Throw detailed error
-    throw new FetcherError(
-      errorMessage,
-      response.status,
-      response,
-      errorResponse?.fieldErrors
-    );
-
+    throw new FetcherError(errorMessage, response.status, response, errorResponse?.fieldErrors);
   } catch (error) {
     // Handle network errors and other exceptions
     if (error instanceof FetcherError) {
@@ -148,7 +140,7 @@ export async function fetcher<T = any>(
     }
 
     const networkError = 'Network error or server unavailable';
-    
+
     if (showErrorToast && toastFn && !suppressErrors) {
       toastFn({
         type: 'error',

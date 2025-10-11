@@ -9,13 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Shield, 
-  AlertTriangle, 
-  CheckCircle, 
-  Star, 
-  MessageSquare, 
-  TrendingUp, 
+import {
+  Shield,
+  AlertTriangle,
+  CheckCircle,
+  Star,
+  MessageSquare,
+  TrendingUp,
   TrendingDown,
   Eye,
   RefreshCw,
@@ -24,7 +24,7 @@ import {
   MapPin,
   Globe,
   Clock,
-  Users
+  Users,
 } from 'lucide-react';
 
 interface ReviewData {
@@ -91,9 +91,9 @@ interface ReputationMonitorProps {
   businessName?: string;
 }
 
-const ReputationMonitor: React.FC<ReputationMonitorProps> = ({ 
-  url: initialUrl = '', 
-  businessName: initialBusinessName = '' 
+const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
+  url: initialUrl = '',
+  businessName: initialBusinessName = '',
 }) => {
   const [url, setUrl] = useState(initialUrl);
   const [businessName, setBusinessName] = useState(initialBusinessName);
@@ -101,28 +101,28 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
   const [reputationData, setReputationData] = useState<ReputationMonitorResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const platformIcons = {
+  const platformIcons: { [key: string]: string } = {
     google: '🏢',
     yelp: '🍽️',
-    facebook: '📘'
+    facebook: '📘',
   };
 
   const platformColors = {
     google: 'bg-blue-50 border-blue-200',
     yelp: 'bg-red-50 border-red-200',
-    facebook: 'bg-blue-50 border-blue-300'
+    facebook: 'bg-blue-50 border-blue-300',
   };
 
   const severityColors = {
     low: 'bg-yellow-50 border-yellow-200 text-yellow-800',
     medium: 'bg-orange-50 border-orange-200 text-orange-800',
-    high: 'bg-red-50 border-red-200 text-red-800'
+    high: 'bg-red-50 border-red-200 text-red-800',
   };
 
   const consistencyStatusColors = {
-    'OK': 'text-green-600 bg-green-50',
+    OK: 'text-green-600 bg-green-50',
     'Minor Issues': 'text-yellow-600 bg-yellow-50',
-    'Major Mismatch': 'text-red-600 bg-red-50'
+    'Major Mismatch': 'text-red-600 bg-red-50',
   };
 
   const monitorReputation = async () => {
@@ -177,10 +177,14 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'high': return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case 'medium': return <AlertTriangle className="h-4 w-4 text-orange-500" />;
-      case 'low': return <Eye className="h-4 w-4 text-yellow-500" />;
-      default: return null;
+      case 'high':
+        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+      case 'medium':
+        return <AlertTriangle className="h-4 w-4 text-orange-500" />;
+      case 'low':
+        return <Eye className="h-4 w-4 text-yellow-500" />;
+      default:
+        return null;
     }
   };
 
@@ -194,7 +198,8 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
             Reputation & Entity Monitor
           </CardTitle>
           <CardDescription>
-            Monitor your business reputation across platforms and AI engines for consistency and reputation management.
+            Monitor your business reputation across platforms and AI engines for consistency and
+            reputation management.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -219,8 +224,8 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
               />
             </div>
           </div>
-          <Button 
-            onClick={monitorReputation} 
+          <Button
+            onClick={monitorReputation}
             className="mt-4 w-full md:w-auto"
             disabled={isLoading}
           >
@@ -257,7 +262,9 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center">
-                  <div className={`text-2xl font-bold ${reputationData.ratingChange.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                  <div
+                    className={`text-2xl font-bold ${reputationData.ratingChange.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}
+                  >
                     {reputationData.ratingChange}
                   </div>
                   <div className="text-sm text-gray-500">Rating Change</div>
@@ -269,7 +276,7 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
                   <div className="text-sm text-gray-500">New Reviews</div>
                 </div>
                 <div className="text-center">
-                  <Badge 
+                  <Badge
                     className={consistencyStatusColors[reputationData.entityConsistency.status]}
                   >
                     {reputationData.entityConsistency.status}
@@ -340,7 +347,10 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
                   {reputationData.newReviews.length > 0 ? (
                     <div className="space-y-4">
                       {reputationData.newReviews.map((review) => (
-                        <div key={review.id} className={`p-4 border rounded-lg ${platformColors[review.platform]}`}>
+                        <div
+                          key={review.id}
+                          className={`p-4 border rounded-lg ${platformColors[review.platform]}`}
+                        >
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <span>{platformIcons[review.platform]}</span>
@@ -351,7 +361,9 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm">{formatRating(review.rating)}</span>
-                              <span className="text-xs text-gray-500">{formatDate(review.date)}</span>
+                              <span className="text-xs text-gray-500">
+                                {formatDate(review.date)}
+                              </span>
                             </div>
                           </div>
                           <p className="text-sm text-gray-700">{review.text}</p>
@@ -359,9 +371,7 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      No new reviews found
-                    </div>
+                    <div className="text-center py-8 text-gray-500">No new reviews found</div>
                   )}
                 </CardContent>
               </Card>
@@ -386,7 +396,9 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
                             <Star className="h-4 w-4 text-yellow-500" />
-                            <span>{profile.rating.toFixed(1)} ({profile.reviewCount} reviews)</span>
+                            <span>
+                              {profile.rating.toFixed(1)} ({profile.reviewCount} reviews)
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-gray-500" />
@@ -399,9 +411,9 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
                           {profile.website && (
                             <div className="flex items-center gap-2">
                               <Globe className="h-4 w-4 text-gray-500" />
-                              <a 
-                                href={profile.website} 
-                                target="_blank" 
+                              <a
+                                href={profile.website}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-sm text-blue-600 hover:underline"
                               >
@@ -442,7 +454,9 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <Alert className={consistencyStatusColors[reputationData.entityConsistency.status]}>
+                    <Alert
+                      className={consistencyStatusColors[reputationData.entityConsistency.status]}
+                    >
                       <CheckCircle className="h-4 w-4" />
                       <AlertDescription>
                         <strong>Status: {reputationData.entityConsistency.status}</strong>
@@ -455,10 +469,15 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
                       <div className="space-y-3">
                         <h4 className="font-semibold">Identified Issues:</h4>
                         {reputationData.entityConsistency.issues.map((issue, index) => (
-                          <div key={index} className={`p-3 border rounded ${severityColors[issue.severity]}`}>
+                          <div
+                            key={index}
+                            className={`p-3 border rounded ${severityColors[issue.severity]}`}
+                          >
                             <div className="font-semibold">{issue.field} Mismatch</div>
                             <div className="text-sm mt-1">
-                              <div className="font-medium">Platforms: {issue.platforms.join(', ')}</div>
+                              <div className="font-medium">
+                                Platforms: {issue.platforms.join(', ')}
+                              </div>
                               <div className="mt-1">
                                 <strong>Values found:</strong>
                                 <ul className="list-disc list-inside mt-1">
@@ -490,9 +509,7 @@ const ReputationMonitor: React.FC<ReputationMonitorProps> = ({
                     <Eye className="h-5 w-5" />
                     AI Engine Analysis
                   </CardTitle>
-                  <CardDescription>
-                    How different AI engines describe your business
-                  </CardDescription>
+                  <CardDescription>How different AI engines describe your business</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">

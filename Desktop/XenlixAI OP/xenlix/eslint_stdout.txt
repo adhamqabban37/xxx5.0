@@ -1,0 +1,5 @@
+
+> xenlix@0.1.0 lint C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix
+> eslint "--silent"
+
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 2.

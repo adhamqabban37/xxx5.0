@@ -12,7 +12,7 @@ const firebaseConfig = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'xenlix-dev',
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'xenlix-dev.appspot.com',
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '123456789012',
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || 'development-app-id'
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || 'development-app-id',
 };
 
 // Initialize Firebase
@@ -24,14 +24,14 @@ try {
   db = getFirestore(app);
 } catch (error) {
   console.warn('Firebase initialization failed - using mock configuration for development:', error);
-  
+
   // Create mock Firebase app
   app = {
     name: '[DEFAULT]',
     options: firebaseConfig,
-    automaticDataCollectionEnabled: false
+    automaticDataCollectionEnabled: false,
   } as FirebaseApp;
-  
+
   // Create a mock firestore for development
   const mockDb = {
     collection: (path: string) => ({
@@ -52,9 +52,9 @@ try {
       set: () => Promise.resolve(),
       update: () => Promise.resolve(),
       delete: () => Promise.resolve(),
-    })
+    }),
   } as any;
-  
+
   db = mockDb;
 }
 

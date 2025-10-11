@@ -2,11 +2,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
-import { 
-  getRecentLogs, 
-  getSubmissionStats, 
+import {
+  getRecentLogs,
+  getSubmissionStats,
   getFilteredLogs,
-  getErrorLogs 
+  getErrorLogs,
 } from '@/lib/indexnow-logger';
 
 export async function GET(request: NextRequest) {
@@ -14,10 +14,7 @@ export async function GET(request: NextRequest) {
     // Authentication check
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -48,12 +45,8 @@ export async function GET(request: NextRequest) {
       stats,
       timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('IndexNow logs API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

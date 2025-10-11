@@ -146,10 +146,10 @@ const getScoreColor = (score: number): string => {
 };
 
 // PDF Document Component
-export const AEOReportPDF: React.FC<{ data: any; url: string; reportTitle: string }> = ({ 
-  data, 
-  url, 
-  reportTitle 
+export const AEOReportPDF: React.FC<{ data: any; url: string; reportTitle: string }> = ({
+  data,
+  url,
+  reportTitle,
 }) => {
   const { overallScore, aeoScore, crawlData, lighthouseAudit, timestamp } = data;
 
@@ -179,7 +179,7 @@ export const AEOReportPDF: React.FC<{ data: any; url: string; reportTitle: strin
         {aeoScore && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>AEO Score Analysis</Text>
-            
+
             {aeoScore.semanticScore && (
               <View>
                 <Text style={styles.subsectionTitle}>Semantic Analysis</Text>
@@ -217,15 +217,22 @@ export const AEOReportPDF: React.FC<{ data: any; url: string; reportTitle: strin
         {lighthouseAudit && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Performance & Technical Audit</Text>
-            
+
             {lighthouseAudit.categories && (
               <>
                 {lighthouseAudit.categories.performance && (
                   <View style={styles.metricRow}>
                     <Text style={styles.metricLabel}>Performance</Text>
-                    <Text style={[styles.metricValue, { 
-                      color: getScoreColor(safeNumber(lighthouseAudit.categories.performance.score) * 100)
-                    }]}>
+                    <Text
+                      style={[
+                        styles.metricValue,
+                        {
+                          color: getScoreColor(
+                            safeNumber(lighthouseAudit.categories.performance.score) * 100
+                          ),
+                        },
+                      ]}
+                    >
                       {Math.round(safeNumber(lighthouseAudit.categories.performance.score) * 100)}%
                     </Text>
                   </View>
@@ -234,10 +241,18 @@ export const AEOReportPDF: React.FC<{ data: any; url: string; reportTitle: strin
                 {lighthouseAudit.categories.accessibility && (
                   <View style={styles.metricRow}>
                     <Text style={styles.metricLabel}>Accessibility</Text>
-                    <Text style={[styles.metricValue, { 
-                      color: getScoreColor(safeNumber(lighthouseAudit.categories.accessibility.score) * 100)
-                    }]}>
-                      {Math.round(safeNumber(lighthouseAudit.categories.accessibility.score) * 100)}%
+                    <Text
+                      style={[
+                        styles.metricValue,
+                        {
+                          color: getScoreColor(
+                            safeNumber(lighthouseAudit.categories.accessibility.score) * 100
+                          ),
+                        },
+                      ]}
+                    >
+                      {Math.round(safeNumber(lighthouseAudit.categories.accessibility.score) * 100)}
+                      %
                     </Text>
                   </View>
                 )}
@@ -245,9 +260,16 @@ export const AEOReportPDF: React.FC<{ data: any; url: string; reportTitle: strin
                 {lighthouseAudit.categories.seo && (
                   <View style={styles.metricRow}>
                     <Text style={styles.metricLabel}>SEO</Text>
-                    <Text style={[styles.metricValue, { 
-                      color: getScoreColor(safeNumber(lighthouseAudit.categories.seo.score) * 100)
-                    }]}>
+                    <Text
+                      style={[
+                        styles.metricValue,
+                        {
+                          color: getScoreColor(
+                            safeNumber(lighthouseAudit.categories.seo.score) * 100
+                          ),
+                        },
+                      ]}
+                    >
                       {Math.round(safeNumber(lighthouseAudit.categories.seo.score) * 100)}%
                     </Text>
                   </View>
@@ -256,10 +278,20 @@ export const AEOReportPDF: React.FC<{ data: any; url: string; reportTitle: strin
                 {lighthouseAudit.categories['best-practices'] && (
                   <View style={styles.metricRow}>
                     <Text style={styles.metricLabel}>Best Practices</Text>
-                    <Text style={[styles.metricValue, { 
-                      color: getScoreColor(safeNumber(lighthouseAudit.categories['best-practices'].score) * 100)
-                    }]}>
-                      {Math.round(safeNumber(lighthouseAudit.categories['best-practices'].score) * 100)}%
+                    <Text
+                      style={[
+                        styles.metricValue,
+                        {
+                          color: getScoreColor(
+                            safeNumber(lighthouseAudit.categories['best-practices'].score) * 100
+                          ),
+                        },
+                      ]}
+                    >
+                      {Math.round(
+                        safeNumber(lighthouseAudit.categories['best-practices'].score) * 100
+                      )}
+                      %
                     </Text>
                   </View>
                 )}
@@ -272,15 +304,17 @@ export const AEOReportPDF: React.FC<{ data: any; url: string; reportTitle: strin
                 <View style={styles.metricRow}>
                   <Text style={styles.metricLabel}>First Contentful Paint</Text>
                   <Text style={styles.metricValue}>
-                    {safeText(lighthouseAudit.audits['first-contentful-paint'].displayValue) || 'N/A'}
+                    {safeText(lighthouseAudit.audits['first-contentful-paint'].displayValue) ||
+                      'N/A'}
                   </Text>
                 </View>
-                
+
                 {lighthouseAudit.audits['largest-contentful-paint'] && (
                   <View style={styles.metricRow}>
                     <Text style={styles.metricLabel}>Largest Contentful Paint</Text>
                     <Text style={styles.metricValue}>
-                      {safeText(lighthouseAudit.audits['largest-contentful-paint'].displayValue) || 'N/A'}
+                      {safeText(lighthouseAudit.audits['largest-contentful-paint'].displayValue) ||
+                        'N/A'}
                     </Text>
                   </View>
                 )}
@@ -289,7 +323,8 @@ export const AEOReportPDF: React.FC<{ data: any; url: string; reportTitle: strin
                   <View style={styles.metricRow}>
                     <Text style={styles.metricLabel}>Cumulative Layout Shift</Text>
                     <Text style={styles.metricValue}>
-                      {safeText(lighthouseAudit.audits['cumulative-layout-shift'].displayValue) || 'N/A'}
+                      {safeText(lighthouseAudit.audits['cumulative-layout-shift'].displayValue) ||
+                        'N/A'}
                     </Text>
                   </View>
                 )}
@@ -302,7 +337,7 @@ export const AEOReportPDF: React.FC<{ data: any; url: string; reportTitle: strin
         {crawlData && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Content Analysis Summary</Text>
-            
+
             {crawlData.structured_data && (
               <View>
                 <Text style={styles.subsectionTitle}>Structured Data</Text>

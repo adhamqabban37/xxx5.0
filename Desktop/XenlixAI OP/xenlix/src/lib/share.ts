@@ -14,7 +14,7 @@ export function deserializeState<T>(encoded: string): T | null {
   try {
     // Restore base64 padding and characters
     const restored = encoded.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = restored + '='.repeat((4 - restored.length % 4) % 4);
+    const padded = restored + '='.repeat((4 - (restored.length % 4)) % 4);
     const json = atob(padded);
     return JSON.parse(json);
   } catch (error) {
@@ -23,8 +23,8 @@ export function deserializeState<T>(encoded: string): T | null {
 }
 
 export function createShareableUrl(
-  basePath: string, 
-  state: any, 
+  basePath: string,
+  state: any,
   baseUrl: string = typeof window !== 'undefined' ? window.location.origin : ''
 ): string {
   const encoded = serializeState(state);
@@ -34,10 +34,10 @@ export function createShareableUrl(
 
 export function getStateFromUrl(): any {
   if (typeof window === 'undefined') return null;
-  
+
   const params = new URLSearchParams(window.location.search);
   const stateParam = params.get('state');
-  
+
   if (!stateParam) return null;
   return deserializeState(stateParam);
 }
@@ -46,20 +46,20 @@ export function getStateFromUrl(): any {
 export function exportToCSV(data: Record<string, any>, filename: string): void {
   const headers = Object.keys(data);
   const values = Object.values(data);
-  
+
   const csvContent = [
     headers.join(','),
-    values.map(val => typeof val === 'object' ? JSON.stringify(val) : String(val)).join(',')
+    values.map((val) => (typeof val === 'object' ? JSON.stringify(val) : String(val))).join(','),
   ].join('\n');
-  
+
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
-  
+
   link.setAttribute('href', url);
   link.setAttribute('download', `${filename}.csv`);
   link.style.visibility = 'hidden';
-  
+
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

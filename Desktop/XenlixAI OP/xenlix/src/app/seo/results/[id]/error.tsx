@@ -24,7 +24,8 @@ export default function Error({
           <AlertTriangle className="h-24 w-24 text-red-500 mx-auto mb-4" />
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Something went wrong</h2>
           <p className="text-gray-600 mb-6">
-            We couldn't load your SEO audit results. This might be due to an expired session or a temporary issue.
+            We couldn't load your SEO audit results. This might be due to an expired session or a
+            temporary issue.
           </p>
         </div>
 
@@ -36,7 +37,7 @@ export default function Error({
             <RefreshCw className="h-5 w-5 mr-2" />
             Try Again
           </button>
-          
+
           <button
             onClick={() => router.push('/seo/audit')}
             className="w-full flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
@@ -44,7 +45,7 @@ export default function Error({
             <RefreshCw className="h-5 w-5 mr-2" />
             Start New Audit
           </button>
-          
+
           <button
             onClick={() => router.push('/')}
             className="w-full flex items-center justify-center bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-semibold"

@@ -1,7 +1,7 @@
 // Schema.org JSON-LD types for business profile markup
 
 export interface Address {
-  "@type": "PostalAddress";
+  '@type': 'PostalAddress';
   streetAddress?: string;
   addressLocality?: string;
   addressRegion?: string;
@@ -10,7 +10,7 @@ export interface Address {
 }
 
 export interface ContactPoint {
-  "@type": "ContactPoint";
+  '@type': 'ContactPoint';
   telephone?: string;
   email?: string;
   contactType?: string;
@@ -19,20 +19,20 @@ export interface ContactPoint {
 }
 
 export interface GeoCoordinates {
-  "@type": "GeoCoordinates";
+  '@type': 'GeoCoordinates';
   latitude?: number;
   longitude?: number;
 }
 
 export interface OpeningHours {
-  "@type": "OpeningHoursSpecification";
+  '@type': 'OpeningHoursSpecification';
   dayOfWeek: string[];
   opens: string;
   closes: string;
 }
 
 export interface AggregateRating {
-  "@type": "AggregateRating";
+  '@type': 'AggregateRating';
   ratingValue: number;
   reviewCount: number;
   bestRating?: number;
@@ -40,13 +40,13 @@ export interface AggregateRating {
 }
 
 export interface Review {
-  "@type": "Review";
+  '@type': 'Review';
   author: {
-    "@type": "Person";
+    '@type': 'Person';
     name: string;
   };
   reviewRating: {
-    "@type": "Rating";
+    '@type': 'Rating';
     ratingValue: number;
     bestRating?: number;
   };
@@ -55,8 +55,8 @@ export interface Review {
 }
 
 export interface LocalBusiness {
-  "@context": "https://schema.org";
-  "@type": "LocalBusiness" | string; // Allow for specific business types
+  '@context': 'https://schema.org';
+  '@type': 'LocalBusiness' | string; // Allow for specific business types
   name: string;
   description?: string;
   url?: string;
@@ -76,7 +76,7 @@ export interface LocalBusiness {
   review?: Review[];
   foundingDate?: string;
   founder?: {
-    "@type": "Person";
+    '@type': 'Person';
     name: string;
   };
   numberOfEmployees?: number;
@@ -84,12 +84,12 @@ export interface LocalBusiness {
 }
 
 export interface Service {
-  "@context": "https://schema.org";
-  "@type": "Service";
+  '@context': 'https://schema.org';
+  '@type': 'Service';
   name: string;
   description?: string;
   provider: {
-    "@type": "LocalBusiness" | "Organization";
+    '@type': 'LocalBusiness' | 'Organization';
     name: string;
     url?: string;
   };
@@ -97,7 +97,7 @@ export interface Service {
   serviceType?: string;
   category?: string;
   offers?: {
-    "@type": "Offer";
+    '@type': 'Offer';
     description?: string;
     price?: string;
     priceCurrency?: string;
@@ -108,39 +108,39 @@ export interface Service {
 }
 
 export interface FAQPage {
-  "@context": "https://schema.org";
-  "@type": "FAQPage";
+  '@context': 'https://schema.org';
+  '@type': 'FAQPage';
   mainEntity: {
-    "@type": "Question";
+    '@type': 'Question';
     name: string;
     acceptedAnswer: {
-      "@type": "Answer";
+      '@type': 'Answer';
       text: string;
     };
   }[];
 }
 
 export interface Product {
-  "@context": "https://schema.org";
-  "@type": "Product";
+  '@context': 'https://schema.org';
+  '@type': 'Product';
   name: string;
   description?: string;
   image?: string[];
   brand?: {
-    "@type": "Brand";
+    '@type': 'Brand';
     name: string;
   };
   manufacturer?: {
-    "@type": "Organization";
+    '@type': 'Organization';
     name: string;
   };
   offers?: {
-    "@type": "Offer";
+    '@type': 'Offer';
     price?: string;
     priceCurrency?: string;
     availability?: string;
     seller?: {
-      "@type": "Organization";
+      '@type': 'Organization';
       name: string;
     };
   };
@@ -149,22 +149,22 @@ export interface Product {
 }
 
 export interface WebSite {
-  "@context": "https://schema.org";
-  "@type": "WebSite";
+  '@context': 'https://schema.org';
+  '@type': 'WebSite';
   name: string;
   url: string;
   description?: string;
   potentialAction?: {
-    "@type": "SearchAction";
+    '@type': 'SearchAction';
     target: string;
-    "query-input": string;
+    'query-input': string;
   };
   sameAs?: string[];
 }
 
 export interface Organization {
-  "@context": "https://schema.org";
-  "@type": "Organization";
+  '@context': 'https://schema.org';
+  '@type': 'Organization';
   name: string;
   description?: string;
   url?: string;
@@ -175,7 +175,7 @@ export interface Organization {
   address?: Address;
   foundingDate?: string;
   founder?: {
-    "@type": "Person";
+    '@type': 'Person';
     name: string;
   };
 }
@@ -260,25 +260,25 @@ export interface SchemaGeneratorOptions {
 
 // Business type mappings for schema.org
 export const BUSINESS_TYPE_MAPPINGS: Record<string, string> = {
-  restaurant: "Restaurant",
-  automotive: "AutoRepair",
-  legal: "LegalService",
-  medical: "MedicalOrganization", 
-  dental: "DentistOffice",
-  fitness: "ExerciseGym",
-  beauty: "BeautySalon",
-  retail: "Store",
-  ecommerce: "OnlineStore",
-  "real estate": "RealEstateAgent",
-  plumbing: "Plumber",
-  electrical: "Electrician",
-  hvac: "HVACBusiness",
-  cleaning: "CleaningService",
-  landscaping: "LandscapingBusiness",
-  photography: "PhotographyBusiness",
-  consulting: "ProfessionalService",
-  technology: "TechnologyCompany",
-  default: "LocalBusiness"
+  restaurant: 'Restaurant',
+  automotive: 'AutoRepair',
+  legal: 'LegalService',
+  medical: 'MedicalOrganization',
+  dental: 'DentistOffice',
+  fitness: 'ExerciseGym',
+  beauty: 'BeautySalon',
+  retail: 'Store',
+  ecommerce: 'OnlineStore',
+  'real estate': 'RealEstateAgent',
+  plumbing: 'Plumber',
+  electrical: 'Electrician',
+  hvac: 'HVACBusiness',
+  cleaning: 'CleaningService',
+  landscaping: 'LandscapingBusiness',
+  photography: 'PhotographyBusiness',
+  consulting: 'ProfessionalService',
+  technology: 'TechnologyCompany',
+  default: 'LocalBusiness',
 };
 
 export interface SchemaOutput {

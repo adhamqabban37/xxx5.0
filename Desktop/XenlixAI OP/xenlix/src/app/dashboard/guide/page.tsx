@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 
 export default function ImplementationGuidePage() {
   return (
@@ -16,7 +16,6 @@ export default function ImplementationGuidePage() {
 
         {/* Main Content */}
         <div className="space-y-8">
-          
           {/* Section 1: Schema Mismatches */}
           <section className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <h2 className="text-xl font-semibold text-cyan-400 mb-4">
@@ -45,9 +44,7 @@ export default function ImplementationGuidePage() {
 
           {/* Section 3: Technical SEO */}
           <section className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-            <h2 className="text-xl font-semibold text-cyan-400 mb-4">
-              Technical SEO Improvements
-            </h2>
+            <h2 className="text-xl font-semibold text-cyan-400 mb-4">Technical SEO Improvements</h2>
             <div className="text-gray-300">
               {/* TODO: Add technical SEO implementation steps */}
               <p className="italic text-gray-500">
@@ -81,25 +78,21 @@ export default function ImplementationGuidePage() {
               </p>
             </div>
           </section>
-
         </div>
 
         {/* Footer Navigation */}
         <div className="mt-12 pt-8 border-t border-slate-700">
           <div className="flex justify-between items-center">
-            <a 
-              href="/dashboard" 
+            <a
+              href="/dashboard"
               className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-gray-300 hover:text-white rounded-lg transition-colors"
             >
               ← Back to Dashboard
             </a>
-            <div className="text-sm text-gray-500">
-              Implementation Guide v1.0
-            </div>
+            <div className="text-sm text-gray-500">Implementation Guide v1.0</div>
           </div>
         </div>
-
       </div>
     </div>
-  )
+  );
 }

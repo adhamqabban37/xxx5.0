@@ -39,7 +39,7 @@ export async function exampleFAQAnalysis() {
 
   const $ = cheerio.load(htmlContent);
   const schema = await generateSchema($, nlp);
-  
+
   console.log('Generated FAQ Schema:', JSON.stringify(schema, null, 2));
   return schema;
 }
@@ -75,7 +75,7 @@ export async function exampleArticleAnalysis() {
 
   const $ = cheerio.load(htmlContent);
   const schema = await generateSchema($, nlp);
-  
+
   console.log('Generated Article Schema:', JSON.stringify(schema, null, 2));
   return schema;
 }
@@ -88,20 +88,22 @@ export async function analyzeUrlForSchema(url: string) {
     // In a real implementation, you would fetch the URL content
     // const response = await fetch(url);
     // const html = await response.text();
-    
+
     // For this example, we'll use sample content
     const html = `<html><body><h1>Sample Page</h1><p>Sample content</p></body></html>`;
-    
+
     const $ = cheerio.load(html);
     const schema = await generateSchema($, nlp);
-    
+
     return {
       url,
-      schema: schema ? {
-        type: schema['@type'],
-        data: schema
-      } : null,
-      success: true
+      schema: schema
+        ? {
+            type: schema['@type'],
+            data: schema,
+          }
+        : null,
+      success: true,
     };
   } catch (error) {
     console.error('Error analyzing URL for schema:', error);
@@ -109,7 +111,7 @@ export async function analyzeUrlForSchema(url: string) {
       url,
       schema: null,
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -121,11 +123,11 @@ export async function testEdgeCases() {
   const testCases = [
     {
       name: 'Empty content',
-      html: '<html><body></body></html>'
+      html: '<html><body></body></html>',
     },
     {
       name: 'Only headings, no content',
-      html: '<html><body><h1>Title</h1><h2>Subtitle</h2></body></html>'
+      html: '<html><body><h1>Title</h1><h2>Subtitle</h2></body></html>',
     },
     {
       name: 'Mixed content',
@@ -139,24 +141,24 @@ export async function testEdgeCases() {
           <p>Regular paragraph content here.</p>
         </body>
         </html>
-      `
-    }
+      `,
+    },
   ];
 
   const results = [];
-  
+
   for (const testCase of testCases) {
     const $ = cheerio.load(testCase.html);
     const schema = await generateSchema($, nlp);
-    
+
     results.push({
       testCase: testCase.name,
       schema,
       hasSchema: !!schema,
-      schemaType: schema ? schema['@type'] : null
+      schemaType: schema ? schema['@type'] : null,
     });
   }
-  
+
   console.log('Edge case test results:', results);
   return results;
 }
@@ -166,5 +168,5 @@ export const examples = {
   faq: exampleFAQAnalysis,
   article: exampleArticleAnalysis,
   url: analyzeUrlForSchema,
-  edgeCases: testEdgeCases
+  edgeCases: testEdgeCases,
 };

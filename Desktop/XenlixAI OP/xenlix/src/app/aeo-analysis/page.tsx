@@ -5,7 +5,8 @@ import { redirect } from 'next/navigation';
 
 export const metadata = {
   title: 'Complete AEO Analysis | XenlixAI',
-  description: 'Comprehensive AEO analysis combining content crawling, AI semantic matching, and technical auditing',
+  description:
+    'Comprehensive AEO analysis combining content crawling, AI semantic matching, and technical auditing',
 };
 
 export default async function CompleteAEOAnalysisPage() {

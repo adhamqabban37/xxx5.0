@@ -15,7 +15,7 @@ const TEST_ROUTES = [
   // Core routes that should exist
   '/',
   '/calculators',
-  '/calculators/roi', 
+  '/calculators/roi',
   '/calculators/pricing',
   '/tools/json-ld',
   '/aeo',
@@ -27,7 +27,7 @@ const TEST_ROUTES = [
   '/aeo-scan',
   '/seo-analyzer',
   '/schema-generator',
-  
+
   // Routes that should redirect (legacy paths)
   '/roi', // → /calculators/roi
   '/pricing', // → /calculators/pricing
@@ -39,7 +39,7 @@ const TEST_ROUTES = [
   '/contact-us', // → /contact
   '/register', // → /signup
   '/login', // → /signin
-  
+
   // Routes that should 404 (test 404 page)
   '/nonexistent-page',
   '/old/broken/link',
@@ -104,37 +104,39 @@ class ValidationResults {
     console.log('\n' + '='.repeat(80));
     console.log('🔍 PLATFORM RELIABILITY VALIDATION REPORT');
     console.log('='.repeat(80));
-    
+
     console.log(`\n📊 TEST SUMMARY`);
     console.log(`Total Tests: ${this.results.totalTests}`);
     console.log(`Passed: ${this.results.passed} ✅`);
     console.log(`Failed: ${this.results.failed} ❌`);
-    console.log(`Success Rate: ${((this.results.passed / this.results.totalTests) * 100).toFixed(1)}%`);
+    console.log(
+      `Success Rate: ${((this.results.passed / this.results.totalTests) * 100).toFixed(1)}%`
+    );
 
     if (this.results.redirects.length > 0) {
       console.log(`\n🔄 REDIRECTS TESTED: ${this.results.redirects.length}`);
-      this.results.redirects.forEach(redirect => {
+      this.results.redirects.forEach((redirect) => {
         console.log(`   ${redirect.from} → ${redirect.to} (${redirect.status})`);
       });
     }
 
     if (this.results.errors.length > 0) {
       console.log(`\n❌ FAILURES:`);
-      this.results.errors.forEach(error => {
+      this.results.errors.forEach((error) => {
         console.log(`   ${error.test}: ${error.message}`);
       });
     }
 
     if (this.results.warnings.length > 0) {
       console.log(`\n⚠️  WARNINGS:`);
-      this.results.warnings.forEach(warning => {
+      this.results.warnings.forEach((warning) => {
         console.log(`   ${warning}`);
       });
     }
 
     const allPassed = this.results.failed === 0;
     console.log(`\n🎯 PLATFORM READY: ${allPassed ? 'YES ✅' : 'NO ❌'}`);
-    
+
     if (allPassed) {
       console.log('All tests passed! Platform reliability validated.');
     } else {
@@ -148,12 +150,12 @@ class ValidationResults {
         totalTests: this.results.totalTests,
         passed: this.results.passed,
         failed: this.results.failed,
-        successRate: ((this.results.passed / this.results.totalTests) * 100).toFixed(1)
+        successRate: ((this.results.passed / this.results.totalTests) * 100).toFixed(1),
       },
       redirects: this.results.redirects,
       errors: this.results.errors,
       warnings: this.results.warnings,
-      platformReady: allPassed
+      platformReady: allPassed,
     };
 
     fs.writeFileSync('platform-validation-report.json', JSON.stringify(reportData, null, 2));
@@ -165,10 +167,13 @@ async function testRoute(url, expectedStatus = 200, expectedRedirect = null) {
   return new Promise((resolve) => {
     const curl = spawn('curl', [
       '-s',
-      '-o', '/dev/null',
-      '-w', '%{http_code}:%{redirect_url}',
-      '--max-redirs', '0',
-      url
+      '-o',
+      '/dev/null',
+      '-w',
+      '%{http_code}:%{redirect_url}',
+      '--max-redirs',
+      '0',
+      url,
     ]);
 
     let output = '';
@@ -181,7 +186,7 @@ async function testRoute(url, expectedStatus = 200, expectedRedirect = null) {
       resolve({
         status: parseInt(statusCode),
         redirectUrl: redirectUrl || null,
-        url
+        url,
       });
     });
 
@@ -193,18 +198,18 @@ async function testRoute(url, expectedStatus = 200, expectedRedirect = null) {
 
 async function validateFileStructure() {
   console.log('🔍 Validating file structure...\n');
-  
+
   const criticalFiles = [
     'src/app/not-found.tsx',
     'src/app/calculators/page.tsx',
     'src/app/calculators/roi/page.tsx',
     'src/app/calculators/pricing/page.tsx',
     'src/app/tools/json-ld/page.tsx',
-    'middleware.ts'
+    'middleware.ts',
   ];
 
   const results = new ValidationResults();
-  
+
   for (const file of criticalFiles) {
     const filePath = path.join(process.cwd(), file);
     if (fs.existsSync(filePath)) {
@@ -226,7 +231,7 @@ async function main() {
   // Check if server is running
   console.log('\n🌐 Testing server connection...\n');
   const serverTest = await testRoute(BASE_URL);
-  
+
   if (serverTest.status === 0) {
     console.log('❌ Server not running. Please start the development server:');
     console.log('   npm run dev');
@@ -242,32 +247,48 @@ async function main() {
   for (const route of TEST_ROUTES) {
     const url = `${BASE_URL}${route}`;
     const result = await testRoute(url);
-    
+
     // Check if this route should redirect
     const expectedRedirect = EXPECTED_REDIRECTS[route];
-    
+
     if (expectedRedirect) {
       // This should be a redirect
       if (result.status === 301 || result.status === 302) {
         const redirectTarget = result.redirectUrl || 'unknown';
         const expectedTarget = `${BASE_URL}${expectedRedirect}`;
-        
+
         if (redirectTarget === expectedTarget) {
-          fileResults.addTest(`Redirect: ${route}`, 'PASS', `Correctly redirects to ${expectedRedirect}`);
+          fileResults.addTest(
+            `Redirect: ${route}`,
+            'PASS',
+            `Correctly redirects to ${expectedRedirect}`
+          );
           fileResults.addRedirect(route, expectedRedirect, 'CORRECT');
         } else {
-          fileResults.addTest(`Redirect: ${route}`, 'FAIL', `Expected redirect to ${expectedRedirect}, got ${redirectTarget}`);
+          fileResults.addTest(
+            `Redirect: ${route}`,
+            'FAIL',
+            `Expected redirect to ${expectedRedirect}, got ${redirectTarget}`
+          );
           fileResults.addRedirect(route, redirectTarget, 'INCORRECT');
         }
       } else {
-        fileResults.addTest(`Redirect: ${route}`, 'FAIL', `Expected redirect (301/302), got ${result.status}`);
+        fileResults.addTest(
+          `Redirect: ${route}`,
+          'FAIL',
+          `Expected redirect (301/302), got ${result.status}`
+        );
       }
     } else {
       // This should be a direct page
       if (result.status === 200) {
         fileResults.addTest(`Route: ${route}`, 'PASS', 'Page loads successfully');
       } else if (result.status === 404) {
-        if (route.startsWith('/nonexistent') || route.includes('broken') || route.includes('missing')) {
+        if (
+          route.startsWith('/nonexistent') ||
+          route.includes('broken') ||
+          route.includes('missing')
+        ) {
           fileResults.addTest(`404 Test: ${route}`, 'PASS', '404 page should display');
         } else {
           fileResults.addTest(`Route: ${route}`, 'FAIL', `Unexpected 404 for valid route`);

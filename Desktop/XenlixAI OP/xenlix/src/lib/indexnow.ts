@@ -28,7 +28,7 @@ export async function submitToIndexNow(
 
   // Add delay if specified (useful for batch operations)
   if (delay > 0) {
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
 
   try {
@@ -89,22 +89,22 @@ export async function submitBatchUrls(
 ): Promise<IndexNowSubmissionResult[]> {
   const { reason = 'updated', priority = 'normal' } = options;
   const results: IndexNowSubmissionResult[] = [];
-  
+
   // Process in chunks of 100 URLs to respect IndexNow limits
   const chunkSize = 100;
   const chunks = [];
-  
+
   for (let i = 0; i < urls.length; i += chunkSize) {
     chunks.push(urls.slice(i, i + chunkSize));
   }
 
   // Submit chunks with delays based on priority
   const delayMs = priority === 'high' ? 1000 : priority === 'normal' ? 2000 : 5000;
-  
+
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
     const delay = i > 0 ? delayMs : 0; // No delay for first chunk
-    
+
     const result = await submitToIndexNow(chunk, { reason, delay });
     results.push(result);
   }
@@ -114,8 +114,10 @@ export async function submitBatchUrls(
 
 // Generate commonly updated URLs for quick submission
 export function getCommonUrls(baseUrl: string = ''): string[] {
-  const base = baseUrl || (typeof window !== 'undefined' ? window.location.origin : 'https://www.xenlixai.com');
-  
+  const base =
+    baseUrl ||
+    (typeof window !== 'undefined' ? window.location.origin : 'https://www.xenlixai.com');
+
   return [
     `${base}/`, // Homepage
     `${base}/contact`, // Contact page
@@ -128,8 +130,10 @@ export function getCommonUrls(baseUrl: string = ''): string[] {
 
 // Generate all important pages for full site submission
 export function getAllSiteUrls(baseUrl: string = ''): string[] {
-  const base = baseUrl || (typeof window !== 'undefined' ? window.location.origin : 'https://www.xenlixai.com');
-  
+  const base =
+    baseUrl ||
+    (typeof window !== 'undefined' ? window.location.origin : 'https://www.xenlixai.com');
+
   return [
     // Core pages
     `${base}/`,
@@ -137,21 +141,21 @@ export function getAllSiteUrls(baseUrl: string = ''): string[] {
     `${base}/plans`,
     `${base}/case-studies`,
     `${base}/dallas`,
-    
+
     // Tool pages
     `${base}/calculators/roi`,
     `${base}/calculators/pricing`,
     `${base}/aeo`,
     `${base}/ai-website-builder`,
     `${base}/ai-seo-automation`,
-    
+
     // Case studies
     `${base}/case-studies/auto-detailing-dallas`,
     `${base}/case-studies/consulting-firm-lead-generation`,
     `${base}/case-studies/dental-practice-ai-optimization`,
     `${base}/case-studies/restaurant-chain-expansion`,
     `${base}/case-studies/saas-blended-cac-reduction`,
-    
+
     // SEO pages
     `${base}/vs-competitors`,
     `${base}/sitemap.xml`,
@@ -174,15 +178,17 @@ export function shouldAutoSubmit(url: string): boolean {
     '/.well-known/',
   ];
 
-  return !excludePatterns.some(pattern => url.includes(pattern));
+  return !excludePatterns.some((pattern) => url.includes(pattern));
 }
 
 // Format URLs to absolute URLs for IndexNow
 export function normalizeUrls(urls: string | string[], baseUrl?: string): string[] {
   const urlArray = Array.isArray(urls) ? urls : [urls];
-  const base = baseUrl || (typeof window !== 'undefined' ? window.location.origin : 'https://www.xenlixai.com');
-  
-  return urlArray.map(url => {
+  const base =
+    baseUrl ||
+    (typeof window !== 'undefined' ? window.location.origin : 'https://www.xenlixai.com');
+
+  return urlArray.map((url) => {
     if (url.startsWith('http')) {
       return url; // Already absolute
     }
@@ -196,10 +202,10 @@ export function normalizeUrls(urls: string | string[], baseUrl?: string): string
 // Log submission results for monitoring
 export function logSubmissionResult(result: IndexNowSubmissionResult, urls: string[]): void {
   const logLevel = result.success ? 'info' : 'error';
-  const message = result.success 
+  const message = result.success
     ? `IndexNow: Successfully submitted ${result.urlCount} URLs`
     : `IndexNow: Failed to submit ${result.urlCount} URLs - ${result.error}`;
-  
+
   console[logLevel](message, {
     urls: urls.slice(0, 3), // Log first 3 URLs
     urlCount: result.urlCount,

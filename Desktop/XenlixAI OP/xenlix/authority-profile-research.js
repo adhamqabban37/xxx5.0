@@ -6,10 +6,10 @@ console.log('====================================');
 
 // Current sameAs array (4 URLs)
 const currentSameAs = [
-  "https://x.com/xenlixai",
-  "https://www.linkedin.com/company/xenlixai", 
-  "https://github.com/xenlixai",
-  "https://www.facebook.com/xenlixai"
+  'https://x.com/xenlixai',
+  'https://www.linkedin.com/company/xenlixai',
+  'https://github.com/xenlixai',
+  'https://www.facebook.com/xenlixai',
 ];
 
 console.log('\n📋 Current sameAs URLs:', currentSameAs.length);
@@ -20,22 +20,22 @@ currentSameAs.forEach((url, index) => {
 // Recommended Authority Profiles for B2B AI/Marketing Company
 const recommendedAuthoritySameAs = [
   // Essential Business Profiles
-  "https://www.linkedin.com/company/xenlixai",           // Professional B2B network
-  "https://x.com/xenlixai",                             // Real-time engagement & news
-  "https://www.facebook.com/xenlixai",                  // General business presence
-  
+  'https://www.linkedin.com/company/xenlixai', // Professional B2B network
+  'https://x.com/xenlixai', // Real-time engagement & news
+  'https://www.facebook.com/xenlixai', // General business presence
+
   // Tech & Development Authority
-  "https://github.com/xenlixai",                        // Technical authority & open source
-  "https://www.youtube.com/@xenlixai",                  // Video content & demos
-  
+  'https://github.com/xenlixai', // Technical authority & open source
+  'https://www.youtube.com/@xenlixai', // Video content & demos
+
   // Business Authority Platforms
-  "https://www.crunchbase.com/organization/xenlixai",   // Business intelligence & funding
-  "https://angel.co/company/xenlixai",                  // Startup ecosystem presence
-  "https://www.producthunt.com/@xenlixai",              // Product discovery platform
-  
+  'https://www.crunchbase.com/organization/xenlixai', // Business intelligence & funding
+  'https://angel.co/company/xenlixai', // Startup ecosystem presence
+  'https://www.producthunt.com/@xenlixai', // Product discovery platform
+
   // Professional Services
-  "https://clutch.co/profile/xenlixai",                 // B2B service reviews
-  "https://www.g2.com/products/xenlixai"                // Software reviews & authority
+  'https://clutch.co/profile/xenlixai', // B2B service reviews
+  'https://www.g2.com/products/xenlixai', // Software reviews & authority
 ];
 
 console.log('\n🎯 Recommended Authority sameAs URLs:', recommendedAuthoritySameAs.length);
@@ -45,7 +45,7 @@ recommendedAuthoritySameAs.forEach((url, index) => {
 
 console.log('\n📊 Authority Profile Categories:');
 console.log('• Social Media: LinkedIn, X (Twitter), Facebook');
-console.log('• Technical Authority: GitHub, YouTube'); 
+console.log('• Technical Authority: GitHub, YouTube');
 console.log('• Business Intelligence: Crunchbase, AngelList');
 console.log('• Product Discovery: Product Hunt');
 console.log('• B2B Reviews: Clutch, G2');
@@ -72,14 +72,14 @@ console.log('✅ Relevant to B2B AI/Marketing services');
 
 console.log('\n🎯 Final Curated sameAs Array (8 URLs):');
 const curatedSameAs = [
-  "https://www.linkedin.com/company/xenlixai",
-  "https://x.com/xenlixai", 
-  "https://www.facebook.com/xenlixai",
-  "https://github.com/xenlixai",
-  "https://www.youtube.com/@xenlixai",
-  "https://www.crunchbase.com/organization/xenlixai",
-  "https://angel.co/company/xenlixai",
-  "https://www.g2.com/products/xenlixai"
+  'https://www.linkedin.com/company/xenlixai',
+  'https://x.com/xenlixai',
+  'https://www.facebook.com/xenlixai',
+  'https://github.com/xenlixai',
+  'https://www.youtube.com/@xenlixai',
+  'https://www.crunchbase.com/organization/xenlixai',
+  'https://angel.co/company/xenlixai',
+  'https://www.g2.com/products/xenlixai',
 ];
 
 curatedSameAs.forEach((url, index) => {

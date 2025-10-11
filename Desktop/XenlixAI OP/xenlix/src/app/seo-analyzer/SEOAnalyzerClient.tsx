@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import { BusinessProfile, SEOAnalysisResult } from '@/types/seo';
@@ -14,36 +14,39 @@ export default function SEOAnalyzerClient() {
     contact: {
       phone: '',
       email: '',
-      address: ''
-    }
+      address: '',
+    },
   });
-  
+
   const [analysisResult, setAnalysisResult] = useState<SEOAnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (field: keyof BusinessProfile, value: any) => {
-    setBusinessProfile(prev => ({
+    setBusinessProfile((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleContactChange = (field: string, value: string) => {
-    setBusinessProfile(prev => ({
+    setBusinessProfile((prev) => ({
       ...prev,
       contact: {
         ...prev.contact,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
   const handleServicesChange = (services: string) => {
-    const serviceArray = services.split(',').map(s => s.trim()).filter(s => s.length > 0);
-    setBusinessProfile(prev => ({
+    const serviceArray = services
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    setBusinessProfile((prev) => ({
       ...prev,
-      services: serviceArray
+      services: serviceArray,
     }));
   };
 
@@ -93,7 +96,8 @@ export default function SEOAnalyzerClient() {
                 SEO Strategy Analyzer
               </h1>
               <p className="text-gray-300">
-                Premium business intelligence tool for comprehensive SEO analysis and strategy development
+                Premium business intelligence tool for comprehensive SEO analysis and strategy
+                development
               </p>
             </div>
             <div className="bg-purple-900/30 border border-purple-600 rounded-lg px-4 py-2">
@@ -106,7 +110,7 @@ export default function SEOAnalyzerClient() {
           {/* Input Form */}
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
             <h2 className="text-2xl font-bold text-white mb-6">Business Profile</h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -122,9 +126,7 @@ export default function SEOAnalyzerClient() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Industry *
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Industry *</label>
                 <input
                   type="text"
                   value={businessProfile.industry || ''}
@@ -135,9 +137,7 @@ export default function SEOAnalyzerClient() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Services
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Services</label>
                 <input
                   type="text"
                   value={businessProfile.services?.join(', ') || ''}
@@ -149,9 +149,7 @@ export default function SEOAnalyzerClient() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    City
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">City</label>
                   <input
                     type="text"
                     value={businessProfile.city || ''}
@@ -162,9 +160,7 @@ export default function SEOAnalyzerClient() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    State
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">State</label>
                   <input
                     type="text"
                     value={businessProfile.state || ''}
@@ -190,11 +186,9 @@ export default function SEOAnalyzerClient() {
 
               <div className="space-y-4">
                 <h3 className="text-lg font-medium text-white">Contact Information</h3>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Phone
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Phone</label>
                   <input
                     type="text"
                     value={businessProfile.contact?.phone || ''}
@@ -205,9 +199,7 @@ export default function SEOAnalyzerClient() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
                   <input
                     type="email"
                     value={businessProfile.contact?.email || ''}
@@ -218,9 +210,7 @@ export default function SEOAnalyzerClient() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Address
-                  </label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Address</label>
                   <input
                     type="text"
                     value={businessProfile.contact?.address || ''}
@@ -257,7 +247,8 @@ export default function SEOAnalyzerClient() {
                   <span className="text-2xl">📊</span>
                 </div>
                 <p className="text-gray-400">
-                  Fill out your business profile and click "Generate SEO Strategy" to get comprehensive recommendations.
+                  Fill out your business profile and click "Generate SEO Strategy" to get
+                  comprehensive recommendations.
                 </p>
               </div>
             )}
@@ -278,13 +269,15 @@ export default function SEOAnalyzerClient() {
                     <div className="mb-2">
                       <span className="font-medium">Recommended Title:</span>
                       <p className="text-sm text-gray-700 mt-1">
-                        {analysisResult.recommendations?.metaTags?.title?.primary || 'No title recommendation available'}
+                        {analysisResult.recommendations?.metaTags?.title?.primary ||
+                          'No title recommendation available'}
                       </p>
                     </div>
                     <div>
                       <span className="font-medium">Recommended Description:</span>
                       <p className="text-sm text-gray-700 mt-1">
-                        {analysisResult.recommendations?.metaTags?.description?.primary || 'No description recommendation available'}
+                        {analysisResult.recommendations?.metaTags?.description?.primary ||
+                          'No description recommendation available'}
                       </p>
                     </div>
                   </div>
@@ -297,18 +290,24 @@ export default function SEOAnalyzerClient() {
                     <div className="mb-2">
                       <span className="font-medium">H1:</span>
                       <p className="text-sm text-gray-700 mt-1">
-                        {analysisResult.recommendations?.headings?.h1?.primary || 'No H1 recommendation available'}
+                        {analysisResult.recommendations?.headings?.h1?.primary ||
+                          'No H1 recommendation available'}
                       </p>
                     </div>
                     <div>
                       <span className="font-medium">Suggested H2s:</span>
                       <ul className="text-sm text-gray-700 mt-1 list-disc list-inside">
-                        {(analysisResult.recommendations?.headings?.h2?.suggestions || []).slice(0, 3).map((h2, index) => (
-                          <li key={index}>{h2}</li>
-                        ))}
+                        {(analysisResult.recommendations?.headings?.h2?.suggestions || [])
+                          .slice(0, 3)
+                          .map((h2, index) => (
+                            <li key={index}>{h2}</li>
+                          ))}
                       </ul>
-                      {(!analysisResult.recommendations?.headings?.h2?.suggestions || analysisResult.recommendations.headings.h2.suggestions.length === 0) && (
-                        <p className="text-sm text-gray-500 mt-1">No H2 recommendations available</p>
+                      {(!analysisResult.recommendations?.headings?.h2?.suggestions ||
+                        analysisResult.recommendations.headings.h2.suggestions.length === 0) && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          No H2 recommendations available
+                        </p>
                       )}
                     </div>
                   </div>
@@ -319,15 +318,18 @@ export default function SEOAnalyzerClient() {
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Primary Keywords</h3>
                   <div className="bg-gray-50 p-4 rounded-md">
                     <div className="flex flex-wrap gap-2">
-                      {(analysisResult.recommendations?.keywordStrategy?.primary || []).map((keyword, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                        >
-                          {keyword.keyword}
-                        </span>
-                      ))}
-                      {(!analysisResult.recommendations?.keywordStrategy?.primary || analysisResult.recommendations.keywordStrategy.primary?.length === 0) && (
+                      {(analysisResult.recommendations?.keywordStrategy?.primary || []).map(
+                        (keyword, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                          >
+                            {keyword.keyword}
+                          </span>
+                        )
+                      )}
+                      {(!analysisResult.recommendations?.keywordStrategy?.primary ||
+                        analysisResult.recommendations.keywordStrategy.primary?.length === 0) && (
                         <p className="text-sm text-gray-500">No primary keywords available</p>
                       )}
                     </div>
@@ -339,13 +341,16 @@ export default function SEOAnalyzerClient() {
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Local Content Ideas</h3>
                   <div className="bg-gray-50 p-4 rounded-md">
                     <ul className="text-sm text-gray-700 space-y-1">
-                      {(analysisResult.recommendations?.localContent?.localTopics || []).slice(0, 3).map((topic, index) => (
-                        <li key={index} className="flex items-center">
-                          <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                          {typeof topic === 'string' ? topic : topic.topic}
-                        </li>
-                      ))}
-                      {(!analysisResult.recommendations?.localContent?.localTopics || analysisResult.recommendations.localContent.localTopics?.length === 0) && (
+                      {(analysisResult.recommendations?.localContent?.localTopics || [])
+                        .slice(0, 3)
+                        .map((topic, index) => (
+                          <li key={index} className="flex items-center">
+                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            {typeof topic === 'string' ? topic : topic.topic}
+                          </li>
+                        ))}
+                      {(!analysisResult.recommendations?.localContent?.localTopics ||
+                        analysisResult.recommendations.localContent.localTopics?.length === 0) && (
                         <li className="text-sm text-gray-500">No local content ideas available</li>
                       )}
                     </ul>
@@ -359,10 +364,15 @@ export default function SEOAnalyzerClient() {
                     <ul className="text-sm text-gray-700 space-y-2">
                       {(analysisResult.actionPlan?.immediate || []).map((action, index) => (
                         <li key={index} className="flex items-start">
-                          <span className={`w-2 h-2 rounded-full mr-2 mt-2 ${
-                            action.impact === 'high' ? 'bg-red-500' : 
-                            action.impact === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                          }`}></span>
+                          <span
+                            className={`w-2 h-2 rounded-full mr-2 mt-2 ${
+                              action.impact === 'high'
+                                ? 'bg-red-500'
+                                : action.impact === 'medium'
+                                  ? 'bg-yellow-500'
+                                  : 'bg-green-500'
+                            }`}
+                          ></span>
                           <div>
                             <span className="font-medium">{action.task}</span>
                             <div className="text-xs text-gray-500">
@@ -379,7 +389,7 @@ export default function SEOAnalyzerClient() {
                 <button
                   onClick={() => {
                     const dataStr = JSON.stringify(analysisResult, null, 2);
-                    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
                     const url = URL.createObjectURL(dataBlob);
                     const link = document.createElement('a');
                     link.href = url;

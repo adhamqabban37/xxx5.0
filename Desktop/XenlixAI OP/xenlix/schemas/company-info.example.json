@@ -1,0 +1,110 @@
+{
+  "source": {
+    "requestedUrl": "https://example.com",
+    "finalUrl": "https://example.com/",
+    "httpStatus": 200,
+    "collectedAt": "2025-09-26T17:30:00Z",
+    "locale": "en-US",
+    "region": "US"
+  },
+  "company": {
+    "name": "Example Co",
+    "legalName": "Example Company LLC",
+    "description": "Local marketing & AI SEO services.",
+    "industry": "Marketing",
+    "foundedYear": 2019,
+    "employeesRange": "11-50",
+    "address": {
+      "street": "1 Market St",
+      "locality": "Austin",
+      "region": "TX",
+      "postalCode": "73301",
+      "country": "US"
+    },
+    "contacts": {
+      "email": "hello@example.com",
+      "phone": "+1-555-0100"
+    }
+  },
+  "web": {
+    "domain": "example.com",
+    "canonicalUrl": "https://example.com/",
+    "sitemapUrl": "https://example.com/sitemap.xml",
+    "robotsTxt": "https://example.com/robots.txt",
+    "social": {
+      "twitter": "https://x.com/example",
+      "linkedin": "https://www.linkedin.com/company/example"
+    },
+    "technologies": ["Next.js", "Vercel", "TailwindCSS"]
+  },
+  "content": {
+    "title": "Example Co — AI SEO for Local Businesses",
+    "meta": {
+      "description": "Rank higher on AI search engines with Example Co.",
+      "keywords": ["AI SEO", "GEO", "local business"]
+    },
+    "schemaOrg": [
+      {
+        "@type": "Organization",
+        "name": "Example Co",
+        "@context": "https://schema.org"
+      }
+    ],
+    "headings": [
+      { "level": 1, "text": "AI SEO that increases calls & leads" },
+      { "level": 2, "text": "Why AI search matters" }
+    ]
+  },
+  "extractions": {
+    "brandMentions": [
+      {
+        "brand": "Example Co",
+        "aliasMatched": "Example Co",
+        "position": null,
+        "sentiment": 1
+      }
+    ],
+    "citations": [
+      {
+        "url": "https://example.com/case-study",
+        "domain": "example.com",
+        "title": "Case Study",
+        "rank": 1,
+        "source": "page"
+      },
+      {
+        "url": "https://trustedsite.com/guide",
+        "domain": "trustedsite.com",
+        "title": "AI SEO Guide",
+        "rank": 2,
+        "source": "ai-answer"
+      }
+    ]
+  },
+  "metrics": {
+    "opr": {
+      "domain": "example.com",
+      "rank": 5.2,
+      "fetchedAt": "2025-09-26T17:31:00Z"
+    },
+    "lighthouse": {
+      "performance": 0.93,
+      "accessibility": 0.98,
+      "bestPractices": 1.0,
+      "seo": 0.97,
+      "reportPath": "/reports/lighthouse-example.html"
+    },
+    "aeo": {
+      "visibilityIndex": 78.5,
+      "coveragePct": 62,
+      "sourceSharePct": 40,
+      "lastSweepAt": "2025-09-26T06:00:00Z"
+    }
+  },
+  "provenance": {
+    "hash": "sha256:7f3ab1",
+    "pipelineVersion": "2025.09.26-rc1",
+    "collector": "perplexity",
+    "notes": "First premium sweep"
+  }
+}

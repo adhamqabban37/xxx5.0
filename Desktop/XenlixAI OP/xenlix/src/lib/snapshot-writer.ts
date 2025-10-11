@@ -67,7 +67,7 @@ export class SnapshotWriter {
   async savePSISnapshot(url: string): Promise<PSISnapshot> {
     const existingSnapshot = await this.getLatestPSISnapshot(url);
     const now = new Date();
-    
+
     // Check if we already have a snapshot from today (idempotent)
     if (existingSnapshot && this.isSameDay(existingSnapshot.timestamp, now)) {
       console.log(`PSI snapshot for ${url} already exists for today, skipping`);
@@ -94,18 +94,17 @@ export class SnapshotWriter {
       await this.savePSISnapshotToDatabase(snapshot);
       console.log(`PSI snapshot saved for ${url}`);
       return snapshot;
-
     } catch (error) {
       console.error(`Failed to save PSI snapshot for ${url}:`, error);
       throw error;
     }
   }
 
-  // OPR Snapshot Collection  
+  // OPR Snapshot Collection
   async saveOPRSnapshot(url: string): Promise<OPRSnapshot> {
     const existingSnapshot = await this.getLatestOPRSnapshot(url);
     const now = new Date();
-    
+
     // Check if we already have a snapshot from today (idempotent)
     if (existingSnapshot && this.isSameDay(existingSnapshot.timestamp, now)) {
       console.log(`OPR snapshot for ${url} already exists for today, skipping`);
@@ -128,7 +127,6 @@ export class SnapshotWriter {
       await this.saveOPRSnapshotToDatabase(snapshot);
       console.log(`OPR snapshot saved for ${url}`);
       return snapshot;
-
     } catch (error) {
       console.error(`Failed to save OPR snapshot for ${url}:`, error);
       throw error;
@@ -139,7 +137,7 @@ export class SnapshotWriter {
   async saveSchemaSnapshot(url: string): Promise<SchemaSnapshot> {
     const existingSnapshot = await this.getLatestSchemaSnapshot(url);
     const now = new Date();
-    
+
     // Check if we already have a snapshot from today (idempotent)
     if (existingSnapshot && this.isSameDay(existingSnapshot.timestamp, now)) {
       console.log(`Schema snapshot for ${url} already exists for today, skipping`);
@@ -152,8 +150,8 @@ export class SnapshotWriter {
         url,
         timestamp: now,
         schemasFound: schemaData.schemas.length,
-        validSchemas: schemaData.schemas.filter(s => s.valid).length,
-        invalidSchemas: schemaData.schemas.filter(s => !s.valid).length,
+        validSchemas: schemaData.schemas.filter((s: any) => s.valid).length,
+        invalidSchemas: schemaData.schemas.filter((s: any) => !s.valid).length,
         schemas: schemaData.schemas,
         rawData: schemaData,
       };
@@ -161,7 +159,6 @@ export class SnapshotWriter {
       await this.saveSchemaSnapshotToDatabase(snapshot);
       console.log(`Schema snapshot saved for ${url}`);
       return snapshot;
-
     } catch (error) {
       console.error(`Failed to save schema snapshot for ${url}:`, error);
       throw error;
@@ -176,7 +173,7 @@ export class SnapshotWriter {
     }
 
     const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&category=performance&category=accessibility&category=best-practices&category=seo`;
-    
+
     const response = await this.fetchWithRetry(psiUrl);
     if (!response.ok) {
       throw new Error(`PSI API error: ${response.status} ${response.statusText}`);
@@ -189,7 +186,7 @@ export class SnapshotWriter {
   private async collectOPRData(url: string): Promise<any> {
     // This would integrate with your GSC client
     const { GSCClient } = await import('./gsc-client');
-    
+
     // You'll need to get session tokens from database or use service account
     const gscClient = new GSCClient({
       accessToken: process.env.GSC_SERVICE_ACCOUNT_TOKEN || '',
@@ -209,17 +206,22 @@ export class SnapshotWriter {
     });
 
     const rows = analytics.rows || [];
-    const totals = rows.reduce((acc, row) => ({
-      totalClicks: acc.totalClicks + row.clicks,
-      totalImpressions: acc.totalImpressions + row.impressions,
-    }), { totalClicks: 0, totalImpressions: 0 });
+    const totals = rows.reduce(
+      (acc, row) => ({
+        totalClicks: acc.totalClicks + row.clicks,
+        totalImpressions: acc.totalImpressions + row.impressions,
+      }),
+      { totalClicks: 0, totalImpressions: 0 }
+    );
 
     return {
       totalClicks: totals.totalClicks,
       totalImpressions: totals.totalImpressions,
-      averageCTR: totals.totalImpressions > 0 ? (totals.totalClicks / totals.totalImpressions) * 100 : 0,
-      averagePosition: rows.length > 0 ? rows.reduce((sum, row) => sum + row.position, 0) / rows.length : 0,
-      topQueries: rows.map(row => ({
+      averageCTR:
+        totals.totalImpressions > 0 ? (totals.totalClicks / totals.totalImpressions) * 100 : 0,
+      averagePosition:
+        rows.length > 0 ? rows.reduce((sum, row) => sum + row.position, 0) / rows.length : 0,
+      topQueries: rows.map((row) => ({
         query: row.keys[0],
         clicks: row.clicks,
         impressions: row.impressions,
@@ -410,7 +412,7 @@ export class SnapshotWriter {
       orderBy: { timestamp: 'asc' },
     });
 
-    return snapshots.map(snapshot => ({
+    return snapshots.map((snapshot) => ({
       url: snapshot.url,
       timestamp: snapshot.timestamp,
       performance: snapshot.performance,
@@ -438,7 +440,7 @@ export class SnapshotWriter {
       orderBy: { timestamp: 'asc' },
     });
 
-    return snapshots.map(snapshot => ({
+    return snapshots.map((snapshot) => ({
       url: snapshot.url,
       timestamp: snapshot.timestamp,
       totalClicks: snapshot.totalClicks,
@@ -462,7 +464,7 @@ export class SnapshotWriter {
       orderBy: { timestamp: 'asc' },
     });
 
-    return snapshots.map(snapshot => ({
+    return snapshots.map((snapshot) => ({
       url: snapshot.url,
       timestamp: snapshot.timestamp,
       schemasFound: snapshot.schemasFound,
@@ -492,10 +494,9 @@ export class SnapshotWriter {
       });
 
       const totalCleaned = psiDeleted.count + oprDeleted.count + schemaDeleted.count;
-      
+
       console.log(`Cleaned up ${totalCleaned} old snapshots`);
       return { cleaned: totalCleaned, errors: 0 };
-
     } catch (error) {
       console.error('Cleanup failed:', error);
       return { cleaned: 0, errors: 1 };
@@ -523,7 +524,7 @@ export class SnapshotWriter {
     } catch (error) {
       if (attempt <= this.retryAttempts) {
         console.warn(`Fetch attempt ${attempt} failed for ${url}, retrying...`);
-        await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
+        await new Promise((resolve) => setTimeout(resolve, this.retryDelay * attempt));
         return this.fetchWithRetry(url, attempt + 1);
       }
       throw error;
@@ -559,7 +560,11 @@ export class SnapshotWriter {
     };
   }
 
-  private validateMicrodata(element: any): { valid: boolean; errors: string[]; warnings: string[] } {
+  private validateMicrodata(element: any): {
+    valid: boolean;
+    errors: string[];
+    warnings: string[];
+  } {
     const errors: string[] = [];
     const warnings: string[] = [];
 

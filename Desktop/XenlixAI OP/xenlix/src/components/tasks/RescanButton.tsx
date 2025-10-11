@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
 import { RefreshCw } from 'lucide-react';

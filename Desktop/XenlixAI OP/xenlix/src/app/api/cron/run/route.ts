@@ -1,23 +1,29 @@
-// CRON job runner endpoint with authentication and concurrency controls
+// CRON job endpoint with authentication and concurrency controls
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 // Validation schema for cron job requests
 const cronJobSchema = z.object({
   secret: z.string(),
-  jobs: z.array(z.enum(['snapshots', 'alerts', 'cleanup'])).optional().default(['snapshots']),
+  jobs: z
+    .array(z.enum(['snapshots', 'alerts', 'cleanup']))
+    .optional()
+    .default(['snapshots']),
   force: z.boolean().optional().default(false), // Force run even if already running
 });
 
 // Global state for tracking running jobs
-const runningJobs = new Map<string, {
-  id: string;
-  type: string;
-  startTime: Date;
-  status: 'running' | 'completed' | 'failed';
-  progress?: number;
-  error?: string;
-}>();
+const runningJobs = new Map<
+  string,
+  {
+    id: string;
+    type: string;
+    startTime: Date;
+    status: 'running' | 'completed' | 'failed';
+    progress: number;
+    error?: string;
+  }
+>();
 
 // Concurrency limits
 const MAX_CONCURRENT_JOBS = 3;
@@ -28,10 +34,10 @@ export async function POST(request: NextRequest) {
     // Parse and validate request
     const body = await request.json();
     const validation = cronJobSchema.safeParse(body);
-    
+
     if (!validation.success) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid request',
           details: validation.error.issues,
         },
@@ -45,31 +51,25 @@ export async function POST(request: NextRequest) {
     const cronSecret = process.env.CRON_SECRET;
     if (!cronSecret) {
       console.error('CRON_SECRET not configured');
-      return NextResponse.json(
-        { error: 'Cron system not configured' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Cron system not configured' }, { status: 500 });
     }
 
     if (secret !== cronSecret) {
       console.warn('Invalid CRON_SECRET attempted');
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check concurrency limits
     const currentlyRunning = Array.from(runningJobs.values()).filter(
-      job => job.status === 'running'
+      (job) => job.status === 'running'
     );
 
     if (currentlyRunning.length >= MAX_CONCURRENT_JOBS && !force) {
       return NextResponse.json(
-        { 
+        {
           error: 'Concurrency limit reached',
           message: `Maximum ${MAX_CONCURRENT_JOBS} jobs can run concurrently`,
-          runningJobs: currentlyRunning.map(job => ({
+          runningJobs: currentlyRunning.map((job) => ({
             id: job.id,
             type: job.type,
             startTime: job.startTime,
@@ -92,11 +92,11 @@ export async function POST(request: NextRequest) {
 
     // Execute requested jobs
     const results = [];
-    
+
     for (const jobType of jobs) {
       // Check if this job type is already running
       const existingJob = Array.from(runningJobs.values()).find(
-        job => job.type === jobType && job.status === 'running'
+        (job) => job.type === jobType && job.status === 'running'
       );
 
       if (existingJob && !force) {
@@ -111,11 +111,18 @@ export async function POST(request: NextRequest) {
 
       // Create new job instance
       const jobId = `${jobType}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const jobInstance = {
+      const jobInstance: {
+        id: string;
+        type: string;
+        startTime: Date;
+        status: 'running' | 'completed' | 'failed';
+        progress: number;
+        error?: string;
+      } = {
         id: jobId,
         type: jobType,
         startTime: new Date(),
-        status: 'running' as const,
+        status: 'running',
         progress: 0,
       };
 
@@ -124,11 +131,11 @@ export async function POST(request: NextRequest) {
       try {
         // Execute the job asynchronously
         const jobResult = await executeJob(jobType, jobId);
-        
+
         // Update job status
         jobInstance.status = 'completed';
         jobInstance.progress = 100;
-        
+
         results.push({
           type: jobType,
           status: 'completed',
@@ -136,14 +143,13 @@ export async function POST(request: NextRequest) {
           result: jobResult,
           duration: Date.now() - jobInstance.startTime.getTime(),
         });
-
       } catch (error) {
         // Update job status
         jobInstance.status = 'failed';
         jobInstance.error = error instanceof Error ? error.message : 'Unknown error';
-        
+
         console.error(`Job ${jobId} failed:`, error);
-        
+
         results.push({
           type: jobType,
           status: 'failed',
@@ -158,22 +164,18 @@ export async function POST(request: NextRequest) {
       success: true,
       timestamp: new Date().toISOString(),
       results,
-      runningJobs: Array.from(runningJobs.values()).filter(
-        job => job.status === 'running'
-      ).map(job => ({
-        id: job.id,
-        type: job.type,
-        startTime: job.startTime,
-        progress: job.progress,
-      })),
+      runningJobs: Array.from(runningJobs.values())
+        .filter((job) => job.status === 'running')
+        .map((job) => ({
+          id: job.id,
+          type: job.type,
+          startTime: job.startTime,
+          progress: job.progress,
+        })),
     });
-
   } catch (error) {
     console.error('Cron endpoint error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -186,10 +188,7 @@ export async function GET(request: NextRequest) {
     // Authenticate with CRON_SECRET
     const cronSecret = process.env.CRON_SECRET;
     if (!cronSecret || secret !== cronSecret) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Clean up completed jobs older than 1 hour
@@ -203,7 +202,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
-      jobs: Array.from(runningJobs.values()).map(job => ({
+      jobs: Array.from(runningJobs.values()).map((job) => ({
         id: job.id,
         type: job.type,
         status: job.status,
@@ -213,18 +212,14 @@ export async function GET(request: NextRequest) {
       })),
       stats: {
         total: runningJobs.size,
-        running: Array.from(runningJobs.values()).filter(j => j.status === 'running').length,
-        completed: Array.from(runningJobs.values()).filter(j => j.status === 'completed').length,
-        failed: Array.from(runningJobs.values()).filter(j => j.status === 'failed').length,
+        running: Array.from(runningJobs.values()).filter((j) => j.status === 'running').length,
+        completed: Array.from(runningJobs.values()).filter((j) => j.status === 'completed').length,
+        failed: Array.from(runningJobs.values()).filter((j) => j.status === 'failed').length,
       },
     });
-
   } catch (error) {
     console.error('Cron status endpoint error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -238,13 +233,13 @@ async function executeJob(jobType: string, jobId: string): Promise<any> {
   switch (jobType) {
     case 'snapshots':
       return await runSnapshotCollection(job);
-    
+
     case 'alerts':
       return await runAlertChecks(job);
-    
+
     case 'cleanup':
       return await runCleanupTasks(job);
-    
+
     default:
       throw new Error(`Unknown job type: ${jobType}`);
   }
@@ -259,7 +254,7 @@ async function runSnapshotCollection(job: any): Promise<any> {
 
   // Get all monitored URLs (this should come from your database)
   const urls = await getMonitoredUrls();
-  
+
   const results = {
     psi: { collected: 0, failed: 0 },
     opr: { collected: 0, failed: 0 },
@@ -277,7 +272,7 @@ async function runSnapshotCollection(job: any): Promise<any> {
       completedTasks++;
       job.progress = Math.round((completedTasks / totalTasks) * 80) + 10; // 10-90%
 
-      // OPR Snapshot  
+      // OPR Snapshot
       await snapshotWriter.saveOPRSnapshot(url);
       results.opr.collected++;
       completedTasks++;
@@ -288,7 +283,6 @@ async function runSnapshotCollection(job: any): Promise<any> {
       results.schema.collected++;
       completedTasks++;
       job.progress = Math.round((completedTasks / totalTasks) * 80) + 10;
-
     } catch (error) {
       console.error(`Failed to collect snapshots for ${url}:`, error);
       results.psi.failed++;
@@ -325,7 +319,7 @@ async function runAlertChecks(job: any, silent = false): Promise<any> {
   job.progress = 20;
 
   const alertResults = await alertManager.checkAllThresholds();
-  
+
   job.progress = 80;
 
   if (!silent) {
@@ -375,11 +369,7 @@ async function runCleanupTasks(job: any): Promise<any> {
 async function getMonitoredUrls(): Promise<string[]> {
   // This should query your database for URLs to monitor
   // For now, return a default set
-  return [
-    'https://example.com',
-    'https://example.com/about',
-    'https://example.com/services',
-  ];
+  return ['https://example.com', 'https://example.com/about', 'https://example.com/services'];
 }
 
 async function cleanupOldLogs(): Promise<any> {

@@ -1,17 +1,17 @@
-import { MetadataRoute } from 'next'
+import { MetadataRoute } from 'next';
 
 // Import our canonical normalization
-import { normalizeCanonicalUrl } from '@/components/CanonicalNormalization'
+import { normalizeCanonicalUrl } from '@/components/CanonicalNormalization';
 
 // Get city database for dynamic routes
-import { getCityDatabase } from '@/lib/sitemap-generator'
+import { getCityDatabase } from '@/lib/sitemap-generator';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://xenlix.ai'
-const MAX_URLS_PER_SITEMAP = 50000
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://xenlix.ai';
+const MAX_URLS_PER_SITEMAP = 50000;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const allUrls: MetadataRoute.Sitemap = []
-  
+  const allUrls: MetadataRoute.Sitemap = [];
+
   // Core pages with canonical URLs
   const corePages = [
     {
@@ -117,51 +117,51 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
-  ]
+  ];
 
-  allUrls.push(...corePages)
+  allUrls.push(...corePages);
 
   // Dynamic city pages
   try {
-    const cityDatabase = await getCityDatabase()
-    const cityUrls = Object.keys(cityDatabase).map(citySlug => ({
+    const cityDatabase = await getCityDatabase();
+    const cityUrls = Object.keys(cityDatabase).map((citySlug) => ({
       url: normalizeCanonicalUrl(`/${citySlug}`, null),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
-    }))
-    
-    allUrls.push(...cityUrls)
+    }));
+
+    allUrls.push(...cityUrls);
   } catch (error) {
-    console.warn('Failed to load city database for sitemap:', error)
+    console.warn('Failed to load city database for sitemap:', error);
   }
 
   // Case study pages
   try {
     const caseStudyPages = [
       'auto-detailing-dallas',
-      'consulting-firm-lead-generation', 
+      'consulting-firm-lead-generation',
       'dental-practice-ai-optimization',
       'restaurant-chain-expansion',
-      'saas-blended-cac-reduction'
-    ]
-    
-    const caseStudyUrls = caseStudyPages.map(slug => ({
+      'saas-blended-cac-reduction',
+    ];
+
+    const caseStudyUrls = caseStudyPages.map((slug) => ({
       url: normalizeCanonicalUrl(`/case-studies/${slug}`, null),
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.6,
-    }))
-    
-    allUrls.push(...caseStudyUrls)
+    }));
+
+    allUrls.push(...caseStudyUrls);
   } catch (error) {
-    console.warn('Failed to generate case study URLs for sitemap:', error)
+    console.warn('Failed to generate case study URLs for sitemap:', error);
   }
 
   // Limit to MAX_URLS_PER_SITEMAP
-  const limitedUrls = allUrls.slice(0, MAX_URLS_PER_SITEMAP)
-  
-  console.log(`Generated sitemap with ${limitedUrls.length} URLs (limit: ${MAX_URLS_PER_SITEMAP})`)
-  
-  return limitedUrls
+  const limitedUrls = allUrls.slice(0, MAX_URLS_PER_SITEMAP);
+
+  console.log(`Generated sitemap with ${limitedUrls.length} URLs (limit: ${MAX_URLS_PER_SITEMAP})`);
+
+  return limitedUrls;
 }

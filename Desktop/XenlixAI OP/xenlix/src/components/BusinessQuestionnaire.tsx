@@ -4,7 +4,17 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronLeft, MapPin, Phone, Mail, Clock, Star, Users, Award } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronLeft,
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  Star,
+  Users,
+  Award,
+} from 'lucide-react';
 import { BusinessInfo } from '../lib/business-extractor';
 
 interface QuestionnaireStep {
@@ -37,7 +47,7 @@ const QUESTIONNAIRE_STEPS: QuestionnaireStep[] = [
   {
     id: 'basic-info',
     title: 'Basic Business Information',
-    description: 'Let\'s start with the essentials about your business',
+    description: "Let's start with the essentials about your business",
     icon: Users,
     questions: [
       {
@@ -45,13 +55,13 @@ const QUESTIONNAIRE_STEPS: QuestionnaireStep[] = [
         type: 'text',
         label: 'Business Name',
         placeholder: 'Enter your business name',
-        required: true
+        required: true,
       },
       {
         id: 'legalName',
         type: 'text',
         label: 'Legal Business Name (if different)',
-        placeholder: 'Legal entity name'
+        placeholder: 'Legal entity name',
       },
       {
         id: 'industry',
@@ -74,8 +84,8 @@ const QUESTIONNAIRE_STEPS: QuestionnaireStep[] = [
           'Education',
           'Finance & Insurance',
           'Entertainment',
-          'Other'
-        ]
+          'Other',
+        ],
       },
       {
         id: 'yearEstablished',
@@ -89,9 +99,9 @@ const QUESTIONNAIRE_STEPS: QuestionnaireStep[] = [
             return 'Please enter a valid year';
           }
           return null;
-        }
-      }
-    ]
+        },
+      },
+    ],
   },
   {
     id: 'location',
@@ -104,37 +114,37 @@ const QUESTIONNAIRE_STEPS: QuestionnaireStep[] = [
         type: 'text',
         label: 'Street Address',
         placeholder: '123 Main Street',
-        required: true
+        required: true,
       },
       {
         id: 'address.city',
         type: 'text',
         label: 'City',
         placeholder: 'Your City',
-        required: true
+        required: true,
       },
       {
         id: 'address.state',
         type: 'text',
         label: 'State/Province',
         placeholder: 'CA',
-        required: true
+        required: true,
       },
       {
         id: 'address.zipCode',
         type: 'text',
         label: 'ZIP/Postal Code',
         placeholder: '90210',
-        required: true
+        required: true,
       },
       {
         id: 'serviceArea',
         type: 'textarea',
         label: 'Service Area (cities/regions you serve)',
         placeholder: 'Los Angeles, Beverly Hills, Santa Monica...',
-        helpText: 'List all cities and areas where you provide services, separated by commas'
-      }
-    ]
+        helpText: 'List all cities and areas where you provide services, separated by commas',
+      },
+    ],
   },
   {
     id: 'contact',
@@ -147,78 +157,78 @@ const QUESTIONNAIRE_STEPS: QuestionnaireStep[] = [
         type: 'phone',
         label: 'Primary Phone Number',
         placeholder: '(555) 123-4567',
-        required: true
+        required: true,
       },
       {
         id: 'email',
         type: 'email',
         label: 'Business Email',
         placeholder: 'info@yourbusiness.com',
-        required: true
+        required: true,
       },
       {
         id: 'tollFree',
         type: 'phone',
         label: 'Toll-Free Number (if available)',
-        placeholder: '(800) 123-4567'
+        placeholder: '(800) 123-4567',
       },
       {
         id: 'fax',
         type: 'phone',
         label: 'Fax Number (if available)',
-        placeholder: '(555) 123-4568'
-      }
-    ]
+        placeholder: '(555) 123-4568',
+      },
+    ],
   },
   {
     id: 'hours',
     title: 'Business Hours',
-    description: 'Let customers know when you\'re open',
+    description: "Let customers know when you're open",
     icon: Clock,
     questions: [
       {
         id: 'hours.monday',
         type: 'text',
         label: 'Monday Hours',
-        placeholder: '9:00 AM - 5:00 PM or Closed'
+        placeholder: '9:00 AM - 5:00 PM or Closed',
       },
       {
         id: 'hours.tuesday',
         type: 'text',
         label: 'Tuesday Hours',
-        placeholder: '9:00 AM - 5:00 PM or Closed'
+        placeholder: '9:00 AM - 5:00 PM or Closed',
       },
       {
         id: 'hours.wednesday',
         type: 'text',
         label: 'Wednesday Hours',
-        placeholder: '9:00 AM - 5:00 PM or Closed'
+        placeholder: '9:00 AM - 5:00 PM or Closed',
       },
       {
         id: 'hours.thursday',
         type: 'text',
         label: 'Thursday Hours',
-        placeholder: '9:00 AM - 5:00 PM or Closed'
+        placeholder: '9:00 AM - 5:00 PM or Closed',
       },
       {
         id: 'hours.friday',
         type: 'text',
         label: 'Friday Hours',
-        placeholder: '9:00 AM - 5:00 PM or Closed'
+        placeholder: '9:00 AM - 5:00 PM or Closed',
       },
       {
         id: 'hours.saturday',
         type: 'text',
         label: 'Saturday Hours',
-        placeholder: '9:00 AM - 3:00 PM or Closed'
+        placeholder: '9:00 AM - 3:00 PM or Closed',
       },
       {
         id: 'hours.sunday',
         type: 'text',
         label: 'Sunday Hours',
-        placeholder: 'Closed'
-      }
-    ]
+        placeholder: 'Closed',
+      },
+    ],
   },
   {
     id: 'services',
@@ -232,14 +242,14 @@ const QUESTIONNAIRE_STEPS: QuestionnaireStep[] = [
         label: 'Primary Services',
         placeholder: 'List your main services, one per line or separated by commas',
         required: true,
-        helpText: 'Be specific - this helps with voice search and local SEO'
+        helpText: 'Be specific - this helps with voice search and local SEO',
       },
       {
         id: 'specialties',
         type: 'textarea',
         label: 'Specialties & Certifications',
         placeholder: 'What makes your business unique?',
-        helpText: 'Include certifications, awards, or unique expertise'
+        helpText: 'Include certifications, awards, or unique expertise',
       },
       {
         id: 'employeeCount',
@@ -251,10 +261,10 @@ const QUESTIONNAIRE_STEPS: QuestionnaireStep[] = [
           '16-50 employees',
           '51-100 employees',
           '101-500 employees',
-          '500+ employees'
-        ]
-      }
-    ]
+          '500+ employees',
+        ],
+      },
+    ],
   },
   {
     id: 'online-presence',
@@ -266,40 +276,40 @@ const QUESTIONNAIRE_STEPS: QuestionnaireStep[] = [
         id: 'socialMedia.facebook',
         type: 'url',
         label: 'Facebook Page URL',
-        placeholder: 'https://facebook.com/yourbusiness'
+        placeholder: 'https://facebook.com/yourbusiness',
       },
       {
         id: 'socialMedia.instagram',
         type: 'url',
         label: 'Instagram Profile URL',
-        placeholder: 'https://instagram.com/yourbusiness'
+        placeholder: 'https://instagram.com/yourbusiness',
       },
       {
         id: 'socialMedia.linkedin',
         type: 'url',
         label: 'LinkedIn Profile URL',
-        placeholder: 'https://linkedin.com/company/yourbusiness'
+        placeholder: 'https://linkedin.com/company/yourbusiness',
       },
       {
         id: 'socialMedia.youtube',
         type: 'url',
         label: 'YouTube Channel URL',
-        placeholder: 'https://youtube.com/yourbusiness'
+        placeholder: 'https://youtube.com/yourbusiness',
       },
       {
         id: 'socialMedia.twitter',
         type: 'url',
         label: 'Twitter/X Profile URL',
-        placeholder: 'https://twitter.com/yourbusiness'
-      }
-    ]
-  }
+        placeholder: 'https://twitter.com/yourbusiness',
+      },
+    ],
+  },
 ];
 
 export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
   initialBusinessInfo,
   onComplete,
-  onSkip
+  onSkip,
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -308,7 +318,7 @@ export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
   // Initialize answers with existing business info
   useEffect(() => {
     const initialAnswers: Record<string, any> = {};
-    
+
     // Flatten the nested business info structure
     if (initialBusinessInfo.businessName) {
       initialAnswers['businessName'] = initialBusinessInfo.businessName;
@@ -326,7 +336,7 @@ export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
         if (value) initialAnswers[`address.${key}`] = value;
       });
     }
-    
+
     setAnswers(initialAnswers);
   }, [initialBusinessInfo]);
 
@@ -334,25 +344,25 @@ export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
   const isLastStep = currentStep === QUESTIONNAIRE_STEPS.length - 1;
 
   const handleInputChange = (questionId: string, value: any) => {
-    setAnswers(prev => ({ ...prev, [questionId]: value }));
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
     // Clear error when user starts typing
     if (errors[questionId]) {
-      setErrors(prev => ({ ...prev, [questionId]: '' }));
+      setErrors((prev) => ({ ...prev, [questionId]: '' }));
     }
   };
 
   const validateStep = (): boolean => {
     const newErrors: Record<string, string> = {};
-    
-    currentStepData.questions.forEach(question => {
+
+    currentStepData.questions.forEach((question) => {
       const value = answers[question.id];
-      
+
       // Check required fields
       if (question.required && (!value || value.trim() === '')) {
         newErrors[question.id] = `${question.label} is required`;
         return;
       }
-      
+
       // Run custom validation
       if (value && question.validation) {
         const validationError = question.validation(value);
@@ -371,13 +381,13 @@ export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
       if (isLastStep) {
         handleComplete();
       } else {
-        setCurrentStep(prev => prev + 1);
+        setCurrentStep((prev) => prev + 1);
       }
     }
   };
 
   const handlePrevious = () => {
-    setCurrentStep(prev => Math.max(0, prev - 1));
+    setCurrentStep((prev) => Math.max(0, prev - 1));
   };
 
   const handleComplete = () => {
@@ -392,23 +402,19 @@ export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
           city: answers['address.city'] || '',
           state: answers['address.state'],
           zipCode: answers['address.zipCode'],
-          country: 'US'
+          country: 'US',
         },
-        serviceArea: answers.serviceArea ? answers.serviceArea.split(',').map((s: string) => s.trim()) : [],
-        coordinates: initialBusinessInfo.location?.coordinates
+        serviceArea: answers.serviceArea
+          ? answers.serviceArea.split(',').map((s: string) => s.trim())
+          : [],
+        coordinates: initialBusinessInfo.location?.coordinates,
       },
       contact: {
         phone: answers.phone,
         email: answers.email,
         website: initialBusinessInfo.contact?.website,
         fax: answers.fax,
-        tollFree: answers.tollFree
-      },
-      services: answers.services ? answers.services.split(',').map((s: string) => s.trim()) : [],
-      specialties: answers.specialties ? answers.specialties.split(',').map((s: string) => s.trim()) : [],
-      attributes: {
-        yearEstablished: answers.yearEstablished ? parseInt(answers.yearEstablished) : undefined,
-        employeeCount: answers.employeeCount ? parseInt(answers.employeeCount.split('-')[0]) : undefined
+        tollFree: answers.tollFree,
       },
       hours: {
         monday: answers['hours.monday'],
@@ -417,29 +423,52 @@ export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
         thursday: answers['hours.thursday'],
         friday: answers['hours.friday'],
         saturday: answers['hours.saturday'],
-        sunday: answers['hours.sunday']
+        sunday: answers['hours.sunday'],
       },
       socialMedia: {
         facebook: answers['socialMedia.facebook'],
         instagram: answers['socialMedia.instagram'],
         linkedin: answers['socialMedia.linkedin'],
         youtube: answers['socialMedia.youtube'],
-        twitter: answers['socialMedia.twitter']
+        twitter: answers['socialMedia.twitter'],
       },
+      description: answers.description,
+      // Services and products
+      services: answers.services ? answers.services.split(',').map((s: string) => s.trim()) : [],
+      products: [],
+      specialties: answers.specialties
+        ? answers.specialties.split(',').map((s: string) => s.trim())
+        : [],
+      // Business attributes
+      attributes: {
+        yearEstablished: answers.yearEstablished ? parseInt(answers.yearEstablished) : undefined,
+        employeeCount: answers.employeeCount
+          ? parseInt(answers.employeeCount.split('-')[0])
+          : undefined,
+        certifications: [],
+        awards: [],
+      },
+      // Reviews
+      reviews: [],
+      // Marketing data
       marketing: {
         targetKeywords: initialBusinessInfo.marketing?.targetKeywords || [],
+        competitorKeywords: initialBusinessInfo.marketing?.competitorKeywords || [],
         targetAudience: initialBusinessInfo.marketing?.targetAudience || [],
-        uniqueSellingPoints: initialBusinessInfo.marketing?.uniqueSellingPoints || []
+        uniqueSellingPoints: initialBusinessInfo.marketing?.uniqueSellingPoints || [],
       },
       metadata: {
         extractedAt: new Date(),
         sourceUrl: initialBusinessInfo.metadata?.sourceUrl || '',
-        extractionMethods: [...(initialBusinessInfo.metadata?.extractionMethods || []), 'questionnaire'],
+        extractionMethods: [
+          ...(initialBusinessInfo.metadata?.extractionMethods || []),
+          'questionnaire',
+        ],
         confidence: 0.95,
         completeness: 0.9,
         needsReview: [],
-        missingData: []
-      }
+        missingData: [],
+      },
     } as BusinessInfo;
 
     onComplete(completeBusinessInfo);
@@ -450,8 +479,8 @@ export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
     const error = errors[question.id];
 
     const baseClasses = `w-full px-4 py-3 border rounded-lg transition-colors ${
-      error 
-        ? 'border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-500' 
+      error
+        ? 'border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-500'
         : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
     }`;
 
@@ -464,8 +493,10 @@ export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
             className={baseClasses}
           >
             <option value="">Select an option...</option>
-            {question.options?.map(option => (
-              <option key={option} value={option}>{option}</option>
+            {question.options?.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </select>
         );
@@ -484,7 +515,15 @@ export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
       default:
         return (
           <input
-            type={question.type === 'phone' ? 'tel' : question.type === 'email' ? 'email' : question.type === 'url' ? 'url' : 'text'}
+            type={
+              question.type === 'phone'
+                ? 'tel'
+                : question.type === 'email'
+                  ? 'email'
+                  : question.type === 'url'
+                    ? 'url'
+                    : 'text'
+            }
             value={value}
             onChange={(e) => handleInputChange(question.id, e.target.value)}
             placeholder={question.placeholder}
@@ -527,19 +566,19 @@ export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
         </div>
 
         <div className="space-y-4">
-          {currentStepData.questions.map(question => (
+          {currentStepData.questions.map((question) => (
             <div key={question.id}>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {question.label}
                 {question.required && <span className="text-red-500 ml-1">*</span>}
               </label>
-              
+
               {renderQuestion(question)}
-              
+
               {errors[question.id] && (
                 <p className="text-red-500 text-sm mt-1">{errors[question.id]}</p>
               )}
-              
+
               {question.helpText && (
                 <p className="text-gray-500 text-sm mt-1">{question.helpText}</p>
               )}
@@ -560,7 +599,7 @@ export const BusinessQuestionnaire: React.FC<BusinessQuestionnaireProps> = ({
               Previous
             </button>
           )}
-          
+
           <button
             onClick={onSkip}
             className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"

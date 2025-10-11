@@ -33,13 +33,13 @@ interface PageContent {
 
 // Extract city from address string
 function extractCity(address: string): string {
-  const parts = address.split(',').map(p => p.trim());
+  const parts = address.split(',').map((p) => p.trim());
   return parts[parts.length - 2] || parts[0] || '';
 }
 
 // Extract state from address string
 function extractState(address: string): string {
-  const parts = address.split(',').map(p => p.trim());
+  const parts = address.split(',').map((p) => p.trim());
   const lastPart = parts[parts.length - 1] || '';
   // Extract state from "State ZIP" format
   return lastPart.split(' ')[0] || '';
@@ -48,14 +48,14 @@ function extractState(address: string): string {
 // Calculate schema completeness percentage
 function calculateSchemaCompleteness(schema: JsonLdSchema): number {
   const requiredFields: { [key: string]: string[] } = {
-    'Organization': ['name', 'description', 'url'],
-    'LocalBusiness': ['name', 'address', 'telephone', 'description'],
-    'Restaurant': ['name', 'address', 'telephone', 'description', 'openingHours'],
-    'Store': ['name', 'address', 'telephone', 'description', 'openingHours']
+    Organization: ['name', 'description', 'url'],
+    LocalBusiness: ['name', 'address', 'telephone', 'description'],
+    Restaurant: ['name', 'address', 'telephone', 'description', 'openingHours'],
+    Store: ['name', 'address', 'telephone', 'description', 'openingHours'],
   };
 
   const fields = requiredFields[schema['@type']] || requiredFields['Organization'];
-  const presentFields = fields.filter(field => {
+  const presentFields = fields.filter((field) => {
     const value = schema[field];
     return value && value !== '' && value !== null && value !== undefined;
   });
@@ -64,7 +64,10 @@ function calculateSchemaCompleteness(schema: JsonLdSchema): number {
 }
 
 // Analyze JSON-LD weaknesses and generate recommendations
-export function analyzeJsonLdWeaknesses(schemas: JsonLdSchema[], businessData: BusinessData): {
+export function analyzeJsonLdWeaknesses(
+  schemas: JsonLdSchema[],
+  businessData: BusinessData
+): {
   weaknesses: string[];
   recommendations: string[];
   completenessScore: number;
@@ -76,8 +79,8 @@ export function analyzeJsonLdWeaknesses(schemas: JsonLdSchema[], businessData: B
   let aeoScore = 0;
 
   // Check for missing critical schemas
-  const schemaTypes = schemas.map(s => s['@type']).filter(Boolean);
-  
+  const schemaTypes = schemas.map((s) => s['@type']).filter(Boolean);
+
   if (!schemaTypes.includes('Organization') && !schemaTypes.includes('LocalBusiness')) {
     weaknesses.push('Missing Organization/LocalBusiness schema');
     recommendations.push('Add Organization schema for better entity recognition by AI engines');
@@ -97,7 +100,7 @@ export function analyzeJsonLdWeaknesses(schemas: JsonLdSchema[], businessData: B
   }
 
   // Analyze each schema's completeness
-  schemas.forEach(schema => {
+  schemas.forEach((schema) => {
     const completeness = calculateSchemaCompleteness(schema);
     totalCompleteness += completeness;
 
@@ -146,7 +149,7 @@ export function analyzeJsonLdWeaknesses(schemas: JsonLdSchema[], businessData: B
     weaknesses,
     recommendations,
     completenessScore: avgCompleteness,
-    aeoScore: finalAeoScore
+    aeoScore: finalAeoScore,
   };
 }
 
@@ -156,19 +159,19 @@ function generateFaqSchema(content: string): JsonLdSchema | null {
   const faqPatterns = [
     /(?:what|how|why|when|where|who)\s+.*\?/gi,
     /Q:\s*(.*?)\s*A:\s*(.*?)(?=Q:|$)/gi,
-    /Question:\s*(.*?)\s*Answer:\s*(.*?)(?=Question:|$)/gi
+    /Question:\s*(.*?)\s*Answer:\s*(.*?)(?=Question:|$)/gi,
   ];
 
   const faqs: { question: string; answer: string }[] = [];
-  
+
   // This is a simplified example - in production you'd want more sophisticated content analysis
   const questions = content.match(faqPatterns[0]) || [];
-  
+
   if (questions.length >= 2) {
     questions.slice(0, 5).forEach((q, i) => {
       faqs.push({
         question: q.trim(),
-        answer: `Answer to: ${q.trim()}` // In production, extract actual answers
+        answer: `Answer to: ${q.trim()}`, // In production, extract actual answers
       });
     });
   }
@@ -176,38 +179,43 @@ function generateFaqSchema(content: string): JsonLdSchema | null {
   if (faqs.length === 0) return null;
 
   return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": faqs.map(faq => ({
-      "@type": "Question",
-      "name": faq.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": faq.answer
-      }
-    }))
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
   };
 }
 
 // Generate optimized JSON-LD schemas
 export function generateImprovedJsonLd(
-  businessData: BusinessData, 
-  currentSchemas: JsonLdSchema[], 
+  businessData: BusinessData,
+  currentSchemas: JsonLdSchema[],
   pageContent: PageContent
 ): JsonLdSchema[] {
   const improvedSchemas: JsonLdSchema[] = [];
-  const existingTypes = currentSchemas.map(s => s['@type']);
+  const existingTypes = currentSchemas.map((s) => s['@type']);
 
   // Generate Organization/LocalBusiness schema
-  if (businessData.name && !existingTypes.includes('Organization') && !existingTypes.includes('LocalBusiness')) {
+  if (
+    businessData.name &&
+    !existingTypes.includes('Organization') &&
+    !existingTypes.includes('LocalBusiness')
+  ) {
     const isLocalBusiness = businessData.phone || businessData.address;
-    
+
     const organizationSchema: JsonLdSchema = {
-      "@context": "https://schema.org",
-      "@type": isLocalBusiness ? "LocalBusiness" : "Organization",
-      "name": businessData.name,
-      "description": pageContent.metaDescription || `${businessData.name} - Professional services and solutions`,
-      "url": businessData.website || ""
+      '@context': 'https://schema.org',
+      '@type': isLocalBusiness ? 'LocalBusiness' : 'Organization',
+      name: businessData.name,
+      description:
+        pageContent.metaDescription || `${businessData.name} - Professional services and solutions`,
+      url: businessData.website || '',
     };
 
     if (businessData.phone) {
@@ -216,18 +224,18 @@ export function generateImprovedJsonLd(
 
     if (businessData.address) {
       organizationSchema.address = {
-        "@type": "PostalAddress",
-        "streetAddress": businessData.address,
-        "addressLocality": extractCity(businessData.address),
-        "addressRegion": extractState(businessData.address)
+        '@type': 'PostalAddress',
+        streetAddress: businessData.address,
+        addressLocality: extractCity(businessData.address),
+        addressRegion: extractState(businessData.address),
       };
     }
 
     if (businessData.lat && businessData.lng) {
       organizationSchema.geo = {
-        "@type": "GeoCoordinates",
-        "latitude": businessData.lat,
-        "longitude": businessData.lng
+        '@type': 'GeoCoordinates',
+        latitude: businessData.lat,
+        longitude: businessData.lng,
       };
     }
 
@@ -236,14 +244,14 @@ export function generateImprovedJsonLd(
     }
 
     if (businessData.hours && businessData.hours.length > 0) {
-      organizationSchema.openingHoursSpecification = businessData.hours.map(hour => {
-        const [day, times] = hour.split(':').map(s => s.trim());
-        const [opens, closes] = times.split('-').map(s => s.trim());
+      organizationSchema.openingHoursSpecification = businessData.hours.map((hour) => {
+        const [day, times] = hour.split(':').map((s) => s.trim());
+        const [opens, closes] = times.split('-').map((s) => s.trim());
         return {
-          "@type": "OpeningHoursSpecification",
-          "dayOfWeek": day,
-          "opens": opens,
-          "closes": closes
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: day,
+          opens: opens,
+          closes: closes,
         };
       });
     }
@@ -254,19 +262,20 @@ export function generateImprovedJsonLd(
   // Generate WebSite schema
   if (businessData.website && !existingTypes.includes('WebSite')) {
     improvedSchemas.push({
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": businessData.name || pageContent.title || "Website",
-      "url": businessData.website,
-      "description": pageContent.metaDescription || `Official website of ${businessData.name || 'our business'}`,
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": `${businessData.website}/search?q={search_term_string}`
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: businessData.name || pageContent.title || 'Website',
+      url: businessData.website,
+      description:
+        pageContent.metaDescription || `Official website of ${businessData.name || 'our business'}`,
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${businessData.website}/search?q={search_term_string}`,
         },
-        "query-input": "required name=search_term_string"
-      }
+        'query-input': 'required name=search_term_string',
+      },
     });
   }
 
@@ -296,6 +305,6 @@ export function analyzeAndImproveJsonLd(
     recommendations: analysis.recommendations,
     improved: improvedSchemas,
     completenessScore: analysis.completenessScore,
-    aeoScore: analysis.aeoScore
+    aeoScore: analysis.aeoScore,
   };
 }

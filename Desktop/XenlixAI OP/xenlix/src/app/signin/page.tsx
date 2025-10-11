@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState, useEffect, Suspense } from "react";
-import { signIn, getSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useState, useEffect, Suspense } from 'react';
+import { signIn, getSession } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 function SignInForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const messageParam = searchParams.get("message");
+    const messageParam = searchParams.get('message');
     if (messageParam) {
       setMessage(messageParam);
     }
@@ -23,26 +23,26 @@ function SignInForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setMessage("");
+    setError('');
+    setMessage('');
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
+      const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        setError('Invalid email or password');
       } else {
         // Refresh session and redirect to dashboard
         await getSession();
-        router.push("/dashboard");
+        router.push('/dashboard');
       }
     } catch (error) {
-      setError("An error occurred. Please try again.");
+      setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -109,13 +109,13 @@ function SignInForm() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-300">
-              Don't have an account?{" "}
+              Don't have an account?{' '}
               <Link href="/signup" className="text-blue-400 hover:text-blue-300 transition-colors">
                 Sign up here
               </Link>
@@ -129,7 +129,9 @@ function SignInForm() {
 
 export default function SignIn() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}
+    >
       <SignInForm />
     </Suspense>
   );

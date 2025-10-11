@@ -63,7 +63,7 @@ export class SchemaValidator {
       errors,
       warnings,
       richResultsEligible: errors.length === 0 && warnings.length <= 2,
-      schemaType: 'LocalBusiness'
+      schemaType: 'LocalBusiness',
     };
   }
 
@@ -120,7 +120,7 @@ export class SchemaValidator {
       errors,
       warnings,
       richResultsEligible: errors.length === 0 && schema.mainEntity?.length >= 3,
-      schemaType: 'FAQPage'
+      schemaType: 'FAQPage',
     };
   }
 
@@ -152,8 +152,9 @@ export class SchemaValidator {
       isValid: errors.length === 0,
       errors,
       warnings,
-      richResultsEligible: errors.length === 0 && description.length >= 140 && description.length <= 160,
-      schemaType: 'MetaDescription'
+      richResultsEligible:
+        errors.length === 0 && description.length >= 140 && description.length <= 160,
+      schemaType: 'MetaDescription',
     };
   }
 
@@ -183,7 +184,7 @@ export class SchemaValidator {
       errors,
       warnings,
       richResultsEligible: errors.length === 0 && title.length >= 30 && title.length <= 60,
-      schemaType: 'PageTitle'
+      schemaType: 'PageTitle',
     };
   }
 
@@ -202,8 +203,8 @@ export class SchemaValidator {
       overall: {
         totalErrors: 0,
         totalWarnings: 0,
-        richResultsReady: true
-      }
+        richResultsReady: true,
+      },
     };
 
     // Validate FAQ schemas
@@ -215,7 +216,7 @@ export class SchemaValidator {
     Object.entries(data.metaData).forEach(([url, meta]: [string, any]) => {
       results.metaData[url] = {
         title: this.validatePageTitle(meta.title),
-        description: this.validateMetaDescription(meta.description)
+        description: this.validateMetaDescription(meta.description),
       };
     });
 
@@ -223,12 +224,12 @@ export class SchemaValidator {
     const allResults = [
       results.localBusiness,
       ...Object.values(results.faqs),
-      ...Object.values(results.metaData).flatMap(m => [m.title, m.description])
+      ...Object.values(results.metaData).flatMap((m) => [m.title, m.description]),
     ];
 
     results.overall.totalErrors = allResults.reduce((sum, r) => sum + r.errors.length, 0);
     results.overall.totalWarnings = allResults.reduce((sum, r) => sum + r.warnings.length, 0);
-    results.overall.richResultsReady = allResults.every(r => r.richResultsEligible);
+    results.overall.richResultsReady = allResults.every((r) => r.richResultsEligible);
 
     return results;
   }
@@ -243,7 +244,7 @@ export class SchemaValidator {
     const lbSchema = encodeURIComponent(JSON.stringify(schemas.localBusiness));
     testUrls.push({
       type: 'LocalBusiness',
-      url: `https://search.google.com/test/rich-results?code=${lbSchema}`
+      url: `https://search.google.com/test/rich-results?code=${lbSchema}`,
     });
 
     // FAQ test URLs
@@ -252,7 +253,7 @@ export class SchemaValidator {
       testUrls.push({
         type: 'FAQ',
         pageUrl,
-        url: `https://search.google.com/test/rich-results?code=${faqSchemaEncoded}`
+        url: `https://search.google.com/test/rich-results?code=${faqSchemaEncoded}`,
       });
     });
 
@@ -270,29 +271,37 @@ export class SchemaValidator {
           {
             task: 'Add LocalBusiness schema to layout.tsx',
             status: validationResults.localBusiness.isValid ? 'completed' : 'pending',
-            priority: 'high'
+            priority: 'high',
           },
           {
             task: 'Add FAQ schemas to page components',
-            status: Object.values(validationResults.faqs).every((r: any) => r.isValid) ? 'completed' : 'pending',
-            priority: 'medium'
-          }
-        ]
+            status: Object.values(validationResults.faqs).every((r: any) => r.isValid)
+              ? 'completed'
+              : 'pending',
+            priority: 'medium',
+          },
+        ],
       },
       {
         category: 'Meta Data',
         items: [
           {
             task: 'Update page titles (30-60 chars)',
-            status: Object.values(validationResults.metaData).every((m: any) => m.title.isValid) ? 'completed' : 'pending',
-            priority: 'high'
+            status: Object.values(validationResults.metaData).every((m: any) => m.title.isValid)
+              ? 'completed'
+              : 'pending',
+            priority: 'high',
           },
           {
             task: 'Update meta descriptions (140-160 chars)',
-            status: Object.values(validationResults.metaData).every((m: any) => m.description.isValid) ? 'completed' : 'pending',
-            priority: 'high'
-          }
-        ]
+            status: Object.values(validationResults.metaData).every(
+              (m: any) => m.description.isValid
+            )
+              ? 'completed'
+              : 'pending',
+            priority: 'high',
+          },
+        ],
       },
       {
         category: 'Testing & Validation',
@@ -300,15 +309,15 @@ export class SchemaValidator {
           {
             task: 'Test schemas in Google Rich Results Test',
             status: 'pending',
-            priority: 'medium'
+            priority: 'medium',
           },
           {
             task: 'Monitor in Google Search Console',
             status: 'pending',
-            priority: 'low'
-          }
-        ]
-      }
+            priority: 'low',
+          },
+        ],
+      },
     ];
 
     return checklist;
@@ -340,7 +349,7 @@ export class LighthouseAnalyzer {
       return {
         score: 0,
         issues: ['Lighthouse data not available'],
-        fixes: ['Run Lighthouse audit first']
+        fixes: ['Run Lighthouse audit first'],
       };
     }
 
@@ -351,14 +360,14 @@ export class LighthouseAnalyzer {
     // Critical SEO audits
     const criticalAudits = [
       'document-title',
-      'meta-description', 
+      'meta-description',
       'canonical',
       'hreflang',
       'robots-txt',
-      'structured-data'
+      'structured-data',
     ];
 
-    criticalAudits.forEach(auditKey => {
+    criticalAudits.forEach((auditKey) => {
       const audit = audits[auditKey];
       if (audit && audit.score !== null && audit.score < 1) {
         issues.push(`${audit.title}: ${audit.description}`);
@@ -368,18 +377,20 @@ export class LighthouseAnalyzer {
 
     // Performance impacts on SEO
     const performanceAudits = ['largest-contentful-paint', 'cumulative-layout-shift'];
-    performanceAudits.forEach(auditKey => {
+    performanceAudits.forEach((auditKey) => {
       const audit = audits[auditKey];
       if (audit && audit.score !== null && audit.score < 0.75) {
         issues.push(`Poor ${audit.title} affects SEO ranking`);
-        fixes.push(`Optimize ${audit.title} - target: ${audit.scoreDisplayMode === 'numeric' ? 'under 2.5s' : 'good score'}`);
+        fixes.push(
+          `Optimize ${audit.title} - target: ${audit.scoreDisplayMode === 'numeric' ? 'under 2.5s' : 'good score'}`
+        );
       }
     });
 
     return {
       score: lighthouseData.categories?.seo?.score || 0,
       issues,
-      fixes
+      fixes,
     };
   }
 
@@ -388,7 +399,7 @@ export class LighthouseAnalyzer {
    */
   static generateSEORecommendations(lighthouseData: any) {
     const recommendations = [];
-    
+
     if (!lighthouseData?.audits) {
       return ['Run Lighthouse audit to get specific recommendations'];
     }
@@ -402,18 +413,18 @@ export class LighthouseAnalyzer {
         category: 'Meta Data',
         issue: 'Page title optimization needed',
         solution: 'Ensure all pages have unique, descriptive titles (30-60 characters)',
-        impact: 'High - affects click-through rates and rankings'
+        impact: 'High - affects click-through rates and rankings',
       });
     }
 
-    // Meta description recommendations  
+    // Meta description recommendations
     if (audits['meta-description']?.score < 1) {
       recommendations.push({
         priority: 'high',
         category: 'Meta Data',
         issue: 'Meta description missing or suboptimal',
         solution: 'Add compelling meta descriptions (140-160 characters) for all pages',
-        impact: 'High - affects click-through rates'
+        impact: 'High - affects click-through rates',
       });
     }
 
@@ -424,7 +435,7 @@ export class LighthouseAnalyzer {
         category: 'Technical SEO',
         issue: 'Missing or incorrect canonical URLs',
         solution: 'Add canonical link tags to prevent duplicate content issues',
-        impact: 'Medium - prevents duplicate content penalties'
+        impact: 'Medium - prevents duplicate content penalties',
       });
     }
 
@@ -435,7 +446,7 @@ export class LighthouseAnalyzer {
         category: 'Schema Markup',
         issue: 'Structured data issues detected',
         solution: 'Fix JSON-LD schema validation errors',
-        impact: 'Medium - enables rich results in search'
+        impact: 'Medium - enables rich results in search',
       });
     }
 
@@ -461,16 +472,19 @@ export class ContentGapAnalyzer {
         priority: string;
       }>;
     }> = [];
-    
+
     semanticAnalysis.forEach((pageAnalysis, index) => {
-      const { topIntents, weakIntents } = pageAnalysis.semanticAnalysis || { topIntents: [], weakIntents: [] };
-      
+      const { topIntents, weakIntents } = pageAnalysis.semanticAnalysis || {
+        topIntents: [],
+        weakIntents: [],
+      };
+
       // Identify content strengths
       const strengths = topIntents.filter((intent: any) => intent.score > 0.7);
-      
+
       // Identify content gaps
       const gaps = weakIntents.filter((intent: any) => intent.score < 0.4);
-      
+
       if (gaps.length > 0) {
         recommendations.push({
           page: pageAnalysis.url,
@@ -479,28 +493,29 @@ export class ContentGapAnalyzer {
             intent: gap.intent,
             currentScore: gap.score,
             recommendedContent: gap.recommendedSnippet,
-            priority: this.calculateGapPriority(gap.intent, pageAnalysis.pageType)
-          }))
+            priority: this.calculateGapPriority(gap.intent, pageAnalysis.pageType),
+          })),
         });
       }
     });
-    
+
     return recommendations;
   }
 
   private static calculateGapPriority(intent: string, pageType: string): 'high' | 'medium' | 'low' {
     // High priority intents for specific page types
     const highPriorityMapping: Record<string, string[]> = {
-      'home': ['what services do you offer', 'how to contact you', 'where are you located'],
-      'services': ['how much does it cost', 'what services do you offer'],
-      'contact': ['how to contact you', 'where are you located', 'what are your hours'],
-      'about': ['what is your experience', 'years in business']
+      home: ['what services do you offer', 'how to contact you', 'where are you located'],
+      services: ['how much does it cost', 'what services do you offer'],
+      contact: ['how to contact you', 'where are you located', 'what are your hours'],
+      about: ['what is your experience', 'years in business'],
     };
 
     const highPriorityIntents = highPriorityMapping[pageType] || [];
-    
+
     if (highPriorityIntents.includes(intent)) return 'high';
-    if (intent.includes('cost') || intent.includes('price') || intent.includes('contact')) return 'medium';
+    if (intent.includes('cost') || intent.includes('price') || intent.includes('contact'))
+      return 'medium';
     return 'low';
   }
 }

@@ -2,7 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CheckCircle, Globe, Zap, Search, Brain, MessageCircle, Target } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckCircle,
+  Globe,
+  Zap,
+  Search,
+  Brain,
+  MessageCircle,
+  Target,
+} from 'lucide-react';
 
 export default function AEOScanPage() {
   const [websiteUrl, setWebsiteUrl] = useState('');
@@ -12,7 +21,7 @@ export default function AEOScanPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!websiteUrl) {
       setError('Please enter a website URL');
       return;
@@ -27,13 +36,13 @@ export default function AEOScanPage() {
         websiteUrl,
         businessName: 'Business Analysis', // Default value
         businessDescription: 'AI-generated analysis', // Default value
-        industry: 'general' // Default value
+        industry: 'general', // Default value
       };
 
       const response = await fetch('/api/aeo-scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
@@ -57,20 +66,26 @@ export default function AEOScanPage() {
       <div className="relative overflow-hidden">
         {/* Background Elements */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-transparent"></div>
-        
+
         <div className="relative max-w-4xl mx-auto px-6 py-20 text-center">
           {/* Main Headlines - Option 1: Problem-Focused */}
           <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 rounded-full text-sm font-medium mb-6">
             <MessageCircle className="w-4 h-4" />
             87% of customers ask AI first—not Google
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-            Is Your Business <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">Invisible</span> to ChatGPT?
+            Is Your Business{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">
+              Invisible
+            </span>{' '}
+            to ChatGPT?
           </h1>
-          
+
           <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-            See exactly how ChatGPT, Claude, and Gemini rank your business, plus get the <span className="text-blue-400 font-semibold">3 critical fixes</span> that could double your AI traffic in 30 days.
+            See exactly how ChatGPT, Claude, and Gemini rank your business, plus get the{' '}
+            <span className="text-blue-400 font-semibold">3 critical fixes</span> that could double
+            your AI traffic in 30 days.
           </p>
 
           {/* Enhanced Single Input Form */}
@@ -78,10 +93,14 @@ export default function AEOScanPage() {
             <form onSubmit={handleSubmit} className="relative">
               {/* Form Label/CTA Above */}
               <div className="text-center mb-4">
-                <p className="text-white font-semibold text-lg mb-2">Get Your Free AI Visibility Report</p>
-                <p className="text-gray-400 text-sm">Enter your website below to see exactly where you're losing customers to AI</p>
+                <p className="text-white font-semibold text-lg mb-2">
+                  Get Your Free AI Visibility Report
+                </p>
+                <p className="text-gray-400 text-sm">
+                  Enter your website below to see exactly where you're losing customers to AI
+                </p>
               </div>
-              
+
               {/* Main Form Container */}
               <div className="relative bg-white rounded-2xl p-3 shadow-2xl">
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -99,7 +118,7 @@ export default function AEOScanPage() {
                       required
                     />
                   </div>
-                  
+
                   {/* CTA Button */}
                   <button
                     type="submit"
@@ -120,7 +139,7 @@ export default function AEOScanPage() {
                   </button>
                 </div>
               </div>
-              
+
               {/* Error Message */}
               {error && (
                 <div className="flex items-center justify-center gap-2 text-red-400 text-sm mt-3 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
@@ -129,12 +148,14 @@ export default function AEOScanPage() {
                 </div>
               )}
             </form>
-            
+
             {/* Instant Credibility Boost */}
             <div className="text-center mt-6">
               <div className="inline-flex items-center gap-3 bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-2 rounded-full text-sm">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="font-medium">Live analysis - See real AI responses in 60 seconds</span>
+                <span className="font-medium">
+                  Live analysis - See real AI responses in 60 seconds
+                </span>
               </div>
             </div>
           </div>
@@ -158,7 +179,8 @@ export default function AEOScanPage() {
           {/* Social Proof with Numbers */}
           <div className="text-center">
             <p className="text-gray-400 text-lg mb-2">
-              Join <span className="text-white font-bold text-xl">2,847</span> businesses who discovered their AI blind spots
+              Join <span className="text-white font-bold text-xl">2,847</span> businesses who
+              discovered their AI blind spots
             </p>
             <div className="flex items-center justify-center gap-2 text-sm text-yellow-400">
               <div className="flex">
@@ -181,11 +203,14 @@ export default function AEOScanPage() {
           <h2 className="text-3xl font-bold text-white text-center mb-12">
             Trusted by 2,000+ Businesses Who Discovered Their AI Blind Spots
           </h2>
-          
+
           {/* Testimonial */}
           <div className="bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-blue-500/20 rounded-2xl p-8 mb-12">
             <blockquote className="text-lg text-gray-300 mb-6 italic leading-relaxed">
-              "Before XenlixAI, I had no idea ChatGPT couldn't find our business when customers asked for marketing consultants in Dallas. The audit showed us exactly what was missing, and within 30 days, we started appearing in AI responses. We've seen a 40% increase in qualified leads."
+              "Before XenlixAI, I had no idea ChatGPT couldn't find our business when customers
+              asked for marketing consultants in Dallas. The audit showed us exactly what was
+              missing, and within 30 days, we started appearing in AI responses. We've seen a 40%
+              increase in qualified leads."
             </blockquote>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
@@ -197,13 +222,14 @@ export default function AEOScanPage() {
               </div>
             </div>
           </div>
-          
+
           {/* See Your Results */}
           <div className="text-center">
             <h3 className="text-2xl font-bold text-white mb-6">See Your Results in Action</h3>
             <div className="max-w-3xl mx-auto text-gray-300 space-y-6">
               <p className="text-lg">
-                Your personalized audit report includes a visual dashboard showing exactly how AI engines see your business. You'll get:
+                Your personalized audit report includes a visual dashboard showing exactly how AI
+                engines see your business. You'll get:
               </p>
               <div className="grid md:grid-cols-2 gap-4 text-left">
                 <ul className="space-y-3">
@@ -213,22 +239,30 @@ export default function AEOScanPage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                    <span>Screenshots of how ChatGPT, Claude, and Gemini respond to customer questions</span>
+                    <span>
+                      Screenshots of how ChatGPT, Claude, and Gemini respond to customer questions
+                    </span>
                   </li>
                 </ul>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                    <span>A color-coded priority list of the top 3 fixes that will have the biggest impact</span>
+                    <span>
+                      A color-coded priority list of the top 3 fixes that will have the biggest
+                      impact
+                    </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                    <span>Before/after examples showing what your optimized presence will look like</span>
+                    <span>
+                      Before/after examples showing what your optimized presence will look like
+                    </span>
                   </li>
                 </ul>
               </div>
               <p className="font-medium text-blue-400 text-lg">
-                No confusing technical jargon—just clear, actionable insights you can implement immediately.
+                No confusing technical jargon—just clear, actionable insights you can implement
+                immediately.
               </p>
             </div>
           </div>
@@ -240,7 +274,7 @@ export default function AEOScanPage() {
         <h2 className="text-3xl font-bold text-white text-center mb-12">
           What Our AI Audit Reveals
         </h2>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 text-center">
             <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
@@ -248,7 +282,8 @@ export default function AEOScanPage() {
             </div>
             <h3 className="text-xl font-bold text-white mb-3">Questions People Ask</h3>
             <p className="text-gray-300 text-sm">
-              We reveal the exact questions your customers ask AI—and show you which answers are missing from your website.
+              We reveal the exact questions your customers ask AI—and show you which answers are
+              missing from your website.
             </p>
           </div>
 
@@ -258,7 +293,8 @@ export default function AEOScanPage() {
             </div>
             <h3 className="text-xl font-bold text-white mb-3">Business Recognition</h3>
             <p className="text-gray-300 text-sm">
-              We test whether AI engines can clearly explain your services when customers ask for recommendations.
+              We test whether AI engines can clearly explain your services when customers ask for
+              recommendations.
             </p>
           </div>
 
@@ -268,7 +304,8 @@ export default function AEOScanPage() {
             </div>
             <h3 className="text-xl font-bold text-white mb-3">Step-by-Step Guides</h3>
             <p className="text-gray-300 text-sm">
-              We identify the instructional content that makes AI engines choose your business as the expert solution.
+              We identify the instructional content that makes AI engines choose your business as
+              the expert solution.
             </p>
           </div>
 
@@ -278,7 +315,8 @@ export default function AEOScanPage() {
             </div>
             <h3 className="text-xl font-bold text-white mb-3">AI Visibility Score</h3>
             <p className="text-gray-300 text-sm">
-              We calculate your exact visibility percentage across ChatGPT, Claude, and Gemini searches.
+              We calculate your exact visibility percentage across ChatGPT, Claude, and Gemini
+              searches.
             </p>
           </div>
         </div>
@@ -287,14 +325,17 @@ export default function AEOScanPage() {
         <div className="mt-16 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Why AI Search Optimization Matters</h2>
           <p className="text-gray-300 text-lg mb-8 max-w-3xl mx-auto">
-            AI search engines are becoming the new Google. ChatGPT processes over 100 million queries daily, 
-            and users increasingly rely on AI for answers instead of traditional search.
+            AI search engines are becoming the new Google. ChatGPT processes over 100 million
+            queries daily, and users increasingly rely on AI for answers instead of traditional
+            search.
           </p>
-          
+
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div>
               <div className="text-4xl font-bold text-blue-400 mb-2">73%</div>
-              <p className="text-gray-400">of users trust AI responses over traditional search results</p>
+              <p className="text-gray-400">
+                of users trust AI responses over traditional search results
+              </p>
             </div>
             <div>
               <div className="text-4xl font-bold text-purple-400 mb-2">4B+</div>
@@ -302,13 +343,16 @@ export default function AEOScanPage() {
             </div>
             <div>
               <div className="text-4xl font-bold text-green-400 mb-2">2x</div>
-              <p className="text-gray-400">higher conversion rates from AI-recommended businesses</p>
+              <p className="text-gray-400">
+                higher conversion rates from AI-recommended businesses
+              </p>
             </div>
           </div>
-          
+
           <div className="mt-8">
             <p className="text-gray-300 text-lg font-medium">
-              If AI can't find or understand your business, you're invisible to millions of potential customers.
+              If AI can't find or understand your business, you're invisible to millions of
+              potential customers.
             </p>
           </div>
         </div>

@@ -22,14 +22,27 @@ const DEFAULT_CONFIG: CanonicalConfig = {
   preserveParams: ['id', 'slug', 'category', 'type', 'template', 'page'],
   forceHttps: true,
   forceLowercase: true,
-  removeTrailingSlash: true
+  removeTrailingSlash: true,
 };
 
 // Tracking parameters to always strip from canonical URLs
 const TRACKING_PARAMETERS = [
-  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
-  'ref', 'source', 'campaign', 'gclid', 'fbclid', 'msclkid', 
-  'referrer', 'affiliate', 'partner', 'from', 'via'
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'ref',
+  'source',
+  'campaign',
+  'gclid',
+  'fbclid',
+  'msclkid',
+  'referrer',
+  'affiliate',
+  'partner',
+  'from',
+  'via',
 ];
 
 /**
@@ -38,7 +51,7 @@ const TRACKING_PARAMETERS = [
 export function useCanonicalUrl(config: CanonicalConfig = {}): string {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  
+
   const mergedConfig = { ...DEFAULT_CONFIG, ...config };
 
   return useMemo(() => {
@@ -50,15 +63,15 @@ export function useCanonicalUrl(config: CanonicalConfig = {}): string {
  * Normalize a URL to create proper canonical URL
  */
 export function normalizeCanonicalUrl(
-  pathname: string, 
-  searchParams: URLSearchParams | null, 
+  pathname: string,
+  searchParams: URLSearchParams | null,
   config: CanonicalConfig = DEFAULT_CONFIG
 ): string {
   const { baseUrl, preserveParams, forceHttps, forceLowercase, removeTrailingSlash } = config;
 
   // Start with base URL
   let canonicalUrl = baseUrl || 'https://xenlix.ai';
-  
+
   // Ensure HTTPS if configured
   if (forceHttps && canonicalUrl.startsWith('http://')) {
     canonicalUrl = canonicalUrl.replace('http://', 'https://');
@@ -66,12 +79,12 @@ export function normalizeCanonicalUrl(
 
   // Normalize pathname
   let normalizedPath = pathname;
-  
+
   // Force lowercase if configured
   if (forceLowercase) {
     normalizedPath = normalizedPath.toLowerCase();
   }
-  
+
   // Remove trailing slash if configured (except for root)
   if (removeTrailingSlash && normalizedPath !== '/' && normalizedPath.endsWith('/')) {
     normalizedPath = normalizedPath.slice(0, -1);
@@ -83,14 +96,14 @@ export function normalizeCanonicalUrl(
   // Handle search parameters
   if (searchParams && preserveParams && preserveParams.length > 0) {
     const preservedParams = new URLSearchParams();
-    
+
     // Only preserve specified parameters, skip tracking parameters
     for (const [key, value] of searchParams.entries()) {
       if (preserveParams.includes(key) && !TRACKING_PARAMETERS.includes(key)) {
         preservedParams.set(key, value);
       }
     }
-    
+
     // Add preserved parameters to canonical URL
     const paramString = preservedParams.toString();
     if (paramString) {
@@ -111,7 +124,7 @@ export function generateCanonicalUrlClient(
 ): string {
   // Convert searchParams object to URLSearchParams
   const urlSearchParams = new URLSearchParams();
-  
+
   if (searchParams) {
     for (const [key, value] of Object.entries(searchParams)) {
       if (typeof value === 'string') {
@@ -137,13 +150,7 @@ export function CanonicalLink({ href, config }: CanonicalLinkProps) {
   const automaticCanonical = useCanonicalUrl(config);
   const canonicalUrl = href || automaticCanonical;
 
-  return (
-    <link 
-      rel="canonical" 
-      href={canonicalUrl}
-      key="canonical"
-    />
-  );
+  return <link rel="canonical" href={canonicalUrl} key="canonical" />;
 }
 
 /**
@@ -151,13 +158,13 @@ export function CanonicalLink({ href, config }: CanonicalLinkProps) {
  */
 export function hasTrackingParameters(searchParams: URLSearchParams | null): boolean {
   if (!searchParams) return false;
-  
+
   for (const param of TRACKING_PARAMETERS) {
     if (searchParams.has(param)) {
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -167,12 +174,12 @@ export function hasTrackingParameters(searchParams: URLSearchParams | null): boo
 export function getCleanUrl(url: string): string {
   try {
     const urlObj = new URL(url);
-    
+
     // Remove tracking parameters
     for (const param of TRACKING_PARAMETERS) {
       urlObj.searchParams.delete(param);
     }
-    
+
     return urlObj.toString();
   } catch {
     return url;
@@ -192,7 +199,7 @@ export function shouldNoindex(pathname: string, searchParams: URLSearchParams | 
     '/checkout',
     '/signin',
     '/signup',
-    '/onboarding'
+    '/onboarding',
   ];
 
   // Check if path matches noindex patterns

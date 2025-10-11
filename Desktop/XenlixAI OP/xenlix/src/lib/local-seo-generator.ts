@@ -11,7 +11,7 @@ import {
   CityPageGenerationConfig,
   GeneratedCityPage,
   LocalSEOGeneratorOptions,
-  CityPageGenerationResponse
+  CityPageGenerationResponse,
 } from '@/types/local-seo';
 import { NormalizedBusinessProfile } from '@/lib/business-profile-parser';
 import { SchemaGenerator } from '@/lib/schema-generator';
@@ -34,7 +34,7 @@ export class LocalSEOGenerator {
       includeServices: true,
       includeFAQ: true,
       includeWebsite: true,
-      includeOrganization: true
+      includeOrganization: true,
     });
   }
 
@@ -64,9 +64,9 @@ export class LocalSEOGenerator {
           version: '1.0.0',
           sourceProfile: this.generateProfileHash(),
           cityDataVersion: '1.0.0',
-          configUsed: this.config
+          configUsed: this.config,
         },
-        performance
+        performance,
       };
 
       const generationTime = Date.now() - startTime;
@@ -77,14 +77,13 @@ export class LocalSEOGenerator {
         performance: {
           generationTime,
           optimizationsApplied: this.getOptimizationsApplied(),
-          recommendations: this.generateRecommendations()
-        }
+          recommendations: this.generateRecommendations(),
+        },
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -103,7 +102,7 @@ export class LocalSEOGenerator {
       `${primaryService} in ${cityName}, ${this.targetCity.stateAbbreviation} | ${businessName}`,
       `Professional ${primaryService} Services - ${cityName}, ${stateName} | ${businessName}`,
       `${businessName} - Expert ${primaryService} in ${cityName}, ${this.targetCity.stateAbbreviation}`,
-      `Top-Rated ${primaryService} Company in ${cityName} | ${businessName}`
+      `Top-Rated ${primaryService} Company in ${cityName} | ${businessName}`,
     ];
 
     // Select best title based on length and keyword density
@@ -138,7 +137,7 @@ export class LocalSEOGenerator {
       localKeywords: keywords.local,
       semanticKeywords: keywords.semantic,
       localSEOSignals,
-      aeoOptimization
+      aeoOptimization,
     };
   }
 
@@ -151,7 +150,7 @@ export class LocalSEOGenerator {
       services: this.generateServiceSections(),
       localInfo: this.generateLocalInformation(),
       faq: this.generateLocalFAQ(),
-      cta: this.generateCallToActions()
+      cta: this.generateCallToActions(),
     };
   }
 
@@ -178,15 +177,18 @@ export class LocalSEOGenerator {
       localBusiness: schemas.localBusiness!,
       services: schemas.services || [],
       faqPage: schemas.faqPage!,
-      aggregateRating: this.businessProfile.reviews.rating > 0 ? {
-        "@type": "AggregateRating",
-        ratingValue: this.businessProfile.reviews.rating,
-        reviewCount: this.businessProfile.reviews.count,
-        bestRating: 5,
-        worstRating: 1
-      } : undefined,
+      aggregateRating:
+        this.businessProfile.reviews.rating > 0
+          ? {
+              '@type': 'AggregateRating',
+              ratingValue: this.businessProfile.reviews.rating,
+              reviewCount: this.businessProfile.reviews.count,
+              bestRating: 5,
+              worstRating: 1,
+            }
+          : undefined,
       breadcrumbList,
-      place
+      place,
     };
   }
 
@@ -197,7 +199,7 @@ export class LocalSEOGenerator {
     return {
       navigation: this.generateNavigationLinks(),
       contentLinks: this.generateContentLinks(),
-      linkDistribution: this.calculateLinkDistribution()
+      linkDistribution: this.calculateLinkDistribution(),
     };
   }
 
@@ -206,9 +208,9 @@ export class LocalSEOGenerator {
    */
   private selectOptimalTitle(variations: string[]): string {
     // Score titles based on SEO factors
-    const scoredTitles = variations.map(title => ({
+    const scoredTitles = variations.map((title) => ({
       title,
-      score: this.scoreTitleSEO(title)
+      score: this.scoreTitleSEO(title),
     }));
 
     // Return highest scoring title
@@ -230,7 +232,8 @@ export class LocalSEOGenerator {
     // Keyword presence
     if (title.toLowerCase().includes(this.businessProfile.businessName.toLowerCase())) score += 15;
     if (title.toLowerCase().includes(this.targetCity.name.toLowerCase())) score += 15;
-    if (title.toLowerCase().includes(this.businessProfile.services[0]?.toLowerCase() || '')) score += 10;
+    if (title.toLowerCase().includes(this.businessProfile.services[0]?.toLowerCase() || ''))
+      score += 10;
 
     // Structure quality
     if (title.includes('|')) score += 5; // Brand separation
@@ -251,11 +254,11 @@ export class LocalSEOGenerator {
     const templates = [
       `Looking for reliable ${primaryService} in ${cityName}? ${businessName} provides expert solutions with ${rating > 0 ? `${rating}-star rated service` : 'exceptional quality'}. Contact us for a free consultation today!`,
       `${businessName} offers professional ${primaryService} throughout ${cityName} and surrounding areas. ${rating > 0 ? `Rated ${rating}/5 stars` : 'Trusted by local customers'}. Get your free quote now!`,
-      `Expert ${primaryService} in ${cityName} by ${businessName}. ${rating > 0 ? `${rating}-star rated` : 'Highly rated'} local business serving the community with quality solutions. Call today!`
+      `Expert ${primaryService} in ${cityName} by ${businessName}. ${rating > 0 ? `${rating}-star rated` : 'Highly rated'} local business serving the community with quality solutions. Call today!`,
     ];
 
     // Select template that fits within 155-160 character limit
-    return templates.find(desc => desc.length <= 160) || templates[0].substring(0, 157) + '...';
+    return templates.find((desc) => desc.length <= 160) || templates[0].substring(0, 157) + '...';
   }
 
   /**
@@ -274,14 +277,14 @@ export class LocalSEOGenerator {
         `Our ${primaryService} Solutions in ${cityName}`,
         `Serving ${cityName} and Surrounding Areas`,
         `What Our ${cityName} Customers Say`,
-        `Get Started with Your ${primaryService} Project in ${cityName}`
+        `Get Started with Your ${primaryService} Project in ${cityName}`,
       ],
       h3Tags: [
-        ...this.businessProfile.services.slice(0, 3).map(service => `${service} in ${cityName}`),
+        ...this.businessProfile.services.slice(0, 3).map((service) => `${service} in ${cityName}`),
         `${cityName} Service Area`,
         `Contact Our ${cityName} Team`,
-        `About Our ${cityName} Location`
-      ]
+        `About Our ${cityName} Location`,
+      ],
     };
   }
 
@@ -292,7 +295,7 @@ export class LocalSEOGenerator {
     const cityName = this.targetCity.name.toLowerCase();
     const stateName = this.targetCity.state.toLowerCase();
     const stateAbbr = this.targetCity.stateAbbreviation.toLowerCase();
-    const services = this.businessProfile.services.map(s => s.toLowerCase());
+    const services = this.businessProfile.services.map((s) => s.toLowerCase());
     const industry = this.businessProfile.industry.toLowerCase();
 
     return {
@@ -300,13 +303,13 @@ export class LocalSEOGenerator {
         `${services[0]} ${cityName}`,
         `${services[0]} ${cityName} ${stateAbbr}`,
         `${industry} ${cityName}`,
-        `${this.businessProfile.businessName.toLowerCase()}`
+        `${this.businessProfile.businessName.toLowerCase()}`,
       ],
       secondary: [
-        ...services.slice(1, 4).map(service => `${service} ${cityName}`),
+        ...services.slice(1, 4).map((service) => `${service} ${cityName}`),
         `${industry} services ${cityName}`,
         `professional ${services[0]} ${stateName}`,
-        `local ${industry} ${cityName}`
+        `local ${industry} ${cityName}`,
       ],
       longTail: [
         `best ${services[0]} company in ${cityName}`,
@@ -314,14 +317,14 @@ export class LocalSEOGenerator {
         `professional ${services[0]} services near ${cityName}`,
         `top rated ${industry} ${cityName}`,
         `${services[0]} contractors ${cityName}`,
-        `${services[0]} specialists ${cityName} area`
+        `${services[0]} specialists ${cityName} area`,
       ],
       local: [
         ...this.targetCity.characteristics.localKeywords,
-        ...this.targetCity.characteristics.neighborhoodNames.map(n => n.toLowerCase()),
+        ...this.targetCity.characteristics.neighborhoodNames.map((n) => n.toLowerCase()),
         `${cityName} ${industry}`,
         `near ${cityName}`,
-        `${cityName} area`
+        `${cityName} area`,
       ],
       semantic: [
         ...this.generateSemanticKeywords(),
@@ -329,8 +332,8 @@ export class LocalSEOGenerator {
         'professional team',
         'local business',
         'customer satisfaction',
-        'expert solutions'
-      ]
+        'expert solutions',
+      ],
     };
   }
 
@@ -340,18 +343,18 @@ export class LocalSEOGenerator {
   private generateSemanticKeywords(): string[] {
     const serviceType = this.businessProfile.services[0]?.toLowerCase() || '';
     const semanticMap: { [key: string]: string[] } = {
-      'plumbing': ['pipe repair', 'water damage', 'drain cleaning', 'fixture installation'],
-      'electrical': ['wiring', 'panel upgrade', 'outlet installation', 'lighting'],
-      'hvac': ['heating', 'cooling', 'air conditioning', 'furnace repair'],
-      'roofing': ['roof repair', 'shingle replacement', 'gutter cleaning', 'leak repair'],
-      'landscaping': ['lawn care', 'garden design', 'tree trimming', 'irrigation'],
-      'cleaning': ['house cleaning', 'office cleaning', 'deep cleaning', 'maintenance'],
-      'construction': ['renovation', 'remodeling', 'building', 'contracting'],
-      'automotive': ['car repair', 'auto service', 'maintenance', 'diagnostics'],
-      'dental': ['teeth cleaning', 'oral health', 'dental care', 'preventive care'],
-      'legal': ['legal advice', 'attorney', 'law firm', 'legal services'],
-      'accounting': ['tax preparation', 'bookkeeping', 'financial planning', 'business consulting'],
-      'marketing': ['digital marketing', 'advertising', 'social media', 'brand development']
+      plumbing: ['pipe repair', 'water damage', 'drain cleaning', 'fixture installation'],
+      electrical: ['wiring', 'panel upgrade', 'outlet installation', 'lighting'],
+      hvac: ['heating', 'cooling', 'air conditioning', 'furnace repair'],
+      roofing: ['roof repair', 'shingle replacement', 'gutter cleaning', 'leak repair'],
+      landscaping: ['lawn care', 'garden design', 'tree trimming', 'irrigation'],
+      cleaning: ['house cleaning', 'office cleaning', 'deep cleaning', 'maintenance'],
+      construction: ['renovation', 'remodeling', 'building', 'contracting'],
+      automotive: ['car repair', 'auto service', 'maintenance', 'diagnostics'],
+      dental: ['teeth cleaning', 'oral health', 'dental care', 'preventive care'],
+      legal: ['legal advice', 'attorney', 'law firm', 'legal services'],
+      accounting: ['tax preparation', 'bookkeeping', 'financial planning', 'business consulting'],
+      marketing: ['digital marketing', 'advertising', 'social media', 'brand development'],
     };
 
     // Find matching semantic keywords
@@ -378,7 +381,7 @@ export class LocalSEOGenerator {
       serviceInTitle: true,
       localLandmarks: this.targetCity.characteristics.landmarkNames.slice(0, 5),
       localEvents: this.targetCity.characteristics.events.slice(0, 3),
-      neighborhoodMentions: this.targetCity.characteristics.neighborhoodNames.slice(0, 5)
+      neighborhoodMentions: this.targetCity.characteristics.neighborhoodNames.slice(0, 5),
     };
   }
 
@@ -394,29 +397,29 @@ export class LocalSEOGenerator {
         `What makes the best ${primaryService} company in ${cityName}?`,
         `How to choose ${primaryService} in ${cityName}?`,
         `Why choose local ${primaryService} in ${cityName}?`,
-        `What should I expect from ${primaryService} in ${cityName}?`
+        `What should I expect from ${primaryService} in ${cityName}?`,
       ],
       conversationalKeywords: [
         `${primaryService} near me`,
         `best ${primaryService} in ${cityName}`,
         `${primaryService} companies ${cityName}`,
         `local ${primaryService} ${cityName}`,
-        `affordable ${primaryService} ${cityName}`
+        `affordable ${primaryService} ${cityName}`,
       ],
       voiceSearchOptimized: this.config.seo.enableVoiceSearch,
       featuredSnippetTargets: [
         `How much does ${primaryService} cost in ${cityName}?`,
         `Best ${primaryService} company in ${cityName}`,
         `${primaryService} process explained`,
-        `Benefits of professional ${primaryService}`
+        `Benefits of professional ${primaryService}`,
       ],
       peopleAlsoAskQuestions: [
         `How long does ${primaryService} take?`,
         `What is included in ${primaryService}?`,
         `Do you serve ${cityName} area?`,
         `What makes you different from other ${primaryService} companies?`,
-        `Do you offer free estimates for ${primaryService}?`
-      ]
+        `Do you offer free estimates for ${primaryService}?`,
+      ],
     };
   }
 
@@ -439,8 +442,8 @@ export class LocalSEOGenerator {
         `${this.businessProfile.reviews.count}+ Happy Customers`,
         'Licensed & Insured',
         'Local Family Business',
-        'Same-Day Service Available'
-      ]
+        'Same-Day Service Available',
+      ],
     };
   }
 
@@ -452,7 +455,7 @@ export class LocalSEOGenerator {
     const services = this.businessProfile.services;
 
     return {
-      primary: services.slice(0, 3).map(service => ({
+      primary: services.slice(0, 3).map((service) => ({
         title: `Professional ${service} in ${cityName}`,
         description: `Our expert team provides comprehensive ${service.toLowerCase()} solutions for residential and commercial clients throughout ${cityName}. We use industry-leading techniques and equipment to ensure quality results every time.`,
         benefits: [
@@ -460,20 +463,20 @@ export class LocalSEOGenerator {
           'Upfront, transparent pricing',
           'Quick response times',
           'Quality workmanship guaranteed',
-          'Local expertise and knowledge'
+          'Local expertise and knowledge',
         ],
         serviceKeywords: [
           `${service.toLowerCase()} ${cityName.toLowerCase()}`,
           `professional ${service.toLowerCase()}`,
           `${service.toLowerCase()} experts`,
-          `quality ${service.toLowerCase()}`
-        ]
+          `quality ${service.toLowerCase()}`,
+        ],
       })),
-      secondary: services.slice(3, 6).map(service => ({
+      secondary: services.slice(3, 6).map((service) => ({
         title: service,
         description: `Expert ${service.toLowerCase()} services for ${cityName} residents and businesses.`,
-        localRelevance: `Serving the ${cityName} community with reliable ${service.toLowerCase()} solutions.`
-      }))
+        localRelevance: `Serving the ${cityName} community with reliable ${service.toLowerCase()} solutions.`,
+      })),
     };
   }
 
@@ -492,10 +495,10 @@ export class LocalSEOGenerator {
         'Established relationships with local suppliers and vendors',
         'Quick response times throughout the city',
         'Understanding of local customer needs and preferences',
-        'Active community involvement and local business support'
+        'Active community involvement and local business support',
       ],
       localTestimonials: this.generateLocalTestimonials(),
-      localCaseStudies: this.generateLocalCaseStudies()
+      localCaseStudies: this.generateLocalCaseStudies(),
     };
   }
 
@@ -513,20 +516,20 @@ export class LocalSEOGenerator {
         quote: `${businessName} provided excellent ${primaryService.toLowerCase()} for our home. Their team was professional, punctual, and delivered exactly what they promised. Highly recommend for anyone in ${cityName}!`,
         author: 'Sarah M.',
         location: neighborhoods[0] || cityName,
-        service: primaryService
+        service: primaryService,
       },
       {
         quote: `Outstanding work and customer service. They explained everything clearly and completed the project on time and within budget. Will definitely use them again.`,
         author: 'Mike R.',
         location: neighborhoods[1] || cityName,
-        service: this.businessProfile.services[1] || primaryService
+        service: this.businessProfile.services[1] || primaryService,
       },
       {
         quote: `Local business that truly cares about quality. They went above and beyond to ensure we were completely satisfied with the results.`,
         author: 'Jennifer L.',
         location: neighborhoods[2] || cityName,
-        service: primaryService
-      }
+        service: primaryService,
+      },
     ];
   }
 
@@ -544,8 +547,8 @@ export class LocalSEOGenerator {
         challenge: `Customer needed reliable ${primaryService.toLowerCase()} solution for their property with specific local requirements and timeline constraints.`,
         solution: `Our team developed a customized approach using local suppliers and expertise, ensuring compliance with city regulations and customer preferences.`,
         result: `Project completed ahead of schedule with 100% customer satisfaction. Customer now recommends us to neighbors and friends in the area.`,
-        location: neighborhoods[0] || cityName
-      }
+        location: neighborhoods[0] || cityName,
+      },
     ];
   }
 
@@ -563,26 +566,38 @@ export class LocalSEOGenerator {
         question: `Do you provide ${primaryService.toLowerCase()} throughout ${cityName}?`,
         answer: `Yes, ${businessName} provides ${primaryService.toLowerCase()} throughout ${cityName} and surrounding areas in ${stateName}. We serve all neighborhoods and can typically respond to service calls within the same day.`,
         category: 'location' as const,
-        keywordTargets: [`${primaryService.toLowerCase()} ${cityName.toLowerCase()}`, `service area ${cityName.toLowerCase()}`]
+        keywordTargets: [
+          `${primaryService.toLowerCase()} ${cityName.toLowerCase()}`,
+          `service area ${cityName.toLowerCase()}`,
+        ],
       },
       {
         question: `What makes ${businessName} different from other ${primaryService.toLowerCase()} companies in ${cityName}?`,
         answer: `As a local ${cityName} business, we understand the unique needs of our community. We offer transparent pricing, licensed professionals, and personalized service that you can only get from a local company that truly cares about its reputation in the community.`,
         category: 'general' as const,
-        keywordTargets: [`local ${primaryService.toLowerCase()}`, `${cityName} ${primaryService.toLowerCase()} company`]
+        keywordTargets: [
+          `local ${primaryService.toLowerCase()}`,
+          `${cityName} ${primaryService.toLowerCase()} company`,
+        ],
       },
       {
         question: `How quickly can you respond to ${primaryService.toLowerCase()} needs in ${cityName}?`,
         answer: `We pride ourselves on quick response times throughout ${cityName}. For emergency services, we typically respond within 2-4 hours. For scheduled appointments, we can usually accommodate same-day or next-day service.`,
         category: 'service' as const,
-        keywordTargets: [`emergency ${primaryService.toLowerCase()}`, `same day service ${cityName}`]
+        keywordTargets: [
+          `emergency ${primaryService.toLowerCase()}`,
+          `same day service ${cityName}`,
+        ],
       },
       {
         question: `Do you offer free estimates for ${primaryService.toLowerCase()} in ${cityName}?`,
         answer: `Yes, we provide free, no-obligation estimates for all ${primaryService.toLowerCase()} projects in ${cityName}. Our experienced team will assess your needs and provide transparent pricing before any work begins.`,
         category: 'pricing' as const,
-        keywordTargets: [`free estimate ${primaryService.toLowerCase()}`, `${primaryService.toLowerCase()} cost ${cityName}`]
-      }
+        keywordTargets: [
+          `free estimate ${primaryService.toLowerCase()}`,
+          `${primaryService.toLowerCase()} cost ${cityName}`,
+        ],
+      },
     ];
   }
 
@@ -594,13 +609,13 @@ export class LocalSEOGenerator {
       primary: {
         text: 'Get Your Local SEO Plan',
         url: '/plans?utm_source=city&utm_campaign=local',
-        type: 'quote' as const
+        type: 'quote' as const,
       },
       secondary: {
         text: 'Calculate Your Marketing ROI',
         url: '/calculators/pricing?utm_source=city',
-        type: 'contact' as const
-      }
+        type: 'contact' as const,
+      },
     };
   }
 
@@ -618,26 +633,31 @@ export class LocalSEOGenerator {
         city: this.businessLocation.primaryAddress.city,
         state: this.businessLocation.primaryAddress.state,
         zipCode: this.businessLocation.primaryAddress.zipCode,
-        country: this.businessLocation.primaryAddress.country
+        country: this.businessLocation.primaryAddress.country,
       },
       contact: {
         phone: this.businessProfile.phone,
         email: this.businessProfile.email,
-        website: this.businessProfile.website
+        website: this.businessProfile.website,
       },
       socialMedia: this.businessProfile.socialMedia,
-      rating: this.businessProfile.reviews.rating > 0 ? {
-        value: this.businessProfile.reviews.rating,
-        count: this.businessProfile.reviews.count,
-        reviews: []
-      } : undefined,
-      coordinates: this.businessProfile.location?.coordinates ? {
-        latitude: this.businessProfile.location.coordinates.latitude,
-        longitude: this.businessProfile.location.coordinates.longitude
-      } : {
-        latitude: this.targetCity.coordinates.latitude,
-        longitude: this.targetCity.coordinates.longitude
-      }
+      rating:
+        this.businessProfile.reviews.rating > 0
+          ? {
+              value: this.businessProfile.reviews.rating,
+              count: this.businessProfile.reviews.count,
+              reviews: [],
+            }
+          : undefined,
+      coordinates: this.businessProfile.location?.coordinates
+        ? {
+            latitude: this.businessProfile.location.coordinates.latitude,
+            longitude: this.businessProfile.location.coordinates.longitude,
+          }
+        : {
+            latitude: this.targetCity.coordinates.latitude,
+            longitude: this.targetCity.coordinates.longitude,
+          },
     };
   }
 
@@ -647,10 +667,10 @@ export class LocalSEOGenerator {
   private generateFAQDataForSchema(): FAQData {
     const localFAQ = this.generateLocalFAQ();
     return {
-      questions: localFAQ.map(faq => ({
+      questions: localFAQ.map((faq) => ({
         question: faq.question,
-        answer: faq.answer
-      }))
+        answer: faq.answer,
+      })),
     };
   }
 
@@ -660,28 +680,28 @@ export class LocalSEOGenerator {
   private generateBreadcrumbSchema() {
     const citySlug = this.generateCitySlug();
     return {
-      "@context": "https://schema.org" as const,
-      "@type": "BreadcrumbList" as const,
+      '@context': 'https://schema.org' as const,
+      '@type': 'BreadcrumbList' as const,
       itemListElement: [
         {
-          "@type": "ListItem" as const,
+          '@type': 'ListItem' as const,
           position: 1,
-          name: "Home",
-          item: "/"
+          name: 'Home',
+          item: '/',
         },
         {
-          "@type": "ListItem" as const,
+          '@type': 'ListItem' as const,
           position: 2,
-          name: "Service Areas",
-          item: "/areas"
+          name: 'Service Areas',
+          item: '/areas',
         },
         {
-          "@type": "ListItem" as const,
+          '@type': 'ListItem' as const,
           position: 3,
           name: this.targetCity.name,
-          item: `/${citySlug}`
-        }
-      ]
+          item: `/${citySlug}`,
+        },
+      ],
     };
   }
 
@@ -690,20 +710,20 @@ export class LocalSEOGenerator {
    */
   private generatePlaceSchema() {
     return {
-      "@context": "https://schema.org" as const,
-      "@type": "Place" as const,
+      '@context': 'https://schema.org' as const,
+      '@type': 'Place' as const,
       name: this.targetCity.name,
       address: {
-        "@type": "PostalAddress" as const,
+        '@type': 'PostalAddress' as const,
         addressLocality: this.targetCity.name,
         addressRegion: this.targetCity.state,
-        addressCountry: this.targetCity.country
+        addressCountry: this.targetCity.country,
       },
       geo: {
-        "@type": "GeoCoordinates" as const,
+        '@type': 'GeoCoordinates' as const,
         latitude: this.targetCity.coordinates.latitude,
-        longitude: this.targetCity.coordinates.longitude
-      }
+        longitude: this.targetCity.coordinates.longitude,
+      },
     };
   }
 
@@ -717,13 +737,13 @@ export class LocalSEOGenerator {
         { text: 'Services', url: '/services', priority: 2 },
         { text: 'About', url: '/about', priority: 3 },
         { text: 'Contact', url: '/contact', priority: 4 },
-        { text: 'Service Areas', url: '/areas', priority: 5 }
+        { text: 'Service Areas', url: '/areas', priority: 5 },
       ],
       breadcrumbs: [
         { text: 'Home', url: '/' },
         { text: 'Service Areas', url: '/areas' },
-        { text: this.targetCity.name, url: `/${this.generateCitySlug()}` }
-      ]
+        { text: this.targetCity.name, url: `/${this.generateCitySlug()}` },
+      ],
     };
   }
 
@@ -732,41 +752,41 @@ export class LocalSEOGenerator {
    */
   private generateContentLinks() {
     const citySlug = this.generateCitySlug();
-    
+
     return {
       relatedCities: this.generateRelatedCityLinks(),
       servicePages: this.businessProfile.services.slice(0, 5).map((service, index) => ({
         serviceName: service,
         url: `/services/${service.toLowerCase().replace(/\s+/g, '-')}`,
         linkText: `${service} Services`,
-        context: `Learn more about our professional ${service.toLowerCase()} solutions.`
+        context: `Learn more about our professional ${service.toLowerCase()} solutions.`,
       })),
       corePages: [
         {
           pageName: 'Contact',
           url: '/contact',
           linkText: 'Contact Our Team',
-          placement: 'content' as const
+          placement: 'content' as const,
         },
         {
           pageName: 'About',
           url: '/about',
           linkText: 'About Our Company',
-          placement: 'content' as const
+          placement: 'content' as const,
         },
         {
           pageName: 'Services',
           url: '/services',
           linkText: 'All Services',
-          placement: 'header' as const
+          placement: 'header' as const,
         },
         {
           pageName: 'Pricing',
           url: '/pricing',
           linkText: 'View Pricing',
-          placement: 'content' as const
-        }
-      ]
+          placement: 'content' as const,
+        },
+      ],
     };
   }
 
@@ -777,12 +797,12 @@ export class LocalSEOGenerator {
     // This would typically come from a database of served cities
     // For now, generate sample related cities based on the service area
     const serviceAreas = this.businessLocation.serviceAreas.cities;
-    
+
     return serviceAreas.slice(0, 5).map((city, index) => ({
       cityName: city,
       url: `/${city.toLowerCase().replace(/\s+/g, '-')}`,
       linkText: `${this.businessProfile.services[0]} in ${city}`,
-      relevanceScore: 1.0 - (index * 0.1)
+      relevanceScore: 1.0 - index * 0.1,
     }));
   }
 
@@ -791,7 +811,7 @@ export class LocalSEOGenerator {
    */
   private calculateLinkDistribution() {
     const totalLinks = 15; // Estimated total internal links
-    
+
     return {
       totalInternalLinks: totalLinks,
       linkToContentRatio: 0.15, // 15% of content should be links
@@ -799,8 +819,8 @@ export class LocalSEOGenerator {
         exact: 30, // 30% exact match
         partial: 40, // 40% partial match
         branded: 20, // 20% branded
-        generic: 10  // 10% generic
-      }
+        generic: 10, // 10% generic
+      },
     };
   }
 
@@ -813,7 +833,7 @@ export class LocalSEOGenerator {
       seoScore: 95, // out of 100
       aeoScore: 90, // out of 100
       localSEOScore: 98, // out of 100
-      contentQualityScore: 92 // out of 100
+      contentQualityScore: 92, // out of 100
     };
   }
 
@@ -821,7 +841,8 @@ export class LocalSEOGenerator {
    * Helper: Generate city slug
    */
   private generateCitySlug(): string {
-    return this.targetCity.name.toLowerCase()
+    return this.targetCity.name
+      .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9-]/g, '');
   }
@@ -840,14 +861,14 @@ export class LocalSEOGenerator {
     const profileString = JSON.stringify({
       name: this.businessProfile.businessName,
       services: this.businessProfile.services,
-      city: this.businessProfile.city
+      city: this.businessProfile.city,
     });
-    
+
     // Simple hash function
     let hash = 0;
     for (let i = 0; i < profileString.length; i++) {
       const char = profileString.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32bit integer
     }
     return Math.abs(hash).toString(16);
@@ -861,17 +882,17 @@ export class LocalSEOGenerator {
       'Local SEO keyword optimization',
       'Schema.org structured data markup',
       'Internal linking strategy implementation',
-      'Mobile-first responsive design optimization'
+      'Mobile-first responsive design optimization',
     ];
 
     if (this.config.seo.enableAEO) {
       optimizations.push('AI-Enhanced Optimization (AEO) implementation');
     }
-    
+
     if (this.config.seo.enableVoiceSearch) {
       optimizations.push('Voice search optimization');
     }
-    
+
     if (this.config.seo.targetFeaturedSnippets) {
       optimizations.push('Featured snippet targeting');
     }

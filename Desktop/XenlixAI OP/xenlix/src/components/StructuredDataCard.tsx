@@ -1,21 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  Code2, 
-  CheckCircle, 
-  AlertTriangle, 
-  Download, 
-  Copy, 
-  ChevronDown, 
-  ChevronUp, 
-  Loader2, 
+import {
+  Code2,
+  CheckCircle,
+  AlertTriangle,
+  Download,
+  Copy,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
   RefreshCw,
   ExternalLink,
   Badge,
   AlertCircle,
   BookOpen,
-  X
+  X,
 } from 'lucide-react';
 
 interface SchemaAudit {
@@ -55,15 +55,15 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch(`/api/analyze/preview?url=${encodeURIComponent(url)}`, {
-        cache: 'no-store'
+        cache: 'no-store',
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const result = await response.json();
       setData(result);
     } catch (err) {
@@ -100,7 +100,7 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
 
   const copyToClipboard = async () => {
     if (!data?.schemaRecommended?.bundleString) return;
-    
+
     try {
       await navigator.clipboard.writeText(data.schemaRecommended.bundleString);
       setCopied(true);
@@ -128,7 +128,7 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
 
   const downloadSchema = () => {
     if (!data?.schemaRecommended?.bundleString) return;
-    
+
     try {
       const blob = new Blob([data.schemaRecommended.bundleString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -149,7 +149,8 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
     setMarked(true);
     // Show toast notification
     const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+    toast.className =
+      'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
     toast.textContent = 'Marked as implemented!';
     document.body.appendChild(toast);
     setTimeout(() => {
@@ -161,7 +162,11 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
   // Loading skeleton
   if (loading) {
     return (
-      <div className={`bg-white rounded-2xl p-6 border border-gray-200 shadow-sm ${className}`} role="region" aria-label="Structured data analysis loading">
+      <div
+        className={`bg-white rounded-2xl p-6 border border-gray-200 shadow-sm ${className}`}
+        role="region"
+        aria-label="Structured data analysis loading"
+      >
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="h-6 bg-gray-200 rounded w-48 mb-2 animate-pulse"></div>
@@ -169,7 +174,7 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
           </div>
           <div className="h-16 w-16 bg-gray-200 rounded-full animate-pulse"></div>
         </div>
-        
+
         <div className="space-y-4">
           <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
           <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
@@ -182,7 +187,11 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
   // Error state
   if (error) {
     return (
-      <div className={`bg-white rounded-2xl p-6 border border-red-200 shadow-sm ${className}`} role="region" aria-label="Structured data analysis error">
+      <div
+        className={`bg-white rounded-2xl p-6 border border-red-200 shadow-sm ${className}`}
+        role="region"
+        aria-label="Structured data analysis error"
+      >
         <div className="flex items-center space-x-2 text-red-600 mb-4">
           <AlertCircle className="h-5 w-5" aria-hidden="true" />
           <h3 className="font-semibold">Schema Analysis Unavailable</h3>
@@ -194,7 +203,10 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
           className="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
           aria-label="Retry schema analysis"
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
+          <RefreshCw
+            className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`}
+            aria-hidden="true"
+          />
           {loading ? 'Retrying...' : 'Retry'}
         </button>
       </div>
@@ -206,20 +218,26 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
   const { schemaAudit } = data;
 
   return (
-    <div className={`bg-white rounded-2xl p-6 border border-gray-200 shadow-sm ${className}`} role="region" aria-labelledby="schema-title">
+    <div
+      className={`bg-white rounded-2xl p-6 border border-gray-200 shadow-sm ${className}`}
+      role="region"
+      aria-labelledby="schema-title"
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 id="schema-title" className="text-xl font-semibold text-gray-900 mb-1">
             Structured Data Analysis
           </h3>
-          <p className="text-gray-600 text-sm">
-            JSON-LD schemas and microdata detection
-          </p>
+          <p className="text-gray-600 text-sm">JSON-LD schemas and microdata detection</p>
         </div>
-        
+
         {/* Score Badge */}
-        <div className={`px-4 py-2 rounded-full border-2 ${getScoreBg(schemaAudit.score)}`} role="img" aria-label={`Schema score: ${schemaAudit.score} out of 100, ${getScoreLabel(schemaAudit.score)}`}>
+        <div
+          className={`px-4 py-2 rounded-full border-2 ${getScoreBg(schemaAudit.score)}`}
+          role="img"
+          aria-label={`Schema score: ${schemaAudit.score} out of 100, ${getScoreLabel(schemaAudit.score)}`}
+        >
           <div className={`text-2xl font-bold ${getScoreColor(schemaAudit.score)}`}>
             {schemaAudit.score}
           </div>
@@ -258,8 +276,7 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
           <div className="text-2xl font-bold text-gray-900">{schemaAudit.detectedTypes.length}</div>
           {schemaAudit.microdata && (
             <div className="text-green-600 text-sm flex items-center mt-1">
-              <CheckCircle className="h-3 w-3 mr-1" aria-hidden="true" />
-              + Microdata
+              <CheckCircle className="h-3 w-3 mr-1" aria-hidden="true" />+ Microdata
             </div>
           )}
         </div>
@@ -311,13 +328,29 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
               <div className="w-4 h-4 mt-0.5 rounded border border-blue-400 bg-white flex items-center justify-center flex-shrink-0">
                 <span className="text-xs text-blue-700 font-bold">•</span>
               </div>
-              <span className="text-blue-900">Add JSON-LD in <code className="bg-blue-100 px-1 rounded text-xs font-mono text-blue-800">&lt;head&gt;</code> as a single <code className="bg-blue-100 px-1 rounded text-xs font-mono text-blue-800">&lt;script type="application/ld+json"&gt;</code> (array)</span>
+              <span className="text-blue-900">
+                Add JSON-LD in{' '}
+                <code className="bg-blue-100 px-1 rounded text-xs font-mono text-blue-800">
+                  &lt;head&gt;
+                </code>{' '}
+                as a single{' '}
+                <code className="bg-blue-100 px-1 rounded text-xs font-mono text-blue-800">
+                  &lt;script type="application/ld+json"&gt;
+                </code>{' '}
+                (array)
+              </span>
             </li>
             <li className="flex items-start space-x-2">
               <div className="w-4 h-4 mt-0.5 rounded border border-blue-400 bg-white flex items-center justify-center flex-shrink-0">
                 <span className="text-xs text-blue-700 font-bold">•</span>
               </div>
-              <span className="text-blue-900">Keep <code className="bg-blue-100 px-1 rounded text-xs font-mono text-blue-800">@id</code> values stable across deployments</span>
+              <span className="text-blue-900">
+                Keep{' '}
+                <code className="bg-blue-100 px-1 rounded text-xs font-mono text-blue-800">
+                  @id
+                </code>{' '}
+                values stable across deployments
+              </span>
             </li>
             <li className="flex items-start space-x-2">
               <div className="w-4 h-4 mt-0.5 rounded border border-blue-400 bg-white flex items-center justify-center flex-shrink-0">
@@ -329,13 +362,17 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
               <div className="w-4 h-4 mt-0.5 rounded border border-blue-400 bg-white flex items-center justify-center flex-shrink-0">
                 <span className="text-xs text-blue-700 font-bold">•</span>
               </div>
-              <span className="text-blue-900">Don't fabricate ratings/reviews - use real data only</span>
+              <span className="text-blue-900">
+                Don't fabricate ratings/reviews - use real data only
+              </span>
             </li>
             <li className="flex items-start space-x-2">
               <div className="w-4 h-4 mt-0.5 rounded border border-blue-400 bg-white flex items-center justify-center flex-shrink-0">
                 <span className="text-xs text-blue-700 font-bold">•</span>
               </div>
-              <span className="text-blue-900">Re-run audit after deploying to verify implementation</span>
+              <span className="text-blue-900">
+                Re-run audit after deploying to verify implementation
+              </span>
             </li>
           </ul>
         </div>
@@ -438,8 +475,14 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
 
       {/* Implementation Modal */}
       {showImplementationModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowImplementationModal(false)}>
-          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowImplementationModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold text-gray-900">How to Implement JSON-LD</h3>
@@ -463,14 +506,23 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
                   WordPress
                 </h4>
                 <div className="space-y-2 text-sm text-gray-700">
-                  <p><strong>Method 1:</strong> Use a plugin like "Schema Pro" or "All in One SEO"</p>
-                  <p><strong>Method 2:</strong> Add to your theme's <code className="bg-gray-100 px-1 rounded font-mono">header.php</code>:</p>
+                  <p>
+                    <strong>Method 1:</strong> Use a plugin like "Schema Pro" or "All in One SEO"
+                  </p>
+                  <p>
+                    <strong>Method 2:</strong> Add to your theme's{' '}
+                    <code className="bg-gray-100 px-1 rounded font-mono">header.php</code>:
+                  </p>
                   <div className="bg-gray-50 rounded p-2 font-mono text-xs">
-                    &lt;script type="application/ld+json"&gt;<br/>
-                    &nbsp;&nbsp;{`{paste your JSON here}`}<br/>
+                    &lt;script type="application/ld+json"&gt;
+                    <br />
+                    &nbsp;&nbsp;{`{paste your JSON here}`}
+                    <br />
                     &lt;/script&gt;
                   </div>
-                  <p><strong>Method 3:</strong> Use Custom HTML block in page editor</p>
+                  <p>
+                    <strong>Method 3:</strong> Use Custom HTML block in page editor
+                  </p>
                 </div>
               </div>
 
@@ -483,13 +535,22 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
                   Shopify
                 </h4>
                 <div className="space-y-2 text-sm text-gray-700">
-                  <p><strong>In your theme editor:</strong></p>
+                  <p>
+                    <strong>In your theme editor:</strong>
+                  </p>
                   <p>1. Go to Online Store → Themes → Edit code</p>
-                  <p>2. Open <code className="bg-gray-100 px-1 rounded font-mono">theme.liquid</code></p>
-                  <p>3. Add before <code className="bg-gray-100 px-1 rounded font-mono">&lt;/head&gt;</code>:</p>
+                  <p>
+                    2. Open <code className="bg-gray-100 px-1 rounded font-mono">theme.liquid</code>
+                  </p>
+                  <p>
+                    3. Add before{' '}
+                    <code className="bg-gray-100 px-1 rounded font-mono">&lt;/head&gt;</code>:
+                  </p>
                   <div className="bg-gray-50 rounded p-2 font-mono text-xs">
-                    &lt;script type="application/ld+json"&gt;<br/>
-                    &nbsp;&nbsp;{`{paste your JSON here}`}<br/>
+                    &lt;script type="application/ld+json"&gt;
+                    <br />
+                    &nbsp;&nbsp;{`{paste your JSON here}`}
+                    <br />
                     &lt;/script&gt;
                   </div>
                 </div>
@@ -504,14 +565,24 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
                   Next.js / Custom Sites
                 </h4>
                 <div className="space-y-2 text-sm text-gray-700">
-                  <p><strong>In your page component or layout:</strong></p>
+                  <p>
+                    <strong>In your page component or layout:</strong>
+                  </p>
                   <div className="bg-gray-50 rounded p-2 font-mono text-xs">
-                    import Head from 'next/head'<br/><br/>
-                    &lt;Head&gt;<br/>
-                    &nbsp;&nbsp;&lt;script<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;type="application/ld+json"<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;dangerouslySetInnerHTML={`{{ __html: JSON.stringify(schemaData) }}`}<br/>
-                    &nbsp;&nbsp;/&gt;<br/>
+                    import Head from 'next/head'
+                    <br />
+                    <br />
+                    &lt;Head&gt;
+                    <br />
+                    &nbsp;&nbsp;&lt;script
+                    <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;type="application/ld+json"
+                    <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;dangerouslySetInnerHTML=
+                    {`{{ __html: JSON.stringify(schemaData) }}`}
+                    <br />
+                    &nbsp;&nbsp;/&gt;
+                    <br />
                     &lt;/Head&gt;
                   </div>
                 </div>
@@ -521,17 +592,43 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
               <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
                 <h4 className="font-semibold text-blue-900 mb-3">✅ Verification & Testing</h4>
                 <div className="space-y-2 text-sm text-blue-800">
-                  <p><strong>Test immediately:</strong> <a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-700">Google's Rich Results Test</a></p>
-                  <p><strong>Validate syntax:</strong> <a href="https://validator.schema.org/" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-700">Schema.org Validator</a></p>
-                  <p><strong>Monitor in GSC:</strong> Check "Enhancements" section for rich snippets</p>
+                  <p>
+                    <strong>Test immediately:</strong>{' '}
+                    <a
+                      href="https://search.google.com/test/rich-results"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-blue-700"
+                    >
+                      Google's Rich Results Test
+                    </a>
+                  </p>
+                  <p>
+                    <strong>Validate syntax:</strong>{' '}
+                    <a
+                      href="https://validator.schema.org/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-blue-700"
+                    >
+                      Schema.org Validator
+                    </a>
+                  </p>
+                  <p>
+                    <strong>Monitor in GSC:</strong> Check "Enhancements" section for rich snippets
+                  </p>
                 </div>
               </div>
 
               {/* AEO Note */}
               <div className="border border-purple-200 bg-purple-50 rounded-lg p-4">
-                <h4 className="font-semibold text-purple-900 mb-2">🤖 AEO (AI Engine Optimization)</h4>
+                <h4 className="font-semibold text-purple-900 mb-2">
+                  🤖 AEO (AI Engine Optimization)
+                </h4>
                 <p className="text-sm text-purple-800">
-                  <strong>Stronger entity graph helps AI engines understand your business.</strong> JSON-LD creates clear relationships between your organization, products, and services that AI systems can parse and reference accurately.
+                  <strong>Stronger entity graph helps AI engines understand your business.</strong>{' '}
+                  JSON-LD creates clear relationships between your organization, products, and
+                  services that AI systems can parse and reference accurately.
                 </p>
               </div>
             </div>

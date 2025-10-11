@@ -7,14 +7,14 @@ import { getBusinessProfileFromUrl } from './src/lib/business-profile-extractor.
 
 async function testBusinessProfile() {
   console.log('🧪 Testing Business Profile Extraction...\n');
-  
+
   // Test with a sample URL
   const testUrl = 'https://example.com';
-  
+
   try {
     console.log(`Testing URL: ${testUrl}`);
     const profile = await getBusinessProfileFromUrl(testUrl);
-    
+
     console.log('\n📊 Extraction Results:');
     console.log('='.repeat(50));
     console.log(`Business Name: ${profile.businessName || 'Not found'}`);
@@ -23,7 +23,7 @@ async function testBusinessProfile() {
     console.log(`Google Reviews: ${profile.googleReviewCount || 'Not found'}`);
     console.log(`Google Rating: ${profile.googleRating || 'Not found'}`);
     console.log(`Logo URL: ${profile.logoUrl || 'Not found'}`);
-    
+
     console.log('\n🔗 Social Profiles:');
     if (Object.keys(profile.socialProfiles).length > 0) {
       Object.entries(profile.socialProfiles).forEach(([platform, url]) => {
@@ -32,9 +32,8 @@ async function testBusinessProfile() {
     } else {
       console.log('  No social profiles found');
     }
-    
+
     console.log('\n✅ Test completed successfully!');
-    
   } catch (error) {
     console.error('❌ Test failed:', error);
   }

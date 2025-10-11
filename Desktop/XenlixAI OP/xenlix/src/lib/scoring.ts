@@ -119,30 +119,32 @@ export function computePreviewScore(
 
   return {
     totalScore,
-    breakdown
+    breakdown,
   };
 }
 
-export function generateMockTimeseries(currentScore: number): Array<{ time: string; score: number }> {
+export function generateMockTimeseries(
+  currentScore: number
+): Array<{ time: string; score: number }> {
   const startScore = Math.max(0, currentScore - 15);
   const dataPoints = [];
-  
+
   for (let i = 0; i < 12; i++) {
     // Easing function: quadratic ease-out
     const progress = i / 11;
     const easedProgress = 1 - Math.pow(1 - progress, 2);
     const score = Math.round(startScore + (currentScore - startScore) * easedProgress);
-    
+
     // Generate time labels (last 12 periods)
     const hoursAgo = 11 - i;
     const timeLabel = hoursAgo === 0 ? 'Now' : `${hoursAgo}h ago`;
-    
+
     dataPoints.push({
       time: timeLabel,
-      score: score
+      score: score,
     });
   }
-  
+
   return dataPoints;
 }
 
@@ -152,35 +154,36 @@ export function buildPreviewBenefits(data: {
   quickFindings: string[];
 }): string[] {
   const benefits: string[] = [];
-  
+
   // Rule: If no JSON-LD → include "Add complete JSON-LD to become answer-ready."
   if (!data.techSignals.hasJSONLD) {
-    benefits.push("Add complete JSON-LD to become answer-ready");
+    benefits.push('Add complete JSON-LD to become answer-ready');
   }
-  
+
   // Rule: If no phone/address → include "Strengthen local trust signals (NAP consistency)."
   if (!data.businessInfo.phone || !data.businessInfo.address) {
-    benefits.push("Strengthen local trust signals (NAP consistency)");
+    benefits.push('Strengthen local trust signals (NAP consistency)');
   }
-  
+
   // Rule: If no canonical → include canonical as specific action
   if (!data.techSignals.canonical) {
-    benefits.push("Implement canonical URLs to prevent duplicate content issues");
+    benefits.push('Implement canonical URLs to prevent duplicate content issues');
   }
-  
+
   // Rule: If no meta description → include meta description as specific action
   if (!data.techSignals.metaDescription) {
-    benefits.push("Add optimized meta descriptions for better AI snippet performance");
+    benefits.push('Add optimized meta descriptions for better AI snippet performance');
   }
-  
+
   // Rule: Always include one benefit bullet
-  const hasGoodFoundation = data.techSignals.hasJSONLD && data.businessInfo.phone && data.techSignals.https;
+  const hasGoodFoundation =
+    data.techSignals.hasJSONLD && data.businessInfo.phone && data.techSignals.https;
   if (hasGoodFoundation) {
-    benefits.push("Higher AI visibility across ChatGPT, Claude, and Perplexity");
+    benefits.push('Higher AI visibility across ChatGPT, Claude, and Perplexity');
   } else {
-    benefits.push("Better answer-engine ranking and discoverability");
+    benefits.push('Better answer-engine ranking and discoverability');
   }
-  
+
   // Limit to 3-4 bullets for clean presentation
   return benefits.slice(0, 4);
 }

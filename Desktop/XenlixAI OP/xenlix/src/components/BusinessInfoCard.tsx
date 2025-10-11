@@ -59,7 +59,7 @@ export default function BusinessInfoCard({ data }: BusinessInfoCardProps) {
             <Phone className="h-5 w-5 text-[#06B6D4] flex-shrink-0" />
             <div>
               <div className="text-sm font-medium text-gray-900">Phone</div>
-              <a 
+              <a
                 href={`tel:${data.phone}`}
                 className="text-sm text-[#4F46E5] hover:text-[#4F46E5]/80 font-medium transition-colors"
               >

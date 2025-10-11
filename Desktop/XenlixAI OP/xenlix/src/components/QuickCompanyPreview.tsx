@@ -6,20 +6,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  Building2, 
-  Globe, 
-  Loader2,
-  ArrowRight,
-  Eye
-} from 'lucide-react';
+import { Building2, Globe, Loader2, ArrowRight, Eye } from 'lucide-react';
 import Link from 'next/link';
 
 interface QuickCompanyPreviewProps {
   className?: string;
 }
 
-export function QuickCompanyPreview({ className = "" }: QuickCompanyPreviewProps) {
+export function QuickCompanyPreview({ className = '' }: QuickCompanyPreviewProps) {
   const [urlInput, setUrlInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,7 +32,7 @@ export function QuickCompanyPreview({ className = "" }: QuickCompanyPreviewProps
             <Building2 className="w-5 h-5 text-blue-600" />
             <h3 className="text-lg font-semibold text-gray-900">Company Preview</h3>
           </div>
-          <Link 
+          <Link
             href="/dashboard/enhanced"
             className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
           >

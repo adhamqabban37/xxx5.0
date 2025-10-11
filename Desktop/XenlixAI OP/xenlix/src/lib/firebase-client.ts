@@ -39,7 +39,9 @@ export class FirebaseClient {
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 
     if (!projectId || !privateKey || !clientEmail) {
-      throw new Error('Missing required Firebase configuration. Please check FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL environment variables.');
+      throw new Error(
+        'Missing required Firebase configuration. Please check FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL environment variables.'
+      );
     }
 
     return {
@@ -58,7 +60,7 @@ export class FirebaseClient {
     try {
       // Check if app is already initialized
       const existingApps = getApps();
-      
+
       if (existingApps.length === 0) {
         // Initialize new app
         this.app = initializeApp({
@@ -77,7 +79,7 @@ export class FirebaseClient {
 
       // Initialize Firestore
       this.db = getFirestore(this.app);
-      
+
       // Initialize Storage (if configured)
       if (this.config.storageBucket) {
         this.storage = getStorage(this.app);
@@ -96,11 +98,11 @@ export class FirebaseClient {
     if (!this.isInitialized) {
       await this.initializeFirebase();
     }
-    
+
     if (!this.db) {
       throw new Error('Firestore not available. Check Firebase configuration.');
     }
-    
+
     return this.db;
   }
 
@@ -109,11 +111,11 @@ export class FirebaseClient {
     if (!this.isInitialized) {
       await this.initializeFirebase();
     }
-    
+
     if (!this.storage) {
       throw new Error('Storage not configured. Set FIREBASE_STORAGE_BUCKET environment variable.');
     }
-    
+
     return this.storage;
   }
 
@@ -129,16 +131,16 @@ export class FirebaseClient {
     };
   }> {
     const startTime = Date.now();
-    
+
     try {
       await this.initializeFirebase();
-      
+
       // Test Firestore connection
       const db = await this.getFirestore();
       await db.collection('_health_check').limit(1).get();
-      
+
       const latency = Date.now() - startTime;
-      
+
       return {
         status: 'healthy',
         latency,

@@ -1,33 +1,37 @@
-import Image from "next/image";
-import Link from "next/link";
-import { Metadata } from "next";
-import CaseStudyCardImage from "./_components/CaseStudyCardImage";
+import Image from 'next/image';
+import Link from 'next/link';
+import { Metadata } from 'next';
+import CaseStudyCardImage from './_components/CaseStudyCardImage';
 
 export const metadata: Metadata = {
-  title: "Case Studies | Real Results from AI Marketing & AEO",
-  description: "See how businesses across industries are winning with Answer Engine Optimization and AI-powered marketing. Detailed case studies with metrics and results.",
-  keywords: "case studies, AI marketing results, AEO success stories, answer engine optimization case studies, AI SEO results",
+  title: 'Case Studies | Real Results from AI Marketing & AEO',
+  description:
+    'See how businesses across industries are winning with Answer Engine Optimization and AI-powered marketing. Detailed case studies with metrics and results.',
+  keywords:
+    'case studies, AI marketing results, AEO success stories, answer engine optimization case studies, AI SEO results',
   openGraph: {
-    title: "Case Studies | Real Results from AI Marketing & AEO - XenlixAI",
-    description: "See how businesses across industries are winning with Answer Engine Optimization and AI-powered marketing. Detailed case studies with metrics and results.",
-    type: "website",
-    url: "https://www.xenlixai.com/case-studies",
-    siteName: "XenlixAI",
+    title: 'Case Studies | Real Results from AI Marketing & AEO - XenlixAI',
+    description:
+      'See how businesses across industries are winning with Answer Engine Optimization and AI-powered marketing. Detailed case studies with metrics and results.',
+    type: 'website',
+    url: 'https://www.xenlixai.com/case-studies',
+    siteName: 'XenlixAI',
     images: [
       {
-        url: "https://www.xenlixai.com/og-case-studies.jpg",
+        url: 'https://www.xenlixai.com/og-case-studies.jpg',
         width: 1200,
         height: 630,
-        alt: "Case Studies - Real Results from AI Marketing & AEO"
-      }
-    ]
+        alt: 'Case Studies - Real Results from AI Marketing & AEO',
+      },
+    ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Case Studies | Real Results from AI Marketing & AEO - XenlixAI",
-    description: "See how businesses across industries are winning with Answer Engine Optimization and AI-powered marketing. Detailed case studies with metrics and results.",
-    creator: "@XenlixAI",
-    images: ["https://www.xenlixai.com/og-case-studies.jpg"]
+    card: 'summary_large_image',
+    title: 'Case Studies | Real Results from AI Marketing & AEO - XenlixAI',
+    description:
+      'See how businesses across industries are winning with Answer Engine Optimization and AI-powered marketing. Detailed case studies with metrics and results.',
+    creator: '@XenlixAI',
+    images: ['https://www.xenlixai.com/og-case-studies.jpg'],
   },
   alternates: {
     canonical: 'https://www.xenlixai.com/case-studies',
@@ -63,105 +67,140 @@ interface CaseStudy {
 // Case studies data - in production this would come from MDX files
 const caseStudies: CaseStudy[] = [
   {
-    title: "Auto Detailing Shop Triples Leads with AEO",
-    slug: "auto-detailing-dallas",
-    industry: "Automotive Services",
-    city: "Dallas",
-    summary: "Shine Auto Detailing went from invisible to top AI assistant mentions, generating 3x more qualified leads in 60 days.",
-    heroImage: "/img/case-studies/shine-auto-hero.jpg",
-    date: "2024-08-15",
+    title: 'Auto Detailing Shop Triples Leads with AEO',
+    slug: 'auto-detailing-dallas',
+    industry: 'Automotive Services',
+    city: 'Dallas',
+    summary:
+      'Shine Auto Detailing went from invisible to top AI assistant mentions, generating 3x more qualified leads in 60 days.',
+    heroImage: '/img/case-studies/shine-auto-hero.jpg',
+    date: '2024-08-15',
     testimonial: {
       quote: "They cracked AI answers for us. Phone hasn't stopped.",
-      author: "Luis R., Owner",
-      rating: 5
+      author: 'Luis R., Owner',
+      rating: 5,
     },
     results: [
-      { metric: "AI Mentions", before: "0", after: "Top 3 in ChatGPT", improvement: "+∞%" },
-      { metric: "Monthly Leads", before: "12", after: "38", improvement: "+217%" },
-      { metric: "Cost per Lead", before: "$85", after: "$31", improvement: "-64%" }
+      { metric: 'AI Mentions', before: '0', after: 'Top 3 in ChatGPT', improvement: '+∞%' },
+      { metric: 'Monthly Leads', before: '12', after: '38', improvement: '+217%' },
+      { metric: 'Cost per Lead', before: '$85', after: '$31', improvement: '-64%' },
     ],
-    metrics: { timeToResults: "14 days", totalInvestment: "$2,400/month", roiPercent: "340%" }
+    metrics: { timeToResults: '14 days', totalInvestment: '$2,400/month', roiPercent: '340%' },
   },
   {
-    title: "Dental Practice Dominates AI Search Results",
-    slug: "dental-practice-ai-optimization",
-    industry: "Healthcare",
-    city: "Austin",
-    summary: "Lakeview Dental achieved #1 AI mentions for competitive dental terms, increasing new patients by 156% in 90 days.",
-    heroImage: "/img/case-studies/lakeview-dental-hero.jpg",
-    date: "2024-07-22",
+    title: 'Dental Practice Dominates AI Search Results',
+    slug: 'dental-practice-ai-optimization',
+    industry: 'Healthcare',
+    city: 'Austin',
+    summary:
+      'Lakeview Dental achieved #1 AI mentions for competitive dental terms, increasing new patients by 156% in 90 days.',
+    heroImage: '/img/case-studies/lakeview-dental-hero.jpg',
+    date: '2024-07-22',
     testimonial: {
-      quote: "From nowhere to top 3 in ChatGPT/Perplexity for core terms.",
-      author: "Dr. Nguyen",
-      rating: 5
+      quote: 'From nowhere to top 3 in ChatGPT/Perplexity for core terms.',
+      author: 'Dr. Nguyen',
+      rating: 5,
     },
     results: [
-      { metric: "AI Visibility", before: "Not mentioned", after: "#1 in ChatGPT", improvement: "+100%" },
-      { metric: "New Patients", before: "18/month", after: "46/month", improvement: "+156%" },
-      { metric: "Consultation Bookings", before: "32/month", after: "78/month", improvement: "+144%" }
+      {
+        metric: 'AI Visibility',
+        before: 'Not mentioned',
+        after: '#1 in ChatGPT',
+        improvement: '+100%',
+      },
+      { metric: 'New Patients', before: '18/month', after: '46/month', improvement: '+156%' },
+      {
+        metric: 'Consultation Bookings',
+        before: '32/month',
+        after: '78/month',
+        improvement: '+144%',
+      },
     ],
-    metrics: { timeToResults: "21 days", totalInvestment: "$3,200/month", roiPercent: "425%" }
+    metrics: { timeToResults: '21 days', totalInvestment: '$3,200/month', roiPercent: '425%' },
   },
   {
-    title: "SaaS Company Cuts CAC 38% with AEO + PMax",
-    slug: "saas-blended-cac-reduction",
-    industry: "Software/Technology",
-    city: "San Francisco",
-    summary: "NutriCo reduced blended customer acquisition cost by 38% while scaling from $2M to $5M ARR using integrated AEO and Performance Max strategy.",
-    heroImage: "/img/case-studies/nutrico-saas-hero.jpg",
-    date: "2024-06-10",
+    title: 'SaaS Company Cuts CAC 38% with AEO + PMax',
+    slug: 'saas-blended-cac-reduction',
+    industry: 'Software/Technology',
+    city: 'San Francisco',
+    summary:
+      'NutriCo reduced blended customer acquisition cost by 38% while scaling from $2M to $5M ARR using integrated AEO and Performance Max strategy.',
+    heroImage: '/img/case-studies/nutrico-saas-hero.jpg',
+    date: '2024-06-10',
     testimonial: {
-      quote: "-38% blended CAC after PMax + AEO in 30 days.",
-      author: "Maya S., CMO",
-      rating: 5
+      quote: '-38% blended CAC after PMax + AEO in 30 days.',
+      author: 'Maya S., CMO',
+      rating: 5,
     },
     results: [
-      { metric: "Blended CAC", before: "$312", after: "$194", improvement: "-38%" },
-      { metric: "Organic Demo Requests", before: "89/month", after: "267/month", improvement: "+200%" },
-      { metric: "AI-Driven Signups", before: "0", after: "156/month", improvement: "+∞%" }
+      { metric: 'Blended CAC', before: '$312', after: '$194', improvement: '-38%' },
+      {
+        metric: 'Organic Demo Requests',
+        before: '89/month',
+        after: '267/month',
+        improvement: '+200%',
+      },
+      { metric: 'AI-Driven Signups', before: '0', after: '156/month', improvement: '+∞%' },
     ],
-    metrics: { timeToResults: "30 days", totalInvestment: "$8,500/month", roiPercent: "520%" }
+    metrics: { timeToResults: '30 days', totalInvestment: '$8,500/month', roiPercent: '520%' },
   },
   {
-    title: "Local Restaurant Chain Expands with AI Marketing",
-    slug: "restaurant-chain-expansion",
-    industry: "Food & Beverage",
-    city: "Chicago",
-    summary: "LocalFresh Markets used AEO to establish authority in new markets, achieving 89% faster location launches and 156% higher revenue per location.",
-    heroImage: "/img/case-studies/localfresh-expansion-hero.jpg",
-    date: "2024-05-18",
+    title: 'Local Restaurant Chain Expands with AI Marketing',
+    slug: 'restaurant-chain-expansion',
+    industry: 'Food & Beverage',
+    city: 'Chicago',
+    summary:
+      'LocalFresh Markets used AEO to establish authority in new markets, achieving 89% faster location launches and 156% higher revenue per location.',
+    heroImage: '/img/case-studies/localfresh-expansion-hero.jpg',
+    date: '2024-05-18',
     testimonial: {
-      quote: "AEO put us ahead of enterprise competitors in AI search.",
-      author: "Sarah Chen, Founder",
-      rating: 5
+      quote: 'AEO put us ahead of enterprise competitors in AI search.',
+      author: 'Sarah Chen, Founder',
+      rating: 5,
     },
     results: [
-      { metric: "Market Entry Speed", before: "8 months", after: "4.2 months", improvement: "-48%" },
-      { metric: "Revenue per Location", before: "$52K/month", after: "$133K/month", improvement: "+156%" },
-      { metric: "Brand Recognition", before: "Local only", after: "Regional leader", improvement: "+300%" }
+      {
+        metric: 'Market Entry Speed',
+        before: '8 months',
+        after: '4.2 months',
+        improvement: '-48%',
+      },
+      {
+        metric: 'Revenue per Location',
+        before: '$52K/month',
+        after: '$133K/month',
+        improvement: '+156%',
+      },
+      {
+        metric: 'Brand Recognition',
+        before: 'Local only',
+        after: 'Regional leader',
+        improvement: '+300%',
+      },
     ],
-    metrics: { timeToResults: "45 days", totalInvestment: "$12,000/month", roiPercent: "680%" }
+    metrics: { timeToResults: '45 days', totalInvestment: '$12,000/month', roiPercent: '680%' },
   },
   {
-    title: "Consulting Firm Scales with AI-Powered Lead Generation",
-    slug: "consulting-firm-lead-generation",
-    industry: "Professional Services",
-    city: "New York",
-    summary: "Apex Consulting transformed their lead generation using AEO and targeted ads, increasing qualified leads by 340% while reducing cost per lead by 52%.",
-    heroImage: "/img/case-studies/apex-consulting-hero.jpg",
-    date: "2024-04-25",
+    title: 'Consulting Firm Scales with AI-Powered Lead Generation',
+    slug: 'consulting-firm-lead-generation',
+    industry: 'Professional Services',
+    city: 'New York',
+    summary:
+      'Apex Consulting transformed their lead generation using AEO and targeted ads, increasing qualified leads by 340% while reducing cost per lead by 52%.',
+    heroImage: '/img/case-studies/apex-consulting-hero.jpg',
+    date: '2024-04-25',
     testimonial: {
-      quote: "ROI calculator helped us sell AEO internally. Game changer.",
-      author: "Mike Rodriguez, Digital Director",
-      rating: 5
+      quote: 'ROI calculator helped us sell AEO internally. Game changer.',
+      author: 'Mike Rodriguez, Digital Director',
+      rating: 5,
     },
     results: [
-      { metric: "Qualified Leads", before: "23/month", after: "101/month", improvement: "+340%" },
-      { metric: "Cost per Lead", before: "$420", after: "$201", improvement: "-52%" },
-      { metric: "Proposal Win Rate", before: "28%", after: "47%", improvement: "+68%" }
+      { metric: 'Qualified Leads', before: '23/month', after: '101/month', improvement: '+340%' },
+      { metric: 'Cost per Lead', before: '$420', after: '$201', improvement: '-52%' },
+      { metric: 'Proposal Win Rate', before: '28%', after: '47%', improvement: '+68%' },
     ],
-    metrics: { timeToResults: "60 days", totalInvestment: "$15,000/month", roiPercent: "450%" }
-  }
+    metrics: { timeToResults: '60 days', totalInvestment: '$15,000/month', roiPercent: '450%' },
+  },
 ];
 
 function CaseStudyCard({ study }: { study: CaseStudy }) {
@@ -191,12 +230,8 @@ function CaseStudyCard({ study }: { study: CaseStudy }) {
       {/* Content */}
       <div className="p-6">
         {/* Title and Summary */}
-        <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-          {study.title}
-        </h2>
-        <p className="text-gray-600 mb-4 line-clamp-3">
-          {study.summary}
-        </p>
+        <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">{study.title}</h2>
+        <p className="text-gray-600 mb-4 line-clamp-3">{study.summary}</p>
 
         {/* Key Results */}
         <div className="grid grid-cols-3 gap-3 mb-4">
@@ -214,12 +249,8 @@ function CaseStudyCard({ study }: { study: CaseStudy }) {
             &ldquo;{study.testimonial.quote}&rdquo;
           </p>
           <footer className="flex items-center justify-between">
-            <cite className="text-xs font-medium text-gray-900">
-              {study.testimonial.author}
-            </cite>
-            <div className="flex text-yellow-400">
-              {'★'.repeat(study.testimonial.rating)}
-            </div>
+            <cite className="text-xs font-medium text-gray-900">{study.testimonial.author}</cite>
+            <div className="flex text-yellow-400">{'★'.repeat(study.testimonial.rating)}</div>
           </footer>
         </blockquote>
 
@@ -251,25 +282,37 @@ export default function CaseStudiesPage() {
             Real Results from Real Businesses
           </h1>
           <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
-            See how companies across industries are dominating AI search results and scaling their growth 
-            with Answer Engine Optimization and intelligent advertising.
+            See how companies across industries are dominating AI search results and scaling their
+            growth with Answer Engine Optimization and intelligent advertising.
           </p>
           <div className="flex flex-wrap justify-center gap-4 text-white/80">
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span>Real metrics</span>
             </div>
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span>Verified results</span>
             </div>
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span>Multiple industries</span>
             </div>
@@ -291,12 +334,10 @@ export default function CaseStudiesPage() {
       {/* CTA Section */}
       <section className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">
-            Ready for Similar Results?
-          </h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Ready for Similar Results?</h2>
           <p className="text-xl text-gray-600 mb-8">
-            Our proven AEO and AI marketing strategies work across industries. 
-            Let's discuss how we can replicate these results for your business.
+            Our proven AEO and AI marketing strategies work across industries. Let's discuss how we
+            can replicate these results for your business.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

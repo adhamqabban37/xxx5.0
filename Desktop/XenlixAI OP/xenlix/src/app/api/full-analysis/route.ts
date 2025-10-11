@@ -17,7 +17,7 @@ try {
 } catch (error) {
   // Fallback rate limiter for development
   fullAnalysisLimiter = {
-    limit: async () => ({ success: true, limit: 2, remaining: 1, reset: new Date() })
+    limit: async () => ({ success: true, limit: 2, remaining: 1, reset: new Date() }),
   };
 }
 
@@ -28,7 +28,7 @@ const fullAnalysisRequestSchema = z.object({
   includeSemanticAnalysis: z.boolean().default(true),
   includeLighthouse: z.boolean().default(true),
   device: z.enum(['mobile', 'desktop']).default('mobile'),
-  cacheResults: z.boolean().default(true)
+  cacheResults: z.boolean().default(true),
 });
 
 interface AnalysisJob {
@@ -47,19 +47,19 @@ interface AnalysisJob {
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   const requestId = crypto.randomUUID();
-  
+
   try {
     console.log(`[${requestId}] Full analysis job request started`);
-    
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       console.log(`[${requestId}] Authentication failed`);
       return NextResponse.json(
-        { 
+        {
           error: 'Authentication required',
           requestId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: 401 }
       );
@@ -72,11 +72,11 @@ export async function POST(request: NextRequest) {
     } catch {
       console.log(`[${requestId}] Rate limit exceeded for user: ${identifier}`);
       return NextResponse.json(
-        { 
+        {
           error: 'Rate limit exceeded. Full analysis is limited to 2 requests per minute.',
           retryAfter: 60,
           requestId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: 429 }
       );
@@ -89,10 +89,10 @@ export async function POST(request: NextRequest) {
     } catch (parseError) {
       console.error(`[${requestId}] JSON parse error:`, parseError);
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid JSON in request body',
           requestId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: 400 }
       );
@@ -104,22 +104,26 @@ export async function POST(request: NextRequest) {
     } catch (validationError) {
       console.error(`[${requestId}] Validation error:`, validationError);
       return NextResponse.json(
-        { 
+        {
           error: 'Validation failed',
-          details: validationError instanceof z.ZodError ? validationError.issues : 'Invalid request format',
+          details:
+            validationError instanceof z.ZodError
+              ? validationError.issues
+              : 'Invalid request format',
           requestId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: 400 }
       );
     }
 
-    const { url, queries, includeSemanticAnalysis, includeLighthouse, device, cacheResults } = validatedData;
+    const { url, queries, includeSemanticAnalysis, includeLighthouse, device, cacheResults } =
+      validatedData;
 
     // Check enhanced Redis cache first
     const analysisParams = { queries, includeSemanticAnalysis, includeLighthouse, device };
     const cacheKey = cacheClient.generateCacheKey('full-analysis', url, analysisParams);
-    
+
     if (cacheResults) {
       const cachedResult = await cacheClient.get(cacheKey);
       if (cachedResult) {
@@ -132,10 +136,10 @@ export async function POST(request: NextRequest) {
           data: cachedResult,
           metrics: cacheClient.getMetrics(),
           requestId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
-      
+
       // Fallback to legacy embedding cache
       try {
         const legacyCachedResult = await embeddingCacheService.getCachedAEOResult(url, queries);
@@ -151,7 +155,7 @@ export async function POST(request: NextRequest) {
             cached: true,
             timestamp: new Date().toISOString(),
             userId: session.user.id,
-            data: legacyCachedResult
+            data: legacyCachedResult,
           });
         }
       } catch (cacheError) {
@@ -168,18 +172,19 @@ export async function POST(request: NextRequest) {
       progress: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      userId: session.user.id
+      userId: session.user.id,
     };
 
     // Store job in Redis/cache for tracking
     await storeJob(job);
 
     // Start async processing (fire and forget)
-    processAnalysisJob(job, includeSemanticAnalysis, includeLighthouse, device, cacheResults)
-      .catch(error => {
+    processAnalysisJob(job, includeSemanticAnalysis, includeLighthouse, device, cacheResults).catch(
+      (error) => {
         console.error(`[${requestId}] Job processing failed:`, error);
         updateJobStatus(requestId, 'failed', 100, undefined, error.message);
-      });
+      }
+    );
 
     const elapsed = Date.now() - startTime;
     console.log(`[${requestId}] Full analysis job queued successfully in ${elapsed}ms`);
@@ -193,20 +198,19 @@ export async function POST(request: NextRequest) {
       url,
       timestamp: new Date().toISOString(),
       userId: session.user.id,
-      checkStatusUrl: `/api/job-status/${requestId}`
+      checkStatusUrl: `/api/job-status/${requestId}`,
     });
-
   } catch (error) {
     const elapsed = Date.now() - startTime;
     console.error(`[${requestId}] Full analysis job error after ${elapsed}ms:`, error);
 
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to queue analysis job',
         message: 'An unexpected error occurred while queuing your analysis.',
         details: error instanceof Error ? error.message : 'Unknown error',
         requestId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     );
@@ -221,21 +225,24 @@ async function processAnalysisJob(
   cacheResults: boolean
 ) {
   const { id: jobId, url, queries } = job;
-  
+
   try {
     const results: any = {};
 
     // Step 1: Crawl content
     await updateJobStatus(jobId, 'crawling', 10);
-    const crawlResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/crawl`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        url,
-        scanType: 'full',
-        includeContent: true
-      })
-    });
+    const crawlResponse = await fetch(
+      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/crawl`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url,
+          scanType: 'full',
+          includeContent: true,
+        }),
+      }
+    );
 
     if (!crawlResponse.ok) {
       throw new Error(`Crawl failed: ${crawlResponse.statusText}`);
@@ -247,16 +254,19 @@ async function processAnalysisJob(
     // Step 2: Semantic Analysis (if enabled)
     if (includeSemanticAnalysis) {
       await updateJobStatus(jobId, 'analyzing', 40);
-      const aeoResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/aeo-score`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url,
-          queries,
-          scanType: 'full',
-          includeSemanticAnalysis: true
-        })
-      });
+      const aeoResponse = await fetch(
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/aeo-score`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url,
+            queries,
+            scanType: 'full',
+            includeSemanticAnalysis: true,
+          }),
+        }
+      );
 
       if (!aeoResponse.ok) {
         throw new Error(`AEO analysis failed: ${aeoResponse.statusText}`);
@@ -269,15 +279,18 @@ async function processAnalysisJob(
     // Step 3: Lighthouse Audit (if enabled)
     if (includeLighthouse) {
       await updateJobStatus(jobId, 'auditing', 70);
-      const lighthouseResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/audit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url,
-          categories: ['performance', 'seo', 'accessibility', 'best-practices'],
-          device
-        })
-      });
+      const lighthouseResponse = await fetch(
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/audit`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url,
+            categories: ['performance', 'seo', 'accessibility', 'best-practices'],
+            device,
+          }),
+        }
+      );
 
       if (!lighthouseResponse.ok) {
         throw new Error(`Lighthouse audit failed: ${lighthouseResponse.statusText}`);
@@ -312,10 +325,15 @@ async function processAnalysisJob(
     // Complete the job
     await updateJobStatus(jobId, 'completed', 100, results);
     console.log(`[${jobId}] Analysis job completed successfully`);
-
   } catch (error) {
     console.error(`[${jobId}] Analysis job failed:`, error);
-    await updateJobStatus(jobId, 'failed', 100, undefined, error instanceof Error ? error.message : 'Unknown error');
+    await updateJobStatus(
+      jobId,
+      'failed',
+      100,
+      undefined,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
   }
 }
 
@@ -341,11 +359,11 @@ async function updateJobStatus(
       job.status = status;
       job.progress = progress;
       job.updatedAt = new Date().toISOString();
-      
+
       if (results) {
         job.results = results;
       }
-      
+
       if (error) {
         job.error = error;
       }
@@ -357,7 +375,13 @@ async function updateJobStatus(
   }
 }
 
-function generateCacheKey(url: string, queries: string[], semantic: boolean, lighthouse: boolean, device: string): string {
+function generateCacheKey(
+  url: string,
+  queries: string[],
+  semantic: boolean,
+  lighthouse: boolean,
+  device: string
+): string {
   return `full-analysis:${url}:${queries.sort().join(',')}:${semantic}:${lighthouse}:${device}`;
 }
 
@@ -366,11 +390,11 @@ function calculateOverallAEOScore(crawlData: any, aeoScore: any, lighthouse: any
   const semanticScore = aeoScore?.overall_score || 0;
   const seoScore = lighthouse?.scores?.seo || 0;
   const performanceScore = lighthouse?.scores?.performance || 0;
-  
+
   // Content structure score
   let contentScore = 0;
   const content = crawlData?.content;
-  
+
   if (content) {
     if (content.title && content.title.length > 10) contentScore += 20;
     if (content.metaDescription && content.metaDescription.length > 50) contentScore += 15;
@@ -384,12 +408,11 @@ function calculateOverallAEOScore(crawlData: any, aeoScore: any, lighthouse: any
     if (content.structuredData && content.structuredData.length > 0) contentScore += 20;
   }
 
-  const weighted = (
-    (semanticScore * 0.4) +
-    (seoScore * 0.3) +
-    (Math.min(contentScore, 100) * 0.2) +
-    (performanceScore * 0.1)
-  );
+  const weighted =
+    semanticScore * 0.4 +
+    seoScore * 0.3 +
+    Math.min(contentScore, 100) * 0.2 +
+    performanceScore * 0.1;
 
   return Math.round(weighted);
 }

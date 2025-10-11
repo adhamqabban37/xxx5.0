@@ -9,16 +9,16 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  Globe, 
-  TrendingUp, 
-  Users, 
-  AlertCircle, 
+import {
+  Globe,
+  TrendingUp,
+  Users,
+  AlertCircle,
   CheckCircle,
   Loader2,
   ExternalLink,
   Download,
-  Settings
+  Settings,
 } from 'lucide-react';
 import { AEOProgressCard, AEOTooltip } from '@/components/AEOHelpTooltips';
 import { BusinessQuestionnaire } from '@/components/BusinessQuestionnaire';
@@ -36,6 +36,146 @@ interface DashboardAnalysis {
   generatedSchemas?: any[];
   recommendations?: any;
   optimizationScore?: number;
+}
+
+// Demo analysis data for when no real analysis is available
+function getDemoAnalysis(): DashboardAnalysis {
+  return {
+    url: 'https://example-business.com',
+    timestamp: new Date().toISOString(),
+    optimizationScore: 67,
+    businessInfo: {
+      businessName: 'Demo Marketing Agency',
+      industry: 'Digital Marketing & SEO',
+      description:
+        'Full-service digital marketing agency specializing in AI-powered SEO and Answer Engine Optimization (AEO)',
+      location: {
+        address: {
+          street: '123 Innovation Drive',
+          city: 'San Francisco',
+          state: 'CA',
+          zipCode: '94105',
+          country: 'USA',
+        },
+        coordinates: {
+          lat: 37.7749,
+          lng: -122.4194,
+        },
+      },
+      contact: {
+        phone: '(555) 123-4567',
+        email: 'hello@demoagency.com',
+        website: 'https://example-business.com',
+      },
+      services: [
+        'SEO Optimization',
+        'Answer Engine Optimization (AEO)',
+        'Content Marketing',
+        'PPC Advertising',
+        'Social Media Marketing',
+      ],
+      hours: {
+        monday: '9:00 AM - 6:00 PM',
+        tuesday: '9:00 AM - 6:00 PM',
+        wednesday: '9:00 AM - 6:00 PM',
+        thursday: '9:00 AM - 6:00 PM',
+        friday: '9:00 AM - 6:00 PM',
+        saturday: 'Closed',
+        sunday: 'Closed',
+      },
+      socialMedia: {
+        facebook: 'https://facebook.com/demoagency',
+        twitter: 'https://twitter.com/demoagency',
+        linkedin: 'https://linkedin.com/company/demoagency',
+      },
+      reviews: {
+        googleRating: 4.8,
+        googleReviewCount: 127,
+        yelpRating: 4.5,
+        yelpReviewCount: 89,
+      },
+    },
+    aeoAnalysis: {
+      schemaOptimization: {
+        score: 75,
+        recommendations: [
+          'Add LocalBusiness schema markup to improve local search visibility',
+          'Implement FAQ schema for common customer questions',
+          'Add Service schema markup for each offered service',
+        ],
+        missingSchemas: ['LocalBusiness', 'FAQ', 'Service'],
+      },
+      contentOptimization: {
+        score: 68,
+        voiceSearchReadiness: 72,
+        conversationalLanguage: 65,
+        questionAnswerPairs: 60,
+        recommendations: [
+          'Create more conversational content that answers common questions',
+          'Add FAQ section with natural language Q&A pairs',
+          'Optimize content for voice search queries',
+        ],
+      },
+      localSEO: {
+        score: 82,
+        googleMyBusinessOptimization: 85,
+        localKeywordUsage: 78,
+        locationConsistency: 88,
+        recommendations: [
+          'Maintain consistent NAP (Name, Address, Phone) across all platforms',
+          'Encourage more customer reviews on Google My Business',
+        ],
+      },
+      technicalSEO: {
+        score: 71,
+        pageSpeed: 68,
+        mobileOptimization: 75,
+        structuredData: 70,
+        recommendations: [
+          'Optimize images and reduce page load time',
+          'Improve mobile responsiveness',
+          'Add more structured data markup',
+        ],
+      },
+    },
+    generatedSchemas: [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'LocalBusiness',
+        name: 'Demo Marketing Agency',
+        description:
+          'Full-service digital marketing agency specializing in AI-powered SEO and Answer Engine Optimization (AEO)',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: '123 Innovation Drive',
+          addressLocality: 'San Francisco',
+          addressRegion: 'CA',
+          postalCode: '94105',
+          addressCountry: 'USA',
+        },
+        telephone: '(555) 123-4567',
+        email: 'hello@demoagency.com',
+        url: 'https://example-business.com',
+      },
+    ],
+    recommendations: {
+      immediate: [
+        'Add missing schema markup for better AI engine visibility',
+        'Create FAQ section to improve answer readiness',
+        'Optimize page speed for better user experience',
+      ],
+      shortTerm: [
+        'Develop more conversational content',
+        'Improve mobile optimization',
+        'Expand local SEO efforts',
+      ],
+      longTerm: [
+        'Build comprehensive knowledge base',
+        'Implement advanced schema strategies',
+        'Develop voice search optimization',
+      ],
+    },
+  };
 }
 
 export default function EnhancedDashboard() {
@@ -60,7 +200,7 @@ export default function EnhancedDashboard() {
     const urlParams = new URLSearchParams(window.location.search);
     const urlFromParams = urlParams.get('url');
     const queryFromParams = urlParams.get('query');
-    
+
     if (urlFromParams) {
       setAnalysisUrl(urlFromParams);
       // Auto-analyze if URL is provided
@@ -76,6 +216,11 @@ export default function EnhancedDashboard() {
         } catch (error) {
           console.warn('Failed to load saved analysis:', error);
         }
+      } else {
+        // Show demo data if no analysis exists
+        setTimeout(() => {
+          setAnalysis(getDemoAnalysis());
+        }, 1000);
       }
     }
   }, []);
@@ -105,8 +250,8 @@ export default function EnhancedDashboard() {
           url: targetUrl,
           includeBusinessExtraction: true,
           includeSchemaGeneration: true,
-          includeAEOAnalysis: true
-        })
+          includeAEOAnalysis: true,
+        }),
       });
 
       if (!response.ok) {
@@ -114,7 +259,7 @@ export default function EnhancedDashboard() {
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setAnalysis(result.data);
         // Save to localStorage for persistence
@@ -134,7 +279,7 @@ export default function EnhancedDashboard() {
     if (analysis) {
       const updatedAnalysis = {
         ...analysis,
-        businessInfo: completeBusinessInfo
+        businessInfo: completeBusinessInfo,
       };
       setAnalysis(updatedAnalysis);
       localStorage.setItem('dashboardAnalysis', JSON.stringify(updatedAnalysis));
@@ -181,9 +326,7 @@ export default function EnhancedDashboard() {
                 </p>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-slate-400">
-                  Welcome, {session.user?.email}
-                </span>
+                <span className="text-sm text-slate-400">Welcome, {session.user?.email}</span>
               </div>
             </div>
           </div>
@@ -199,7 +342,7 @@ export default function EnhancedDashboard() {
           onAnalyze={handleAnalyze}
           className="mb-8"
         />
-        
+
         {error && (
           <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center gap-2">
@@ -222,13 +365,15 @@ export default function EnhancedDashboard() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-5xl font-bold mb-2">
-                    {analysis.optimizationScore || 0}%
-                  </div>
+                  <div className="text-5xl font-bold mb-2">{analysis.optimizationScore || 0}%</div>
                   <div className="text-blue-200">
-                    {(analysis.optimizationScore || 0) >= 80 ? 'Excellent' : 
-                     (analysis.optimizationScore || 0) >= 60 ? 'Good' : 
-                     (analysis.optimizationScore || 0) >= 40 ? 'Fair' : 'Needs Improvement'}
+                    {(analysis.optimizationScore || 0) >= 80
+                      ? 'Excellent'
+                      : (analysis.optimizationScore || 0) >= 60
+                        ? 'Good'
+                        : (analysis.optimizationScore || 0) >= 40
+                          ? 'Fair'
+                          : 'Needs Improvement'}
                   </div>
                 </div>
               </div>
@@ -243,7 +388,8 @@ export default function EnhancedDashboard() {
                       ✨ Enhance Your Business Profile
                     </h3>
                     <p className="text-blue-700 text-sm">
-                      Complete your business information for more accurate schema generation and better AEO optimization
+                      Complete your business information for more accurate schema generation and
+                      better AEO optimization
                     </p>
                   </div>
                   <button
@@ -261,22 +407,29 @@ export default function EnhancedDashboard() {
             {analysis.aeoAnalysis && (
               <div className="space-y-6 mb-8">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">AEO Optimization Analysis</h3>
-                
+
                 <div className="grid gap-6">
                   <AEOProgressCard
                     stepKey="schema-analysis"
                     title="Schema Markup Optimization"
                     score={analysis.aeoAnalysis.schemaOptimization?.score || 0}
-                    status={analysis.aeoAnalysis.schemaOptimization?.score > 80 ? 'completed' : 
-                            analysis.aeoAnalysis.schemaOptimization?.score > 50 ? 'analyzing' : 'needs-attention'}
+                    status={
+                      analysis.aeoAnalysis.schemaOptimization?.score > 80
+                        ? 'completed'
+                        : analysis.aeoAnalysis.schemaOptimization?.score > 50
+                          ? 'analyzing'
+                          : 'needs-attention'
+                    }
                   >
                     <div className="mt-4 space-y-2">
-                      {analysis.aeoAnalysis.schemaOptimization?.recommendations?.slice(0, 3).map((rec: string, index: number) => (
-                        <div key={index} className="flex items-start gap-2 text-sm text-gray-600">
-                          <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                          <span>{rec}</span>
-                        </div>
-                      ))}
+                      {analysis.aeoAnalysis.schemaOptimization?.recommendations
+                        ?.slice(0, 3)
+                        .map((rec: string, index: number) => (
+                          <div key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                            <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                            <span>{rec}</span>
+                          </div>
+                        ))}
                     </div>
                   </AEOProgressCard>
 
@@ -284,21 +437,32 @@ export default function EnhancedDashboard() {
                     stepKey="content-optimization"
                     title="Content & Voice Search Optimization"
                     score={analysis.aeoAnalysis.contentOptimization?.score || 0}
-                    status={analysis.aeoAnalysis.contentOptimization?.score > 80 ? 'completed' : 
-                            analysis.aeoAnalysis.contentOptimization?.score > 50 ? 'analyzing' : 'needs-attention'}
+                    status={
+                      analysis.aeoAnalysis.contentOptimization?.score > 80
+                        ? 'completed'
+                        : analysis.aeoAnalysis.contentOptimization?.score > 50
+                          ? 'analyzing'
+                          : 'needs-attention'
+                    }
                   >
                     <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
                       <div>
                         <span className="text-gray-500">Voice Readiness</span>
-                        <div className="font-medium">{analysis.aeoAnalysis.contentOptimization?.voiceSearchReadiness || 0}%</div>
+                        <div className="font-medium">
+                          {analysis.aeoAnalysis.contentOptimization?.voiceSearchReadiness || 0}%
+                        </div>
                       </div>
                       <div>
                         <span className="text-gray-500">Conversational</span>
-                        <div className="font-medium">{analysis.aeoAnalysis.contentOptimization?.conversationalLanguage || 0}%</div>
+                        <div className="font-medium">
+                          {analysis.aeoAnalysis.contentOptimization?.conversationalLanguage || 0}%
+                        </div>
                       </div>
                       <div>
                         <span className="text-gray-500">Q&A Structure</span>
-                        <div className="font-medium">{analysis.aeoAnalysis.contentOptimization?.questionAnswerPairs || 0}%</div>
+                        <div className="font-medium">
+                          {analysis.aeoAnalysis.contentOptimization?.questionAnswerPairs || 0}%
+                        </div>
                       </div>
                     </div>
                   </AEOProgressCard>
@@ -307,17 +471,26 @@ export default function EnhancedDashboard() {
                     stepKey="local-seo"
                     title="Local SEO Optimization"
                     score={analysis.aeoAnalysis.localSEO?.score || 0}
-                    status={analysis.aeoAnalysis.localSEO?.score > 80 ? 'completed' : 
-                            analysis.aeoAnalysis.localSEO?.score > 50 ? 'analyzing' : 'needs-attention'}
+                    status={
+                      analysis.aeoAnalysis.localSEO?.score > 80
+                        ? 'completed'
+                        : analysis.aeoAnalysis.localSEO?.score > 50
+                          ? 'analyzing'
+                          : 'needs-attention'
+                    }
                   >
                     <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-gray-500">GMB Optimization</span>
-                        <div className="font-medium">{analysis.aeoAnalysis.localSEO?.googleMyBusinessOptimization || 0}%</div>
+                        <div className="font-medium">
+                          {analysis.aeoAnalysis.localSEO?.googleMyBusinessOptimization || 0}%
+                        </div>
                       </div>
                       <div>
                         <span className="text-gray-500">Local Keywords</span>
-                        <div className="font-medium">{analysis.aeoAnalysis.localSEO?.localKeywordUsage || 0}%</div>
+                        <div className="font-medium">
+                          {analysis.aeoAnalysis.localSEO?.localKeywordUsage || 0}%
+                        </div>
                       </div>
                     </div>
                   </AEOProgressCard>
@@ -326,21 +499,32 @@ export default function EnhancedDashboard() {
                     stepKey="technical-seo"
                     title="Technical SEO Foundation"
                     score={analysis.aeoAnalysis.technicalSEO?.score || 0}
-                    status={analysis.aeoAnalysis.technicalSEO?.score > 80 ? 'completed' : 
-                            analysis.aeoAnalysis.technicalSEO?.score > 50 ? 'analyzing' : 'needs-attention'}
+                    status={
+                      analysis.aeoAnalysis.technicalSEO?.score > 80
+                        ? 'completed'
+                        : analysis.aeoAnalysis.technicalSEO?.score > 50
+                          ? 'analyzing'
+                          : 'needs-attention'
+                    }
                   >
                     <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
                       <div>
                         <span className="text-gray-500">Page Speed</span>
-                        <div className="font-medium">{analysis.aeoAnalysis.technicalSEO?.pageSpeed || 0}%</div>
+                        <div className="font-medium">
+                          {analysis.aeoAnalysis.technicalSEO?.pageSpeed || 0}%
+                        </div>
                       </div>
                       <div>
                         <span className="text-gray-500">Mobile</span>
-                        <div className="font-medium">{analysis.aeoAnalysis.technicalSEO?.mobileOptimization || 0}%</div>
+                        <div className="font-medium">
+                          {analysis.aeoAnalysis.technicalSEO?.mobileOptimization || 0}%
+                        </div>
                       </div>
                       <div>
                         <span className="text-gray-500">Structured Data</span>
-                        <div className="font-medium">{analysis.aeoAnalysis.technicalSEO?.structuredData || 0}%</div>
+                        <div className="font-medium">
+                          {analysis.aeoAnalysis.technicalSEO?.structuredData || 0}%
+                        </div>
                       </div>
                     </div>
                   </AEOProgressCard>
@@ -391,98 +575,111 @@ export default function EnhancedDashboard() {
             {/* Recommendations Section */}
             {analysis.recommendations && (
               <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">Actionable Recommendations</h3>
-                
-                {analysis.recommendations.immediate && analysis.recommendations.immediate.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                      Immediate Actions (Do Today)
-                    </h4>
-                    <div className="space-y-3">
-                      {analysis.recommendations.immediate.map((rec: any, index: number) => (
-                        <div key={index} className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="font-medium text-red-900">{rec.action}</span>
-                            <span className="text-xs bg-red-200 text-red-800 px-2 py-1 rounded">
-                              {rec.impact} Impact
-                            </span>
-                          </div>
-                          <div className="text-sm text-red-700">
-                            Time: {rec.timeRequired} • Difficulty: {rec.difficulty}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">
+                  Actionable Recommendations
+                </h3>
 
-                {analysis.recommendations.shortTerm && analysis.recommendations.shortTerm.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                      Short-term Goals (This Week)
-                    </h4>
-                    <div className="space-y-3">
-                      {analysis.recommendations.shortTerm.map((rec: any, index: number) => (
-                        <div key={index} className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="font-medium text-yellow-900">{rec.action}</span>
-                            <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
-                              {rec.impact} Impact
-                            </span>
+                {analysis.recommendations.immediate &&
+                  analysis.recommendations.immediate.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                        Immediate Actions (Do Today)
+                      </h4>
+                      <div className="space-y-3">
+                        {analysis.recommendations.immediate.map((rec: any, index: number) => (
+                          <div
+                            key={index}
+                            className="p-4 bg-red-50 border border-red-200 rounded-lg"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-medium text-red-900">{rec.action}</span>
+                              <span className="text-xs bg-red-200 text-red-800 px-2 py-1 rounded">
+                                {rec.impact} Impact
+                              </span>
+                            </div>
+                            <div className="text-sm text-red-700">
+                              Time: {rec.timeRequired} • Difficulty: {rec.difficulty}
+                            </div>
                           </div>
-                          <div className="text-sm text-yellow-700">
-                            Time: {rec.timeRequired} • Difficulty: {rec.difficulty}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {analysis.recommendations.longTerm && analysis.recommendations.longTerm.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      Long-term Strategy (This Month)
-                    </h4>
-                    <div className="space-y-3">
-                      {analysis.recommendations.longTerm.map((rec: any, index: number) => (
-                        <div key={index} className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="font-medium text-blue-900">{rec.action}</span>
-                            <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">
-                              {rec.impact} Impact
-                            </span>
+                {analysis.recommendations.shortTerm &&
+                  analysis.recommendations.shortTerm.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        Short-term Goals (This Week)
+                      </h4>
+                      <div className="space-y-3">
+                        {analysis.recommendations.shortTerm.map((rec: any, index: number) => (
+                          <div
+                            key={index}
+                            className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-medium text-yellow-900">{rec.action}</span>
+                              <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
+                                {rec.impact} Impact
+                              </span>
+                            </div>
+                            <div className="text-sm text-yellow-700">
+                              Time: {rec.timeRequired} • Difficulty: {rec.difficulty}
+                            </div>
                           </div>
-                          <div className="text-sm text-blue-700">
-                            Time: {rec.timeRequired} • Difficulty: {rec.difficulty}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                {analysis.recommendations.longTerm &&
+                  analysis.recommendations.longTerm.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        Long-term Strategy (This Month)
+                      </h4>
+                      <div className="space-y-3">
+                        {analysis.recommendations.longTerm.map((rec: any, index: number) => (
+                          <div
+                            key={index}
+                            className="p-4 bg-blue-50 border border-blue-200 rounded-lg"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-medium text-blue-900">{rec.action}</span>
+                              <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">
+                                {rec.impact} Impact
+                              </span>
+                            </div>
+                            <div className="text-sm text-blue-700">
+                              Time: {rec.timeRequired} • Difficulty: {rec.difficulty}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
               </div>
             )}
 
             {/* AI Search Rank Tracker */}
-            <AIRankTracker 
-              initialUrl={analysisUrl} 
-              className="mb-8"
-            />
+            <AIRankTracker initialUrl={analysisUrl} className="mb-8" />
 
             {/* Reputation Monitor */}
-            <ReputationMonitor 
-              url={analysisUrl} 
-              businessName={analysis.businessInfo?.name || analysis.businessInfo?.businessName || 'Your Business'}
+            <ReputationMonitor
+              url={analysisUrl}
+              businessName={
+                analysis.businessInfo?.name ||
+                analysis.businessInfo?.businessName ||
+                'Your Business'
+              }
             />
 
             {/* Production AEO Analysis */}
-            <AEOAnalysis 
-              initialUrls={analysisUrl ? [analysisUrl] : []}
-            />
+            <AEOAnalysis initialUrls={analysisUrl ? [analysisUrl] : []} />
           </>
         )}
 
@@ -505,12 +702,12 @@ export default function EnhancedDashboard() {
 
 function getSchemaDescription(schemaType: string): string {
   const descriptions: Record<string, string> = {
-    'LocalBusiness': 'Core business information for local search visibility',
-    'Organization': 'Official business entity and brand information',
-    'Service': 'Individual service offerings and descriptions',
-    'FAQPage': 'Frequently asked questions for voice search optimization',
-    'WebSite': 'Website identity and search functionality',
-    'BreadcrumbList': 'Navigation structure for better user experience'
+    LocalBusiness: 'Core business information for local search visibility',
+    Organization: 'Official business entity and brand information',
+    Service: 'Individual service offerings and descriptions',
+    FAQPage: 'Frequently asked questions for voice search optimization',
+    WebSite: 'Website identity and search functionality',
+    BreadcrumbList: 'Navigation structure for better user experience',
   };
 
   return descriptions[schemaType] || 'Additional structured data for enhanced search presence';

@@ -1,37 +1,16 @@
 # Core framework and API dependencies
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-python-multipart==0.0.6
+# Use modern versions compatible with anyio>=4 and pydantic>=2.10 required by crawl4ai 0.7.x
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+pydantic>=2.10,<3.0
+python-multipart>=0.0.6,<1.0
 
 # Crawling and web scraping
-crawl4ai[all]==0.2.77
-aiofiles==23.2.0
+crawl4ai>=0.7.2,<0.8.0
+aiofiles>=24.1.0
 requests==2.31.0
 beautifulsoup4==4.12.2
-lxml==4.9.3
-selenium==4.15.0
-webdriver-manager==4.0.1
+lxml>=5.3,<6
 
-# AI and machine learning
-sentence-transformers==2.2.2
-transformers==4.36.0
-torch==2.1.0
-numpy==1.24.3
-pandas==2.1.3
-scikit-learn==1.3.2
-openai==1.3.8
-
-# Production optimizations
-redis==5.0.1
-aioredis==2.0.1
-structlog==23.2.0
-python-json-logger==2.0.7
+# Optional utilities
 python-dotenv==1.0.0
-cryptography==41.0.8
-
-# Development and testing
-pytest==7.4.3
-pytest-asyncio==0.21.1
-black==23.11.0
-flake8==6.1.0

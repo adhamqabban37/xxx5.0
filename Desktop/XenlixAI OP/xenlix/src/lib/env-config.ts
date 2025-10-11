@@ -82,12 +82,12 @@ export interface EnvironmentConfig {
  */
 function validateRequiredEnvVars(): string[] {
   const missing: string[] = [];
-  
+
   // Critical environment variables
   if (!process.env.NEXTAUTH_SECRET) {
     missing.push('NEXTAUTH_SECRET');
   }
-  
+
   if (!process.env.NEXT_PUBLIC_SITE_URL) {
     missing.push('NEXT_PUBLIC_SITE_URL');
   }
@@ -123,7 +123,9 @@ export function loadEnvironmentConfig(): EnvironmentConfig {
     // Firebase Configuration
     firebase: {
       projectId: process.env.FIREBASE_PROJECT_ID || 'xenlix-aeo-platform',
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL || 'firebase-adminsdk@xenlix-aeo-platform.iam.gserviceaccount.com',
+      clientEmail:
+        process.env.FIREBASE_CLIENT_EMAIL ||
+        'firebase-adminsdk@xenlix-aeo-platform.iam.gserviceaccount.com',
       privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
       databaseUrl: process.env.FIREBASE_DATABASE_URL,
     },
@@ -137,23 +139,32 @@ export function loadEnvironmentConfig(): EnvironmentConfig {
 
     // AI/ML Services
     ai: {
-      openai: process.env.OPENAI_API_KEY ? {
-        apiKey: process.env.OPENAI_API_KEY,
-        organization: process.env.OPENAI_ORGANIZATION,
-      } : undefined,
-      
-      huggingface: process.env.HUGGINGFACE_API_TOKEN ? {
-        token: process.env.HUGGINGFACE_API_TOKEN,
-        model: process.env.HUGGINGFACE_MODEL || 'sentence-transformers/all-MiniLM-L6-v2',
-      } : undefined,
-      
-      anthropic: process.env.ANTHROPIC_API_KEY ? {
-        apiKey: process.env.ANTHROPIC_API_KEY,
-      } : undefined,
-      
-      google: process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY ? {
-        apiKey: process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY!,
-      } : undefined,
+      openai: process.env.OPENAI_API_KEY
+        ? {
+            apiKey: process.env.OPENAI_API_KEY,
+            organization: process.env.OPENAI_ORGANIZATION,
+          }
+        : undefined,
+
+      huggingface: process.env.HUGGINGFACE_API_TOKEN
+        ? {
+            token: process.env.HUGGINGFACE_API_TOKEN,
+            model: process.env.HUGGINGFACE_MODEL || 'sentence-transformers/all-MiniLM-L6-v2',
+          }
+        : undefined,
+
+      anthropic: process.env.ANTHROPIC_API_KEY
+        ? {
+            apiKey: process.env.ANTHROPIC_API_KEY,
+          }
+        : undefined,
+
+      google:
+        process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY
+          ? {
+              apiKey: process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY!,
+            }
+          : undefined,
     },
 
     // Google Services
@@ -171,7 +182,10 @@ export function loadEnvironmentConfig(): EnvironmentConfig {
       nodeEnv: process.env.NODE_ENV || 'development',
       environment: process.env.APP_ENV || process.env.ENVIRONMENT || 'development',
       siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.xenlixai.com',
-      baseUrl: process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.xenlixai.com',
+      baseUrl:
+        process.env.NEXT_PUBLIC_BASE_URL ||
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        'https://www.xenlixai.com',
     },
 
     // Security Configuration
@@ -198,7 +212,7 @@ let cachedConfig: EnvironmentConfig | null = null;
 export function getEnvironmentConfig(): EnvironmentConfig {
   if (!cachedConfig) {
     cachedConfig = loadEnvironmentConfig();
-    
+
     // Log configuration status (without sensitive data)
     console.log('🔧 Environment Configuration Loaded:', {
       nodeEnv: cachedConfig.app.nodeEnv,
@@ -210,10 +224,10 @@ export function getEnvironmentConfig(): EnvironmentConfig {
         openai: !!cachedConfig.ai.openai,
         huggingface: !!cachedConfig.ai.huggingface,
         anthropic: !!cachedConfig.ai.anthropic,
-      }
+      },
     });
   }
-  
+
   return cachedConfig;
 }
 
@@ -222,7 +236,7 @@ export function getEnvironmentConfig(): EnvironmentConfig {
  */
 export function isServiceAvailable(service: keyof EnvironmentConfig): boolean {
   const config = getEnvironmentConfig();
-  
+
   switch (service) {
     case 'redis':
       return !!config.redis.url && config.app.nodeEnv === 'production';
@@ -240,7 +254,7 @@ export function isServiceAvailable(service: keyof EnvironmentConfig): boolean {
  */
 export function getServiceUrl(service: 'crawl4ai' | 'nextauth'): string {
   const config = getEnvironmentConfig();
-  
+
   switch (service) {
     case 'crawl4ai':
       return config.crawl4ai.url;

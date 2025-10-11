@@ -29,10 +29,10 @@ interface DashboardMetricsProps {
 
 // Move getScoreColor function into the client component
 function getScoreColor(score: number): string {
-  if (score >= 90) return "border-green-500 bg-green-500/10";
-  if (score >= 70) return "border-yellow-500 bg-yellow-500/10";
-  if (score >= 50) return "border-orange-500 bg-orange-500/10";
-  return "border-red-500 bg-red-500/10";
+  if (score >= 90) return 'border-green-500 bg-green-500/10';
+  if (score >= 70) return 'border-yellow-500 bg-yellow-500/10';
+  if (score >= 50) return 'border-orange-500 bg-orange-500/10';
+  return 'border-red-500 bg-red-500/10';
 }
 
 export function DashboardMetrics({ premiumAuditData }: DashboardMetricsProps) {
@@ -46,7 +46,7 @@ export function DashboardMetrics({ premiumAuditData }: DashboardMetricsProps) {
         className={getScoreColor(premiumAuditData.overallScore)}
       >
         <div className="w-full bg-slate-700 rounded-full h-2 mt-2">
-          <div 
+          <div
             className="bg-gradient-to-r from-red-500 to-yellow-500 h-2 rounded-full"
             style={{ width: `${premiumAuditData.overallScore}%` }}
           />

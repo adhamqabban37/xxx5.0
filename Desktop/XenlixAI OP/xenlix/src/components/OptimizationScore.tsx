@@ -55,7 +55,7 @@ const CircularProgress = ({ score, size = 160 }: { score: number; size?: number 
           strokeLinecap="round"
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset }}
-          transition={{ duration: 2, ease: "easeOut" }}
+          transition={{ duration: 2, ease: 'easeOut' }}
         />
         <defs>
           <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -65,11 +65,11 @@ const CircularProgress = ({ score, size = 160 }: { score: number; size?: number 
           </linearGradient>
         </defs>
       </svg>
-      
+
       {/* Score text */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center">
-          <motion.div 
+          <motion.div
             className="text-3xl font-bold text-gray-900"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -137,7 +137,6 @@ export default function OptimizationScore({ scoreData, timeseriesData }: Optimiz
       {/* Score Display */}
       <div className="p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
           {/* Circular Progress */}
           <div className="flex flex-col items-center">
             <CircularProgress score={scoreData.totalScore} />
@@ -155,23 +154,23 @@ export default function OptimizationScore({ scoreData, timeseriesData }: Optimiz
               <TrendingUp className="h-5 w-5 text-[#06B6D4]" />
               <h4 className="text-lg font-semibold text-gray-900">Performance Trend</h4>
             </div>
-            
+
             <div className="flex-1" style={{ minHeight: '200px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={timeseriesData}>
                   <defs>
                     <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#4F46E5" stopOpacity={0.05}/>
+                      <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#4F46E5" stopOpacity={0.05} />
                     </linearGradient>
                   </defs>
-                  <XAxis 
-                    dataKey="time" 
+                  <XAxis
+                    dataKey="time"
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 12, fill: '#6B7280' }}
                   />
-                  <YAxis 
+                  <YAxis
                     domain={[0, 100]}
                     axisLine={false}
                     tickLine={false}
@@ -199,7 +198,7 @@ export default function OptimizationScore({ scoreData, timeseriesData }: Optimiz
             <Zap className="h-5 w-5 text-[#F97316]" />
             <h4 className="text-lg font-semibold text-gray-900">Score Breakdown</h4>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {Object.entries(scoreData.breakdown).map(([key, value]) => {
               const labels: { [key: string]: string } = {
@@ -211,14 +210,16 @@ export default function OptimizationScore({ scoreData, timeseriesData }: Optimiz
                 robots: 'Robots.txt',
                 title: 'Title Tag',
                 h1: 'H1 Tag',
-                contactInfo: 'Contact Info'
+                contactInfo: 'Contact Info',
               };
-              
+
               return (
                 <div key={key} className="bg-white/60 rounded-lg p-3 border border-gray-100">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-700">{labels[key]}</span>
-                    <span className={`text-sm font-bold ${value > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                    <span
+                      className={`text-sm font-bold ${value > 0 ? 'text-green-600' : 'text-gray-400'}`}
+                    >
                       +{value}
                     </span>
                   </div>

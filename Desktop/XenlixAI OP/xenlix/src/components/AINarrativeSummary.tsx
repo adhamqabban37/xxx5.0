@@ -17,7 +17,7 @@ interface AINarrativeSummaryProps {
   businessName?: string;
 }
 
-function generateNarrativeSummary(scores: ScoreData, businessName: string = "your site"): string {
+function generateNarrativeSummary(scores: ScoreData, businessName: string = 'your site'): string {
   const {
     questionIntentScore,
     answerReadinessScore,
@@ -25,58 +25,60 @@ function generateNarrativeSummary(scores: ScoreData, businessName: string = "you
     overallAeoScore,
     technicalSeoScore = 0,
     readabilityScore = 0,
-    sentimentScore = 0
+    sentimentScore = 0,
   } = scores;
 
   // Identify strengths and weaknesses
   const scoreAnalysis = [
-    { name: "Question Intent", score: questionIntentScore, category: "AEO Core" },
-    { name: "Answer Readiness", score: answerReadinessScore, category: "AEO Core" },
-    { name: "Conversational Tone", score: conversationalToneScore, category: "AEO Core" },
-    { name: "Technical SEO", score: technicalSeoScore, category: "Foundation" },
-    { name: "Content Readability", score: readabilityScore, category: "Content" },
-    { name: "Content Sentiment", score: sentimentScore, category: "Content" }
-  ].filter(item => item.score > 0);
+    { name: 'Question Intent', score: questionIntentScore, category: 'AEO Core' },
+    { name: 'Answer Readiness', score: answerReadinessScore, category: 'AEO Core' },
+    { name: 'Conversational Tone', score: conversationalToneScore, category: 'AEO Core' },
+    { name: 'Technical SEO', score: technicalSeoScore, category: 'Foundation' },
+    { name: 'Content Readability', score: readabilityScore, category: 'Content' },
+    { name: 'Content Sentiment', score: sentimentScore, category: 'Content' },
+  ].filter((item) => item.score > 0);
 
-  const strengths = scoreAnalysis.filter(item => item.score >= 70);
-  const weaknesses = scoreAnalysis.filter(item => item.score < 50);
-  const moderate = scoreAnalysis.filter(item => item.score >= 50 && item.score < 70);
+  const strengths = scoreAnalysis.filter((item) => item.score >= 70);
+  const weaknesses = scoreAnalysis.filter((item) => item.score < 50);
+  const moderate = scoreAnalysis.filter((item) => item.score >= 50 && item.score < 70);
 
   // Determine overall performance level
-  let performanceLevel = "";
-  let primaryIssue = "";
-  let recommendation = "";
+  let performanceLevel = '';
+  let primaryIssue = '';
+  let recommendation = '';
 
   if (overallAeoScore >= 80) {
-    performanceLevel = "excellent AEO readiness";
+    performanceLevel = 'excellent AEO readiness';
   } else if (overallAeoScore >= 60) {
-    performanceLevel = "solid foundation with room for improvement";
+    performanceLevel = 'solid foundation with room for improvement';
   } else if (overallAeoScore >= 40) {
-    performanceLevel = "moderate AEO readiness";
+    performanceLevel = 'moderate AEO readiness';
   } else {
-    performanceLevel = "significant optimization opportunities";
+    performanceLevel = 'significant optimization opportunities';
   }
 
   // Identify primary issue
   if (questionIntentScore < 40) {
     primaryIssue = "content doesn't effectively target question-based searches";
-    recommendation = "Focus on creating FAQ-style content and answering direct user questions.";
+    recommendation = 'Focus on creating FAQ-style content and answering direct user questions.';
   } else if (answerReadinessScore < 40) {
-    primaryIssue = "content lacks clear, direct answers";
-    recommendation = "Restructure content to provide immediate, actionable answers to user queries.";
+    primaryIssue = 'content lacks clear, direct answers';
+    recommendation =
+      'Restructure content to provide immediate, actionable answers to user queries.';
   } else if (conversationalToneScore < 40) {
-    primaryIssue = "content tone is too formal for AI search engines";
-    recommendation = "Adopt a more conversational, natural tone that AI engines prefer.";
+    primaryIssue = 'content tone is too formal for AI search engines';
+    recommendation = 'Adopt a more conversational, natural tone that AI engines prefer.';
   } else if (technicalSeoScore < 50) {
-    primaryIssue = "technical foundation needs strengthening";
-    recommendation = "Address technical SEO issues like meta descriptions, heading structure, and page speed.";
+    primaryIssue = 'technical foundation needs strengthening';
+    recommendation =
+      'Address technical SEO issues like meta descriptions, heading structure, and page speed.';
   } else {
-    primaryIssue = "balanced improvements needed across all areas";
-    recommendation = "Continue optimizing all AEO factors for maximum AI search visibility.";
+    primaryIssue = 'balanced improvements needed across all areas';
+    recommendation = 'Continue optimizing all AEO factors for maximum AI search visibility.';
   }
 
   // Generate contextual narrative
-  let narrative = "";
+  let narrative = '';
 
   if (overallAeoScore >= 70) {
     narrative = `${businessName} demonstrates ${performanceLevel}, positioning well for AI-powered search engines like Google SGE and Perplexity. `;
@@ -103,9 +105,9 @@ function getPerformanceIcon(score: number) {
 }
 
 function getPerformanceColor(score: number): string {
-  if (score >= 70) return "border-[#06B6D4]/30 bg-[#06B6D4]/5"; // Secondary - good scores
-  if (score >= 50) return "border-[#F97316]/30 bg-[#F97316]/5"; // Accent - moderate
-  return "border-[#4F46E5]/30 bg-[#4F46E5]/5"; // Primary - low scores/critical issues
+  if (score >= 70) return 'border-[#06B6D4]/30 bg-[#06B6D4]/5'; // Secondary - good scores
+  if (score >= 50) return 'border-[#F97316]/30 bg-[#F97316]/5'; // Accent - moderate
+  return 'border-[#4F46E5]/30 bg-[#4F46E5]/5'; // Primary - low scores/critical issues
 }
 
 const AINarrativeSummary: React.FC<AINarrativeSummaryProps> = ({ scores, businessName }) => {
@@ -129,7 +131,7 @@ const AINarrativeSummary: React.FC<AINarrativeSummaryProps> = ({ scores, busines
         >
           <Brain className="h-6 w-6 text-[#4F46E5]" />
         </motion.div>
-        
+
         <div className="flex-1">
           <motion.h3
             initial={{ opacity: 0 }}
@@ -140,7 +142,7 @@ const AINarrativeSummary: React.FC<AINarrativeSummaryProps> = ({ scores, busines
             AI Analysis Summary
             {icon}
           </motion.h3>
-          
+
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -149,7 +151,7 @@ const AINarrativeSummary: React.FC<AINarrativeSummaryProps> = ({ scores, busines
           >
             {narrative}
           </motion.p>
-          
+
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -157,7 +159,9 @@ const AINarrativeSummary: React.FC<AINarrativeSummaryProps> = ({ scores, busines
             className="mt-4 flex items-center gap-2 text-sm text-slate-600"
           >
             <div className="w-2 h-2 bg-[#4F46E5] rounded-full"></div>
-            <span>AI-generated insights based on {Object.keys(scores).length} performance metrics</span>
+            <span>
+              AI-generated insights based on {Object.keys(scores).length} performance metrics
+            </span>
           </motion.div>
         </div>
       </div>

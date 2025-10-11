@@ -45,7 +45,7 @@ function buildLocalBusinessBlock(biz: NormalizedBusiness): any | null {
     '@type': businessType,
     '@id': `${baseUrl}#identity`,
     name: biz.name,
-    url: baseUrl
+    url: baseUrl,
   };
 
   // Add images (logo and/or hero image)
@@ -71,7 +71,7 @@ function buildLocalBusinessBlock(biz: NormalizedBusiness): any | null {
       ...(biz.address.city && { addressLocality: biz.address.city }),
       ...(biz.address.region && { addressRegion: biz.address.region }),
       ...(biz.address.postal && { postalCode: biz.address.postal }),
-      ...(biz.address.country && { addressCountry: biz.address.country })
+      ...(biz.address.country && { addressCountry: biz.address.country }),
     };
   }
 
@@ -80,7 +80,7 @@ function buildLocalBusinessBlock(biz: NormalizedBusiness): any | null {
     block.geo = {
       '@type': 'GeoCoordinates',
       latitude: biz.geo.lat,
-      longitude: biz.geo.lon
+      longitude: biz.geo.lon,
     };
   }
 
@@ -107,13 +107,13 @@ function buildLocalBusinessBlock(biz: NormalizedBusiness): any | null {
     block.hasOfferCatalog = {
       '@type': 'OfferCatalog',
       name: 'Services',
-      itemListElement: biz.services.map(service => ({
+      itemListElement: biz.services.map((service) => ({
         '@type': 'Offer',
         itemOffered: {
           '@type': 'Service',
-          name: service
-        }
-      }))
+          name: service,
+        },
+      })),
     };
   }
 
@@ -134,8 +134,8 @@ function buildAggregateRatingBlock(biz: NormalizedBusiness): any | null {
     ratingValue: biz.rating,
     reviewCount: biz.reviewCount,
     itemReviewed: {
-      '@id': `${baseUrl}#identity`
-    }
+      '@id': `${baseUrl}#identity`,
+    },
   };
 }
 
@@ -147,14 +147,14 @@ function buildFAQPageBlock(faqs: { q: string; a: string }[]): any | null {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: faqs.map(faq => ({
+    mainEntity: faqs.map((faq) => ({
       '@type': 'Question',
       name: faq.q,
       acceptedAnswer: {
         '@type': 'Answer',
-        text: faq.a
-      }
-    }))
+        text: faq.a,
+      },
+    })),
   };
 }
 
@@ -163,7 +163,7 @@ function determineBusinessType(biz: NormalizedBusiness): string {
     return 'LocalBusiness';
   }
 
-  const services = biz.services.map(s => s.toLowerCase()).join(' ');
+  const services = biz.services.map((s) => s.toLowerCase()).join(' ');
 
   // Healthcare
   if (services.match(/dental|dentist|orthodont|teeth|oral/i)) {
@@ -278,7 +278,8 @@ function parseHourString(hourString: string): any | null {
   }
 
   // Try to extract day and time patterns
-  const dayPattern = /(monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat|sun)/i;
+  const dayPattern =
+    /(monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat|sun)/i;
   const timePattern = /(\d{1,2}):?(\d{2})?\s*(am|pm)?/gi;
 
   const dayMatch = cleaned.match(dayPattern);
@@ -294,7 +295,7 @@ function parseHourString(hourString: string): any | null {
         '@type': 'OpeningHoursSpecification',
         dayOfWeek: [day],
         opens: openTime,
-        closes: closeTime
+        closes: closeTime,
       };
     }
   }
@@ -304,20 +305,20 @@ function parseHourString(hourString: string): any | null {
 
 function normalizeDayName(day: string): string | null {
   const dayMap: { [key: string]: string } = {
-    'monday': 'Monday',
-    'mon': 'Monday',
-    'tuesday': 'Tuesday',
-    'tue': 'Tuesday',
-    'wednesday': 'Wednesday',
-    'wed': 'Wednesday',
-    'thursday': 'Thursday',
-    'thu': 'Thursday',
-    'friday': 'Friday',
-    'fri': 'Friday',
-    'saturday': 'Saturday',
-    'sat': 'Saturday',
-    'sunday': 'Sunday',
-    'sun': 'Sunday'
+    monday: 'Monday',
+    mon: 'Monday',
+    tuesday: 'Tuesday',
+    tue: 'Tuesday',
+    wednesday: 'Wednesday',
+    wed: 'Wednesday',
+    thursday: 'Thursday',
+    thu: 'Thursday',
+    friday: 'Friday',
+    fri: 'Friday',
+    saturday: 'Saturday',
+    sat: 'Saturday',
+    sunday: 'Sunday',
+    sun: 'Sunday',
   };
 
   return dayMap[day.toLowerCase()] || null;

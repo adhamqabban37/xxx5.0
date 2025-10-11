@@ -28,26 +28,25 @@ export default function AEOAuditPage() {
       }
 
       console.log('Starting content analysis for:', url);
-      
+
       // Use the real content analysis engine
       const response = await fetch('/api/analyze-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url }),
       });
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Failed to analyze content');
       }
 
       console.log('Analysis completed, navigating to summary');
-      
+
       // Navigate to summary page with URL parameter
       const encodedUrl = encodeURIComponent(url);
       router.push(`/aeo/summary?url=${encodedUrl}`);
-      
     } catch (err) {
       console.error('Analysis error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred during analysis');
@@ -109,7 +108,10 @@ export default function AEOAuditPage() {
           <div className="p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="websiteUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="websiteUrl"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Website URL *
                 </label>
                 <input
@@ -127,9 +129,9 @@ export default function AEOAuditPage() {
                   We'll analyze your website for AI search engine readiness
                 </p>
               </div>
-              
-              <button 
-                type="submit" 
+
+              <button
+                type="submit"
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 px-6 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 suppressHydrationWarning={true}
@@ -153,15 +155,18 @@ export default function AEOAuditPage() {
             Join the Future of Search Marketing
           </h3>
           <p className="text-gray-600 text-sm mb-4">
-            While 92% of traffic still comes from Google & Bing, AI search engines are growing 400% year-over-year. 
-            Be ready when your customers start asking AI instead of searching.
+            While 92% of traffic still comes from Google & Bing, AI search engines are growing 400%
+            year-over-year. Be ready when your customers start asking AI instead of searching.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <a href="/plans" className="text-blue-600 hover:text-blue-800 underline font-medium">
               See Our AEO Plans
             </a>
             <span className="text-gray-400">•</span>
-            <a href="/calculators/pricing" className="text-purple-600 hover:text-purple-800 underline font-medium">
+            <a
+              href="/calculators/pricing"
+              className="text-purple-600 hover:text-purple-800 underline font-medium"
+            >
               Calculate Your ROI
             </a>
           </div>

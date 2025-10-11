@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, HttpUrl, ValidationError
-from crawl4ai import WebCrawler, CrawlerRunConfig
+from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
 from crawl4ai.extraction_strategy import JsonCssExtractionStrategy, LLMExtractionStrategy
 import asyncio
 import json
@@ -14,7 +14,7 @@ import os
 import time
 from collections import defaultdict
 import traceback
-from semantic_analysis import semantic_service
+from semantic_analysis_simple import semantic_service
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -60,15 +60,8 @@ app.add_middleware(RateLimitMiddleware, calls_per_minute=int(os.getenv('RATE_LIM
 # CORS middleware for Next.js integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000", 
-        "http://localhost:3001", 
-        "http://localhost:3002", 
-        "http://localhost:3003",
-        "https://xenlix.ai",  # Add production domain
-        "https://*.xenlix.ai"  # Add subdomains
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],  # temporary permissive CORS; tighten in production
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -115,9 +108,44 @@ class AEOAnalysis(BaseModel):
     overall_aeo_score: float
 
 class ScanResult(BaseModel):
+    # Core
     url: str
     status: str
     timestamp: datetime
+
+    # Basic page info
+    title: Optional[str] = None
+    meta_description: Optional[str] = None
+    canonical_url: Optional[str] = None
+    word_count: int = 0
+
+    # Content structure
+    headings: Dict[str, List[str]] = {}
+
+    # Schema & structured data
+    json_ld_schemas: List[Dict[str, Any]] = []
+    schema_types: List[str] = []
+    has_faq_schema: bool = False
+    has_local_business_schema: bool = False
+    has_article_schema: bool = False
+
+    # Social metadata
+    open_graph: Dict[str, Optional[str]] = {}
+    twitter_card: Dict[str, Optional[str]] = {}
+
+    # Content analysis
+    content_analysis: Dict[str, Any] = {}
+
+    # AEO scores and recommendations
+    aeo_analysis: Optional[AEOAnalysis] = None
+    recommendations: List[Dict[str, Any]] = []
+
+    # Semantic analysis results
+    semantic_analysis: Optional[Dict[str, Any]] = None
+
+    # Raw content (optional)
+    raw_html: Optional[str] = None
+    extracted_content: Optional[str] = None
 
 class HealthStatus(BaseModel):
     status: str
@@ -133,32 +161,12 @@ service_stats = {
     "start_time": datetime.utcnow()
 }
 
-# Health check endpoint
-@app.get("/health", response_model=HealthStatus)
+# Health check endpoint (simple shape as requested)
+@app.get("/health")
 async def health_check():
-    """Health check endpoint for monitoring"""
     try:
-        # Check semantic service
-        semantic_status = "healthy"
-        try:
-            if semantic_service.model is None:
-                await semantic_service.initialize()
-            semantic_status = "healthy" if semantic_service.model is not None else "unhealthy"
-        except Exception as e:
-            logger.error(f"Semantic service health check failed: {e}")
-            semantic_status = "unhealthy"
-        
-        return HealthStatus(
-            status="healthy" if semantic_status == "healthy" else "degraded",
-            timestamp=datetime.utcnow(),
-            services={
-                "semantic_analysis": semantic_status,
-                "web_crawler": "healthy",  # Add crawler check if needed
-            },
-            version="1.0.0"
-        )
-    except Exception as e:
-        logger.error(f"Health check failed: {e}")
+        return {"status": "ok"}
+    except Exception:
         raise HTTPException(status_code=503, detail="Service unavailable")
 
 # Metrics endpoint
@@ -175,49 +183,18 @@ async def get_metrics():
         "semantic_model_loaded": semantic_service.model is not None,
         "timestamp": datetime.utcnow().isoformat()
     }
-    
-    # Basic page info
-    title: Optional[str] = None
-    meta_description: Optional[str] = None
-    canonical_url: Optional[str] = None
-    word_count: int = 0
-    
-    # Content structure
-    headings: Dict[str, List[str]] = {}
-    
-    # Schema & structured data
-    json_ld_schemas: List[Dict[str, Any]] = []
-    schema_types: List[str] = []
-    has_faq_schema: bool = False
-    has_local_business_schema: bool = False
-    has_article_schema: bool = False
-    
-    # Social metadata
-    open_graph: Dict[str, Optional[str]] = {}
-    twitter_card: Dict[str, Optional[str]] = {}
-    
-    # Content analysis
-    content_analysis: Dict[str, Any] = {}
-    
-    # AEO scores and recommendations
-    aeo_analysis: Optional[AEOAnalysis] = None
-    recommendations: List[Dict[str, Any]] = []
-    
-    # Semantic analysis results
-    semantic_analysis: Optional[Dict[str, Any]] = None
-    
-    # Raw content (optional)
-    raw_html: Optional[str] = None
-    extracted_content: Optional[str] = None
 
 # Global crawler instance
 crawler = None
 
 async def get_crawler():
+    """Get or initialize the shared AsyncWebCrawler instance"""
     global crawler
     if crawler is None:
-        crawler = WebCrawler(verbose=True)
-        await crawler.awarmup()
+        crawler = AsyncWebCrawler(verbose=True)
+        # Warm up the crawler if supported; ignore if method doesn't exist
+        if hasattr(crawler, "awarmup"):
+            await crawler.awarmup()
     return crawler
 
 @app.on_event("startup")
@@ -232,12 +209,10 @@ async def shutdown_event():
     """Cleanup on shutdown"""
     global crawler
     if crawler:
-        await crawler.aclose()
+        if hasattr(crawler, "aclose"):
+            await crawler.aclose()
 
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "crawl4ai-aeo", "timestamp": datetime.now()}
+# Note: Single /health endpoint is defined above with response_model=HealthStatus
 
 @app.post("/scan", response_model=ScanResult)
 async def scan_website(request: ScanRequest):
@@ -427,6 +402,53 @@ async def process_crawl_result(crawl_result, url: str) -> ScanResult:
         raw_html=crawl_result.html if len(crawl_result.html or "") < 50000 else None,  # Limit size
         extracted_content=crawl_result.cleaned_html[:5000] if crawl_result.cleaned_html else None  # First 5k chars
     )
+
+@app.get("/crawl")
+async def crawl(url: str):
+    """GET crawl endpoint returning JSON result (same structure as ScanResult)"""
+    try:
+        crawler = await get_crawler()
+        config = CrawlerRunConfig(
+            word_count_threshold=50,
+            extraction_strategy=JsonCssExtractionStrategy({
+                "headings": [
+                    {"name": "h1", "selector": "h1"},
+                    {"name": "h2", "selector": "h2"},
+                    {"name": "h3", "selector": "h3"},
+                    {"name": "h4", "selector": "h4"},
+                    {"name": "h5", "selector": "h5"},
+                    {"name": "h6", "selector": "h6"}
+                ],
+                "metadata": [
+                    {"name": "title", "selector": "title"},
+                    {"name": "meta_description", "selector": "meta[name='description']", "attribute": "content"},
+                    {"name": "canonical", "selector": "link[rel='canonical']", "attribute": "href"},
+                    {"name": "og_title", "selector": "meta[property='og:title']", "attribute": "content"},
+                    {"name": "og_description", "selector": "meta[property='og:description']", "attribute": "content"},
+                    {"name": "og_image", "selector": "meta[property='og:image']", "attribute": "content"},
+                    {"name": "twitter_card", "selector": "meta[name='twitter:card']", "attribute": "content"},
+                    {"name": "twitter_title", "selector": "meta[name='twitter:title']", "attribute": "content"},
+                    {"name": "twitter_description", "selector": "meta[name='twitter:description']", "attribute": "content"}
+                ],
+                "structured_data": [
+                    {"name": "json_ld", "selector": "script[type='application/ld+json']"}
+                ]
+            }),
+            user_agent="XenlixAI-Bot/1.0 (+https://xenlix.ai/bot)",
+            headless=True,
+            page_timeout=30000,
+            delay_before_return_html=2.0
+        )
+        result = await crawler.arun(url=str(url), config=config)
+        if not result.success:
+            raise HTTPException(status_code=400, detail=f"Crawl failed: {result.error_message}")
+        scan_result = await process_crawl_result(result, str(url))
+        return scan_result.model_dump()
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"GET /crawl failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 def analyze_content_structure(content: str) -> Dict[str, Any]:
     """Analyze content structure for AEO optimization"""
@@ -665,4 +687,6 @@ async def perform_semantic_analysis(scan_result: ScanResult, queries: List[str],
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    host = os.getenv("CRAWL4AI_HOST", "0.0.0.0")
+    port = int(os.getenv("CRAWL4AI_PORT", "8001"))
+    uvicorn.run(app, host=host, port=port)

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useState } from "react";
-import { AdDraftBundle } from "@/types/ads";
-import { copyToClipboard } from "@/lib/exporters";
+import Link from 'next/link';
+import { useState } from 'react';
+import { AdDraftBundle } from '@/types/ads';
+import { copyToClipboard } from '@/lib/exporters';
 
 interface AdPreviewProps {
   bundle: AdDraftBundle;
@@ -15,10 +15,10 @@ interface CharacterCounterProps {
   className?: string;
 }
 
-function CharacterCounter({ text, limit, className = "" }: CharacterCounterProps) {
+function CharacterCounter({ text, limit, className = '' }: CharacterCounterProps) {
   const count = text.length;
   const isOverLimit = count > limit;
-  
+
   return (
     <span className={`text-xs ${isOverLimit ? 'text-red-500' : 'text-gray-500'} ${className}`}>
       {count}/{limit}
@@ -66,7 +66,9 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <span className="mr-2" aria-hidden="true">{tab.icon}</span>
+              <span className="mr-2" aria-hidden="true">
+                {tab.icon}
+              </span>
               {tab.label}
             </button>
           ))}
@@ -74,7 +76,12 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
       </div>
 
       {/* Tab Content */}
-      <div className="space-y-4" role="tabpanel" aria-labelledby={`${activeTab}-tab`} id={`${activeTab}-panel`}>
+      <div
+        className="space-y-4"
+        role="tabpanel"
+        aria-labelledby={`${activeTab}-tab`}
+        id={`${activeTab}-panel`}
+      >
         {/* Google Ads Preview */}
         {activeTab === 'google' && (
           <div className="space-y-6">
@@ -94,7 +101,10 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                 <h4 className="font-medium text-gray-900 mb-3">Headlines</h4>
                 <div className="space-y-2">
                   {bundle.google.headlines.map((headline, index) => (
-                    <div key={index} className="flex items-center justify-between bg-white p-2 rounded border">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between bg-white p-2 rounded border"
+                    >
                       <span className="text-sm">{headline}</span>
                       <CharacterCounter text={headline} limit={30} />
                     </div>
@@ -110,7 +120,11 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                     <div key={index} className="bg-white p-2 rounded border">
                       <div className="flex items-start justify-between">
                         <span className="text-sm flex-1">{description}</span>
-                        <CharacterCounter text={description} limit={90} className="ml-2 flex-shrink-0" />
+                        <CharacterCounter
+                          text={description}
+                          limit={90}
+                          className="ml-2 flex-shrink-0"
+                        />
                       </div>
                     </div>
                   ))}
@@ -124,7 +138,11 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                   <div className="bg-white p-2 rounded border">
                     <div className="flex items-start justify-between">
                       <span className="text-sm flex-1">{bundle.google.longHeadline}</span>
-                      <CharacterCounter text={bundle.google.longHeadline} limit={90} className="ml-2 flex-shrink-0" />
+                      <CharacterCounter
+                        text={bundle.google.longHeadline}
+                        limit={90}
+                        className="ml-2 flex-shrink-0"
+                      />
                     </div>
                   </div>
                 </div>
@@ -136,7 +154,10 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                   <h4 className="font-medium text-gray-900 mb-3">Keywords</h4>
                   <div className="flex flex-wrap gap-2">
                     {bundle.google.keywords.map((keyword, index) => (
-                      <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                      >
                         {keyword}
                       </span>
                     ))}
@@ -150,7 +171,10 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                   <h4 className="font-medium text-gray-900 mb-3">Callouts</h4>
                   <div className="flex flex-wrap gap-2">
                     {bundle.google.callouts.map((callout, index) => (
-                      <span key={index} className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
+                      >
                         {callout}
                       </span>
                     ))}
@@ -180,7 +204,10 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                 <h4 className="font-medium text-gray-900 mb-3">Headlines</h4>
                 <div className="space-y-2">
                   {bundle.bing.headlines.map((headline, index) => (
-                    <div key={index} className="flex items-center justify-between bg-white p-2 rounded border">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between bg-white p-2 rounded border"
+                    >
                       <span className="text-sm">{headline}</span>
                       <CharacterCounter text={headline} limit={30} />
                     </div>
@@ -196,7 +223,11 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                     <div key={index} className="bg-white p-2 rounded border">
                       <div className="flex items-start justify-between">
                         <span className="text-sm flex-1">{description}</span>
-                        <CharacterCounter text={description} limit={90} className="ml-2 flex-shrink-0" />
+                        <CharacterCounter
+                          text={description}
+                          limit={90}
+                          className="ml-2 flex-shrink-0"
+                        />
                       </div>
                     </div>
                   ))}
@@ -209,7 +240,10 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                   <h4 className="font-medium text-gray-900 mb-3">Keywords</h4>
                   <div className="flex flex-wrap gap-2">
                     {bundle.bing.keywords.map((keyword, index) => (
-                      <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                      >
                         {keyword}
                       </span>
                     ))}
@@ -254,7 +288,10 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                 <h4 className="font-medium text-gray-900 mb-3">Headlines</h4>
                 <div className="space-y-2">
                   {bundle.meta.headlines.map((headline, index) => (
-                    <div key={index} className="flex items-center justify-between bg-white p-2 rounded border">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between bg-white p-2 rounded border"
+                    >
                       <span className="text-sm">{headline}</span>
                       <CharacterCounter text={headline} limit={40} />
                     </div>
@@ -267,7 +304,10 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                 <h4 className="font-medium text-gray-900 mb-3">Descriptions</h4>
                 <div className="space-y-2">
                   {bundle.meta.descriptions.map((description, index) => (
-                    <div key={index} className="flex items-center justify-between bg-white p-2 rounded border">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between bg-white p-2 rounded border"
+                    >
                       <span className="text-sm">{description}</span>
                       <CharacterCounter text={description} limit={30} />
                     </div>
@@ -331,7 +371,10 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                 <h4 className="font-medium text-gray-900 mb-3">Call to Actions</h4>
                 <div className="flex flex-wrap gap-2">
                   {bundle.tiktok.ctas.map((cta, index) => (
-                    <span key={index} className="px-3 py-1 bg-pink-100 text-pink-800 text-sm rounded-full">
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-pink-100 text-pink-800 text-sm rounded-full"
+                    >
                       {cta}
                     </span>
                   ))}
@@ -343,7 +386,10 @@ export default function AdPreview({ bundle }: AdPreviewProps) {
                 <h4 className="font-medium text-gray-900 mb-3">Hashtags</h4>
                 <div className="flex flex-wrap gap-2">
                   {bundle.tiktok.hashtags.map((hashtag, index) => (
-                    <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-purple-100 text-purple-800 text-sm rounded-full"
+                    >
                       {hashtag}
                     </span>
                   ))}

@@ -10,41 +10,41 @@ export default function SEOAuditPage() {
     businessName: '',
     industry: '',
     targetLocation: '',
-    mainKeywords: ['']
+    mainKeywords: [''],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleKeywordChange = (index: number, value: string) => {
     const newKeywords = [...formData.mainKeywords];
     newKeywords[index] = value;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      mainKeywords: newKeywords
+      mainKeywords: newKeywords,
     }));
   };
 
   const addKeyword = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      mainKeywords: [...prev.mainKeywords, '']
+      mainKeywords: [...prev.mainKeywords, ''],
     }));
   };
 
   const removeKeyword = (index: number) => {
     if (formData.mainKeywords.length > 1) {
       const newKeywords = formData.mainKeywords.filter((_, i) => i !== index);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        mainKeywords: newKeywords
+        mainKeywords: newKeywords,
       }));
     }
   };
@@ -62,7 +62,7 @@ export default function SEOAuditPage() {
         },
         body: JSON.stringify({
           ...formData,
-          mainKeywords: formData.mainKeywords.filter(keyword => keyword.trim() !== '')
+          mainKeywords: formData.mainKeywords.filter((keyword) => keyword.trim() !== ''),
         }),
       });
 
@@ -74,7 +74,10 @@ export default function SEOAuditPage() {
 
       // Store results in session for immediate access
       if (result.auditData) {
-        sessionStorage.setItem(`seoAnalysisResult_${result.auditId}`, JSON.stringify(result.auditData));
+        sessionStorage.setItem(
+          `seoAnalysisResult_${result.auditId}`,
+          JSON.stringify(result.auditData)
+        );
       }
 
       // Redirect to results page with clean URL
@@ -91,14 +94,12 @@ export default function SEOAuditPage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Professional SEO Audit
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Professional SEO Audit</h1>
           <p className="text-gray-600 text-lg">
             Capture the 92% of traffic from Google, Bing & traditional search engines
           </p>
           <div className="flex items-center justify-center gap-1 mt-2">
-            {[1,2,3,4,5].map((star) => (
+            {[1, 2, 3, 4, 5].map((star) => (
               <Star key={star} className="h-5 w-5 text-yellow-400 fill-current" />
             ))}
             <span className="ml-2 text-sm text-gray-600">4.9/5 from 1,247+ audits</span>
@@ -109,7 +110,9 @@ export default function SEOAuditPage() {
         <div className="bg-white rounded-lg shadow-lg border border-green-200 mb-8 p-6">
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Why Traditional SEO Still Matters</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Why Traditional SEO Still Matters
+              </h3>
               <ul className="space-y-2 text-gray-700">
                 <li className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
@@ -132,8 +135,9 @@ export default function SEOAuditPage() {
             <div className="bg-green-50 rounded-lg p-4">
               <h4 className="font-bold text-green-800 mb-2">AEO + SEO = Complete Dominance</h4>
               <p className="text-green-700 text-sm">
-                You've already optimized for AI search engines. Now capture the massive traditional search traffic too. 
-                Our combined approach gives you visibility across all search platforms.
+                You've already optimized for AI search engines. Now capture the massive traditional
+                search traffic too. Our combined approach gives you visibility across all search
+                platforms.
               </p>
             </div>
           </div>
@@ -169,7 +173,9 @@ export default function SEOAuditPage() {
           <div className="flex items-center justify-center gap-4 mb-3">
             <span className="text-3xl font-bold">$97</span>
             <span className="text-lg line-through opacity-75">$147</span>
-            <span className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-bold">Save $50</span>
+            <span className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-bold">
+              Save $50
+            </span>
           </div>
           <p className="text-green-100">Complete SEO audit + implementation roadmap</p>
         </div>
@@ -186,7 +192,10 @@ export default function SEOAuditPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Website URL */}
               <div>
-                <label htmlFor="websiteUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="websiteUrl"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Website URL *
                 </label>
                 <input
@@ -202,7 +211,10 @@ export default function SEOAuditPage() {
 
               {/* Business Name */}
               <div>
-                <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="businessName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Business Name *
                 </label>
                 <input
@@ -232,7 +244,10 @@ export default function SEOAuditPage() {
 
               {/* Target Location */}
               <div>
-                <label htmlFor="targetLocation" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="targetLocation"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Primary Target Location
                 </label>
                 <input
@@ -290,8 +305,8 @@ export default function SEOAuditPage() {
               )}
 
               {/* Submit Button */}
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 className="w-full py-3 px-6 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >

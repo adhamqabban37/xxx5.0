@@ -1,13 +1,13 @@
 import React from 'react';
-import { 
-  Globe, 
-  MapPin, 
-  Phone, 
-  Twitter, 
-  Linkedin, 
-  Facebook, 
+import {
+  Globe,
+  MapPin,
+  Phone,
+  Twitter,
+  Linkedin,
+  Facebook,
   Instagram,
-  Youtube 
+  Youtube,
 } from 'lucide-react';
 
 interface BusinessData {
@@ -39,7 +39,11 @@ interface BusinessInfoHeaderProps {
   url?: string;
 }
 
-const BusinessInfoHeader: React.FC<BusinessInfoHeaderProps> = ({ businessData, businessAddress, url }) => {
+const BusinessInfoHeader: React.FC<BusinessInfoHeaderProps> = ({
+  businessData,
+  businessAddress,
+  url,
+}) => {
   const { name, website, socials } = businessData;
 
   // Prioritize businessAddress from enhanced extraction, fallback to businessData
@@ -52,47 +56,81 @@ const BusinessInfoHeader: React.FC<BusinessInfoHeaderProps> = ({ businessData, b
   // Helper function to generate Google Maps embed URL from address and business info
   const generateMapEmbedUrl = (): string => {
     if (!finalAddress && !name && !finalCity) return '';
-    
+
     let query = '';
-    
+
     // Priority 1: Use full address if available
     if (finalAddress) {
       query = finalAddress;
-    } 
+    }
     // Priority 2: Use city, state combination if available
     else if (finalCity) {
       query = finalCity;
       if (finalState) query += `, ${finalState}`;
       if (finalCountry) query += `, ${finalCountry}`;
-      
+
       // Add business name for better accuracy
       if (name) query = `${name}, ${query}`;
     }
     // Priority 3: Use business name + location from URL or general location
     else if (name) {
       query = name;
-      
+
       // Try to extract location from website URL
       if (website || url) {
         try {
           const urlToAnalyze = url || website;
           const urlObj = new URL(urlToAnalyze);
-          const pathParts = urlObj.pathname.split('/').filter(p => p.length > 0);
+          const pathParts = urlObj.pathname.split('/').filter((p) => p.length > 0);
           const hostParts = urlObj.hostname.split('.');
-          
+
           // Look for city names in URL path or subdomain
           const locationKeywords = [
-            'dallas', 'houston', 'austin', 'san-antonio', 'fort-worth',
-            'miami', 'tampa', 'orlando', 'jacksonville', 'atlanta',
-            'chicago', 'nyc', 'newyork', 'brooklyn', 'manhattan',
-            'losangeles', 'la', 'sf', 'sanfrancisco', 'sandiego',
-            'seattle', 'portland', 'denver', 'phoenix', 'scottsdale',
-            'boston', 'philadelphia', 'detroit', 'charlotte', 'nashville',
-            'vegas', 'lasvegas', 'reno', 'sacramento', 'fresno',
-            'minneapolis', 'milwaukee', 'cleveland', 'columbus',
-            'indianapolis', 'louisville', 'memphis', 'birmingham'
+            'dallas',
+            'houston',
+            'austin',
+            'san-antonio',
+            'fort-worth',
+            'miami',
+            'tampa',
+            'orlando',
+            'jacksonville',
+            'atlanta',
+            'chicago',
+            'nyc',
+            'newyork',
+            'brooklyn',
+            'manhattan',
+            'losangeles',
+            'la',
+            'sf',
+            'sanfrancisco',
+            'sandiego',
+            'seattle',
+            'portland',
+            'denver',
+            'phoenix',
+            'scottsdale',
+            'boston',
+            'philadelphia',
+            'detroit',
+            'charlotte',
+            'nashville',
+            'vegas',
+            'lasvegas',
+            'reno',
+            'sacramento',
+            'fresno',
+            'minneapolis',
+            'milwaukee',
+            'cleveland',
+            'columbus',
+            'indianapolis',
+            'louisville',
+            'memphis',
+            'birmingham',
           ];
-          
+
           for (const part of [...pathParts, ...hostParts]) {
             const cleanPart = part.toLowerCase().replace(/[-_]/g, '');
             if (locationKeywords.includes(cleanPart)) {
@@ -105,12 +143,12 @@ const BusinessInfoHeader: React.FC<BusinessInfoHeaderProps> = ({ businessData, b
         }
       }
     }
-    
+
     if (!query) return '';
-    
+
     // URL encode the query string
     const encodedQuery = encodeURIComponent(query);
-    
+
     // Construct the Google Maps embed URL
     return `https://maps.google.com/maps?q=${encodedQuery}&output=embed`;
   };
@@ -122,16 +160,14 @@ const BusinessInfoHeader: React.FC<BusinessInfoHeaderProps> = ({ businessData, b
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left Column - Information */}
         <div>
-          <h2 className="text-3xl font-bold text-slate-900 mb-6">
-            {name}
-          </h2>
-          
+          <h2 className="text-3xl font-bold text-slate-900 mb-6">{name}</h2>
+
           <div className="space-y-4">
             {/* Website */}
             {website && (
               <div className="flex items-center gap-3">
                 <Globe className="text-slate-600 text-lg" />
-                <a 
+                <a
                   href={website}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -154,7 +190,7 @@ const BusinessInfoHeader: React.FC<BusinessInfoHeaderProps> = ({ businessData, b
             {finalPhone && (
               <div className="flex items-center gap-3">
                 <Phone className="text-slate-600 text-lg" />
-                <a 
+                <a
                   href={`tel:${finalPhone}`}
                   className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
                 >
@@ -177,7 +213,7 @@ const BusinessInfoHeader: React.FC<BusinessInfoHeaderProps> = ({ businessData, b
                   <Twitter />
                 </a>
               )}
-              
+
               {socials.linkedin && (
                 <a
                   href={socials.linkedin}
@@ -188,7 +224,7 @@ const BusinessInfoHeader: React.FC<BusinessInfoHeaderProps> = ({ businessData, b
                   <Linkedin />
                 </a>
               )}
-              
+
               {socials.facebook && (
                 <a
                   href={socials.facebook}
@@ -199,7 +235,7 @@ const BusinessInfoHeader: React.FC<BusinessInfoHeaderProps> = ({ businessData, b
                   <Facebook />
                 </a>
               )}
-              
+
               {socials.instagram && (
                 <a
                   href={socials.instagram}
@@ -210,7 +246,7 @@ const BusinessInfoHeader: React.FC<BusinessInfoHeaderProps> = ({ businessData, b
                   <Instagram />
                 </a>
               )}
-              
+
               {socials.youtube && (
                 <a
                   href={socials.youtube}
@@ -242,7 +278,9 @@ const BusinessInfoHeader: React.FC<BusinessInfoHeaderProps> = ({ businessData, b
                 <div className="text-center text-slate-500">
                   <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">Location map unavailable</p>
-                  <p className="text-xs text-slate-400 mt-1">No address information found on website</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    No address information found on website
+                  </p>
                 </div>
               </div>
             )}

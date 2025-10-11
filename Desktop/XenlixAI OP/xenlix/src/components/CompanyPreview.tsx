@@ -6,13 +6,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  Building2, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Globe, 
-  Clock, 
+import {
+  Building2,
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Clock,
   Star,
   Users,
   Tag,
@@ -22,7 +22,7 @@ import {
   AlertCircle,
   Loader2,
   Eye,
-  EyeOff
+  EyeOff,
 } from 'lucide-react';
 import { BusinessInfo } from '@/lib/business-extractor';
 
@@ -34,12 +34,12 @@ interface CompanyPreviewProps {
   className?: string;
 }
 
-export function CompanyPreview({ 
-  businessInfo, 
-  url, 
-  isLoading = false, 
+export function CompanyPreview({
+  businessInfo,
+  url,
+  isLoading = false,
   onAnalyze,
-  className = "" 
+  className = '',
 }: CompanyPreviewProps) {
   const [urlInput, setUrlInput] = useState(url || '');
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -71,7 +71,7 @@ export function CompanyPreview({
 
   const getCompletionPercentage = () => {
     if (!businessInfo) return 0;
-    
+
     const fields = [
       businessInfo.businessName,
       businessInfo.industry,
@@ -81,15 +81,17 @@ export function CompanyPreview({
       businessInfo.contact?.website,
       businessInfo.services?.length > 0,
       businessInfo.hours?.monday,
-      businessInfo.description
+      businessInfo.description,
     ];
-    
+
     const completed = fields.filter(Boolean).length;
     return Math.round((completed / fields.length) * 100);
   };
 
   return (
-    <div className={`bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg shadow-lg ${className}`}>
+    <div
+      className={`bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg shadow-lg ${className}`}
+    >
       {/* Header with URL Input */}
       <div className="p-6 border-b border-slate-700">
         <div className="flex items-center justify-between mb-4">
@@ -142,7 +144,9 @@ export function CompanyPreview({
         <div className="p-8 text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-400" />
           <h3 className="text-lg font-medium text-white mb-2">Analyzing Company Information</h3>
-          <p className="text-slate-300">Extracting business details, contact info, and services...</p>
+          <p className="text-slate-300">
+            Extracting business details, contact info, and services...
+          </p>
         </div>
       )}
 
@@ -156,7 +160,7 @@ export function CompanyPreview({
               <span className="text-blue-100 font-bold">{getCompletionPercentage()}%</span>
             </div>
             <div className="w-full bg-slate-700 rounded-full h-2">
-              <div 
+              <div
                 className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${getCompletionPercentage()}%` }}
               ></div>
@@ -171,16 +175,20 @@ export function CompanyPreview({
                   <Building2 className="w-5 h-5 text-blue-400" />
                   Business Overview
                 </h3>
-                
+
                 <div className="space-y-4">
                   {/* Business Name */}
                   <div className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
                     <div>
                       <div className="text-sm text-slate-400">Business Name</div>
-                      <div className="font-medium text-white">{businessInfo.businessName || 'Not specified'}</div>
+                      <div className="font-medium text-white">
+                        {businessInfo.businessName || 'Not specified'}
+                      </div>
                     </div>
                     <button
-                      onClick={() => copyToClipboard(businessInfo.businessName || '', 'businessName')}
+                      onClick={() =>
+                        copyToClipboard(businessInfo.businessName || '', 'businessName')
+                      }
                       className="p-2 text-slate-400 hover:text-slate-200"
                     >
                       {copiedField === 'businessName' ? (
@@ -247,7 +255,7 @@ export function CompanyPreview({
                   <Phone className="w-5 h-5 text-green-400" />
                   Contact Information
                 </h3>
-                
+
                 <div className="space-y-3">
                   {/* Phone */}
                   {businessInfo.contact?.phone && (
@@ -281,9 +289,7 @@ export function CompanyPreview({
                         <Mail className="w-4 h-4 text-blue-400" />
                         <div>
                           <div className="text-sm text-slate-400">Email</div>
-                          <div className="font-medium text-white">
-                            {businessInfo.contact.email}
-                          </div>
+                          <div className="font-medium text-white">{businessInfo.contact.email}</div>
                         </div>
                       </div>
                       <button
@@ -308,9 +314,9 @@ export function CompanyPreview({
                           <div className="text-sm text-slate-400">Website</div>
                           <div className="font-medium text-white flex items-center gap-2">
                             {businessInfo.contact.website}
-                            <a 
-                              href={businessInfo.contact.website} 
-                              target="_blank" 
+                            <a
+                              href={businessInfo.contact.website}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="text-purple-400 hover:text-purple-300"
                             >
@@ -338,11 +344,15 @@ export function CompanyPreview({
                       )}
                       <div className="text-white">
                         {businessInfo.location.address.city}
-                        {businessInfo.location.address.state && `, ${businessInfo.location.address.state}`}
-                        {businessInfo.location.address.zipCode && ` ${businessInfo.location.address.zipCode}`}
+                        {businessInfo.location.address.state &&
+                          `, ${businessInfo.location.address.state}`}
+                        {businessInfo.location.address.zipCode &&
+                          ` ${businessInfo.location.address.zipCode}`}
                       </div>
                       {businessInfo.location.address.country !== 'US' && (
-                        <div className="text-slate-300">{businessInfo.location.address.country}</div>
+                        <div className="text-slate-300">
+                          {businessInfo.location.address.country}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -358,7 +368,10 @@ export function CompanyPreview({
                   </h4>
                   <div className="space-y-1">
                     {Object.entries(businessInfo.hours).map(([day, hours]) => (
-                      <div key={day} className="flex justify-between p-2 text-sm bg-orange-900/20 rounded border border-orange-600/30">
+                      <div
+                        key={day}
+                        className="flex justify-between p-2 text-sm bg-orange-900/20 rounded border border-orange-600/30"
+                      >
                         <span className="font-medium capitalize text-white">{day}</span>
                         <span className="text-slate-300">{hours || 'Closed'}</span>
                       </div>
@@ -378,18 +391,19 @@ export function CompanyPreview({
                     <div className="flex items-center gap-2 mb-2">
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
+                          <Star
+                            key={i}
                             className={`w-4 h-4 ${
-                              i < Math.round(businessInfo.averageRating || 0) 
-                                ? 'text-yellow-400 fill-current' 
+                              i < Math.round(businessInfo.averageRating || 0)
+                                ? 'text-yellow-400 fill-current'
                                 : 'text-slate-500'
-                            }`} 
+                            }`}
                           />
                         ))}
                       </div>
                       <span className="font-medium text-white">
-                        {businessInfo.averageRating?.toFixed(1)} ({businessInfo.reviews.length} reviews)
+                        {businessInfo.averageRating?.toFixed(1)} ({businessInfo.reviews.length}{' '}
+                        reviews)
                       </span>
                     </div>
                     <div className="text-sm text-slate-300">

@@ -33,55 +33,54 @@ export function useWebsiteScanner(): UseScannerReturn {
     setError(null);
   }, []);
 
-  const scanWebsite = useCallback(async (
-    url: string, 
-    priority: 'high' | 'normal' | 'low' = 'normal'
-  ): Promise<string> => {
-    try {
-      setIsScanning(true);
-      setError(null);
+  const scanWebsite = useCallback(
+    async (url: string, priority: 'high' | 'normal' | 'low' = 'normal'): Promise<string> => {
+      try {
+        setIsScanning(true);
+        setError(null);
 
-      const response = await fetch('/api/scan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        const response = await fetch('/api/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url,
+            priority,
+            scanType: 'full',
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Scan failed');
+        }
+
+        const scanId = data.scanId;
+
+        // Add to scan history immediately
+        const newScan: ScanJob = {
+          scanId,
+          status: 'queued',
           url,
-          priority,
-          scanType: 'full'
-        }),
-      });
+          createdAt: new Date().toISOString(),
+          progress: 10,
+        };
 
-      const data = await response.json();
+        setScanHistory((prev) => [newScan, ...prev.slice(0, 9)]); // Keep last 10 scans
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Scan failed');
+        return scanId;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        setError(errorMessage);
+        throw err;
+      } finally {
+        setIsScanning(false);
       }
-
-      const scanId = data.scanId;
-      
-      // Add to scan history immediately
-      const newScan: ScanJob = {
-        scanId,
-        status: 'queued',
-        url,
-        createdAt: new Date().toISOString(),
-        progress: 10
-      };
-
-      setScanHistory(prev => [newScan, ...prev.slice(0, 9)]); // Keep last 10 scans
-
-      return scanId;
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsScanning(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   const getScanStatus = useCallback(async (scanId: string): Promise<ScanJob> => {
     try {
@@ -101,18 +100,13 @@ export function useWebsiteScanner(): UseScannerReturn {
         completedAt: data.completedAt,
         result: data.result,
         error: data.error,
-        progress: data.progress
+        progress: data.progress,
       };
 
       // Update scan history with latest status
-      setScanHistory(prev => 
-        prev.map(scan => 
-          scan.scanId === scanId ? scanJob : scan
-        )
-      );
+      setScanHistory((prev) => prev.map((scan) => (scan.scanId === scanId ? scanJob : scan)));
 
       return scanJob;
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get scan status';
       setError(errorMessage);
@@ -126,7 +120,7 @@ export function useWebsiteScanner(): UseScannerReturn {
     scanHistory,
     isScanning,
     error,
-    clearError
+    clearError,
   };
 }
 
@@ -140,7 +134,7 @@ export function useScanPolling(scanId: string | null, intervalMs = 3000) {
     if (!scanId || isPolling) return;
 
     setIsPolling(true);
-    
+
     const poll = async () => {
       try {
         const job = await getScanStatus(scanId);
@@ -171,6 +165,6 @@ export function useScanPolling(scanId: string | null, intervalMs = 3000) {
     scanJob,
     isPolling,
     startPolling,
-    stopPolling
+    stopPolling,
   };
 }

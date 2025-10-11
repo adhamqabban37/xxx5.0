@@ -11,16 +11,16 @@ const testCheckout = async () => {
         planId: 'free',
         email: 'test@example.com',
         phone: '+1234567890',
-        companyName: 'Test Company'
-      })
+        companyName: 'Test Company',
+      }),
     });
 
     const data = await response.json();
-    
+
     if (response.ok) {
       console.log('✅ Checkout API working correctly');
       console.log('Response:', data);
-      
+
       if (data.success && data.isFreeTrial) {
         console.log('✅ Free trial created successfully');
         console.log('Trial ends at:', data.trialEndDate);

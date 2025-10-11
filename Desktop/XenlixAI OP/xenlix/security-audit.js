@@ -25,14 +25,14 @@ class SecurityAudit {
       errors: [],
       warnings: [],
       passed: 0,
-      failed: 0
+      failed: 0,
     };
   }
 
   log(status, category, message, details = null) {
     const timestamp = new Date().toISOString();
     const icon = status === 'PASS' ? '✅' : status === 'FAIL' ? '❌' : '⚠️';
-    
+
     console.log(`${icon} [${category}] ${message}`);
     if (details) console.log(`   Details: ${details}`);
 
@@ -49,7 +49,7 @@ class SecurityAudit {
   async checkHTTPSRedirect(url) {
     return new Promise((resolve) => {
       const httpUrl = url.replace('https://', 'http://');
-      
+
       const req = http.get(httpUrl, (res) => {
         if (res.statusCode === 301 || res.statusCode === 302) {
           const location = res.headers.location;
@@ -83,12 +83,12 @@ class SecurityAudit {
         path: urlObj.pathname + urlObj.search,
         method: 'HEAD',
         headers: {
-          'User-Agent': 'Mozilla/5.0 (SecurityBot/1.0; +https://xenlix.ai/security-audit)'
-        }
+          'User-Agent': 'Mozilla/5.0 (SecurityBot/1.0; +https://xenlix.ai/security-audit)',
+        },
       };
 
       const client = urlObj.protocol === 'https:' ? https : http;
-      
+
       const req = client.request(options, (res) => {
         const headers = res.headers;
         resolve({
@@ -99,8 +99,8 @@ class SecurityAudit {
             'x-content-type-options': headers['x-content-type-options'],
             'x-frame-options': headers['x-frame-options'],
             'x-xss-protection': headers['x-xss-protection'],
-            'referrer-policy': headers['referrer-policy']
-          }
+            'referrer-policy': headers['referrer-policy'],
+          },
         });
       });
 
@@ -123,23 +123,28 @@ class SecurityAudit {
     }
 
     const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_API_KEY}`;
-    
+
     const payload = {
       client: {
-        clientId: "xenlix-security-audit",
-        clientVersion: "1.0.0"
+        clientId: 'xenlix-security-audit',
+        clientVersion: '1.0.0',
       },
       threatInfo: {
-        threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
-        platformTypes: ["ANY_PLATFORM"],
-        threatEntryTypes: ["URL"],
-        threatEntries: [{ url }]
-      }
+        threatTypes: [
+          'MALWARE',
+          'SOCIAL_ENGINEERING',
+          'UNWANTED_SOFTWARE',
+          'POTENTIALLY_HARMFUL_APPLICATION',
+        ],
+        platformTypes: ['ANY_PLATFORM'],
+        threatEntryTypes: ['URL'],
+        threatEntries: [{ url }],
+      },
     };
 
     return new Promise((resolve) => {
       const postData = JSON.stringify(payload);
-      
+
       const options = {
         hostname: 'safebrowsing.googleapis.com',
         port: 443,
@@ -147,20 +152,20 @@ class SecurityAudit {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(postData)
-        }
+          'Content-Length': Buffer.byteLength(postData),
+        },
       };
 
       const req = https.request(options, (res) => {
         let data = '';
-        res.on('data', (chunk) => data += chunk);
+        res.on('data', (chunk) => (data += chunk));
         res.on('end', () => {
           try {
             const response = JSON.parse(data);
             resolve({
               safe: !response.matches || response.matches.length === 0,
               matches: response.matches || [],
-              status: res.statusCode
+              status: res.statusCode,
             });
           } catch (err) {
             resolve({ error: 'Failed to parse response', data });
@@ -179,35 +184,45 @@ class SecurityAudit {
 
   async scanCodeForMixedContent() {
     const patterns = [
-      { pattern: /http:\/\/(?!localhost|127\.0\.0\.1|0\.0\.0\.0)/g, description: 'HTTP URLs in code' },
+      {
+        pattern: /http:\/\/(?!localhost|127\.0\.0\.1|0\.0\.0\.0)/g,
+        description: 'HTTP URLs in code',
+      },
       { pattern: /src=['"\s]*http:\/\//g, description: 'HTTP resources in src attributes' },
       { pattern: /href=['"\s]*http:\/\//g, description: 'HTTP links in href attributes' },
-      { pattern: /url\(['"\s]*http:\/\//g, description: 'HTTP URLs in CSS' }
+      { pattern: /url\(['"\s]*http:\/\//g, description: 'HTTP URLs in CSS' },
     ];
 
     const filesToScan = [
       'src/**/*.tsx',
-      'src/**/*.ts', 
+      'src/**/*.ts',
       'src/**/*.js',
       'src/**/*.jsx',
       'src/**/*.css',
-      'public/**/*.html'
+      'public/**/*.html',
     ];
 
     console.log('\n🔍 Scanning codebase for mixed content vulnerabilities...\n');
 
     for (const filePattern of filesToScan) {
       try {
-        const grepResult = await this.runCommand(`grep -r -n "http://" ${filePattern} 2>/dev/null || true`);
-        
+        const grepResult = await this.runCommand(
+          `grep -r -n "http://" ${filePattern} 2>/dev/null || true`
+        );
+
         if (grepResult.trim()) {
-          const lines = grepResult.split('\n').filter(line => line.trim());
-          
+          const lines = grepResult.split('\n').filter((line) => line.trim());
+
           for (const line of lines) {
             // Skip localhost and development URLs
-            if (line.includes('localhost') || line.includes('127.0.0.1') || 
-                line.includes('example.com') || line.includes('schemas/sitemap') ||
-                line.includes('w3.org') || line.includes('xmlns')) {
+            if (
+              line.includes('localhost') ||
+              line.includes('127.0.0.1') ||
+              line.includes('example.com') ||
+              line.includes('schemas/sitemap') ||
+              line.includes('w3.org') ||
+              line.includes('xmlns')
+            ) {
               continue;
             }
 
@@ -227,17 +242,17 @@ class SecurityAudit {
 
   async runCommand(command) {
     return new Promise((resolve, reject) => {
-      const child = spawn('sh', ['-c', command], { 
+      const child = spawn('sh', ['-c', command], {
         stdio: ['pipe', 'pipe', 'pipe'],
-        cwd: process.cwd()
+        cwd: process.cwd(),
       });
 
       let stdout = '';
       let stderr = '';
 
-      child.stdout.on('data', (data) => stdout += data);
-      child.stderr.on('data', (data) => stderr += data);
-      
+      child.stdout.on('data', (data) => (stdout += data));
+      child.stderr.on('data', (data) => (stderr += data));
+
       child.on('close', (code) => {
         if (code === 0 || stdout.trim()) {
           resolve(stdout);
@@ -257,10 +272,22 @@ class SecurityAudit {
       this.log('WARN', 'HTTPS', `Could not test production redirect: ${prodResult.error}`);
     } else if (prodResult.redirects) {
       this.log('PASS', 'HTTPS', `Production HTTP redirects to HTTPS (${prodResult.status})`);
-      this.results.httpsEnforcement.push({ url: BASE_URL, redirects: true, status: prodResult.status });
+      this.results.httpsEnforcement.push({
+        url: BASE_URL,
+        redirects: true,
+        status: prodResult.status,
+      });
     } else {
-      this.log('FAIL', 'HTTPS', `Production does not redirect HTTP to HTTPS (${prodResult.status})`);
-      this.results.httpsEnforcement.push({ url: BASE_URL, redirects: false, status: prodResult.status });
+      this.log(
+        'FAIL',
+        'HTTPS',
+        `Production does not redirect HTTP to HTTPS (${prodResult.status})`
+      );
+      this.results.httpsEnforcement.push({
+        url: BASE_URL,
+        redirects: false,
+        status: prodResult.status,
+      });
     }
   }
 
@@ -273,11 +300,11 @@ class SecurityAudit {
       { name: 'x-content-type-options', required: true, description: 'Content type options' },
       { name: 'x-frame-options', required: true, description: 'Frame options' },
       { name: 'x-xss-protection', required: false, description: 'XSS protection' },
-      { name: 'referrer-policy', required: true, description: 'Referrer policy' }
+      { name: 'referrer-policy', required: true, description: 'Referrer policy' },
     ];
 
     const headerResult = await this.checkSecurityHeaders(BASE_URL);
-    
+
     if (headerResult.error) {
       this.log('FAIL', 'Security Headers', `Could not check headers: ${headerResult.error}`);
       return;
@@ -285,10 +312,14 @@ class SecurityAudit {
 
     for (const check of headerChecks) {
       const headerValue = headerResult.headers[check.name];
-      
+
       if (headerValue) {
         this.log('PASS', 'Security Headers', `${check.description} present: ${headerValue}`);
-        this.results.securityHeaders.push({ header: check.name, present: true, value: headerValue });
+        this.results.securityHeaders.push({
+          header: check.name,
+          present: true,
+          value: headerValue,
+        });
       } else if (check.required) {
         this.log('FAIL', 'Security Headers', `Missing required ${check.description}`);
         this.results.securityHeaders.push({ header: check.name, present: false, required: true });
@@ -303,18 +334,26 @@ class SecurityAudit {
     console.log('\n🔍 Running Google Safe Browsing check...\n');
 
     const safeBrowsingResult = await this.checkSafeBrowsing(BASE_URL);
-    
+
     if (safeBrowsingResult.error) {
-      this.log('WARN', 'Safe Browsing', `Could not check Safe Browsing: ${safeBrowsingResult.error}`);
+      this.log(
+        'WARN',
+        'Safe Browsing',
+        `Could not check Safe Browsing: ${safeBrowsingResult.error}`
+      );
     } else if (safeBrowsingResult.warning) {
       this.log('WARN', 'Safe Browsing', safeBrowsingResult.warning);
     } else if (safeBrowsingResult.safe) {
       this.log('PASS', 'Safe Browsing', 'No threats detected - site is SAFE');
       this.results.safeBrowsing.push({ safe: true, matches: [] });
     } else {
-      this.log('FAIL', 'Safe Browsing', `Threats detected: ${safeBrowsingResult.matches.length} matches`);
+      this.log(
+        'FAIL',
+        'Safe Browsing',
+        `Threats detected: ${safeBrowsingResult.matches.length} matches`
+      );
       this.results.safeBrowsing.push({ safe: false, matches: safeBrowsingResult.matches });
-      
+
       for (const match of safeBrowsingResult.matches) {
         this.log('FAIL', 'Safe Browsing', `Threat: ${match.threatType} on ${match.platform}`);
       }
@@ -332,24 +371,31 @@ class SecurityAudit {
     console.log(`Failed: ${this.results.failed} ❌`);
     console.log(`Warnings: ${this.results.warnings.length} ⚠️`);
 
-    const securityScore = this.results.failed === 0 ? 100 : 
-                         Math.max(0, Math.round((this.results.passed / (this.results.passed + this.results.failed)) * 100));
-    
+    const securityScore =
+      this.results.failed === 0
+        ? 100
+        : Math.max(
+            0,
+            Math.round((this.results.passed / (this.results.passed + this.results.failed)) * 100)
+          );
+
     console.log(`Security Score: ${securityScore}%`);
 
     // HTTPS Enforcement
     if (this.results.httpsEnforcement.length > 0) {
       console.log(`\n🔒 HTTPS ENFORCEMENT`);
-      this.results.httpsEnforcement.forEach(result => {
-        console.log(`   ${result.redirects ? '✅' : '❌'} ${result.url} - Status: ${result.status}`);
+      this.results.httpsEnforcement.forEach((result) => {
+        console.log(
+          `   ${result.redirects ? '✅' : '❌'} ${result.url} - Status: ${result.status}`
+        );
       });
     }
 
     // Security Headers
     if (this.results.securityHeaders.length > 0) {
       console.log(`\n🛡️ SECURITY HEADERS`);
-      this.results.securityHeaders.forEach(header => {
-        const status = header.present ? '✅' : (header.required ? '❌' : '⚠️');
+      this.results.securityHeaders.forEach((header) => {
+        const status = header.present ? '✅' : header.required ? '❌' : '⚠️';
         console.log(`   ${status} ${header.header}: ${header.present ? header.value : 'Missing'}`);
       });
     }
@@ -357,7 +403,7 @@ class SecurityAudit {
     // Mixed Content
     if (this.results.mixedContent.length > 0) {
       console.log(`\n⚠️ MIXED CONTENT ISSUES`);
-      this.results.mixedContent.forEach(issue => {
+      this.results.mixedContent.forEach((issue) => {
         console.log(`   ❌ ${issue}`);
       });
     } else {
@@ -367,12 +413,12 @@ class SecurityAudit {
     // Safe Browsing
     if (this.results.safeBrowsing.length > 0) {
       console.log(`\n🔍 SAFE BROWSING STATUS`);
-      this.results.safeBrowsing.forEach(result => {
+      this.results.safeBrowsing.forEach((result) => {
         if (result.safe) {
           console.log(`   ✅ Site is SAFE - No threats detected`);
         } else {
           console.log(`   ❌ Threats detected: ${result.matches.length}`);
-          result.matches.forEach(match => {
+          result.matches.forEach((match) => {
             console.log(`      - ${match.threatType} on ${match.platform}`);
           });
         }
@@ -382,7 +428,7 @@ class SecurityAudit {
     // Errors & Warnings
     if (this.results.errors.length > 0) {
       console.log(`\n❌ CRITICAL ISSUES`);
-      this.results.errors.forEach(error => {
+      this.results.errors.forEach((error) => {
         console.log(`   [${error.category}] ${error.message}`);
         if (error.details) console.log(`      Details: ${error.details}`);
       });
@@ -390,7 +436,7 @@ class SecurityAudit {
 
     if (this.results.warnings.length > 0) {
       console.log(`\n⚠️ WARNINGS`);
-      this.results.warnings.forEach(warning => {
+      this.results.warnings.forEach((warning) => {
         console.log(`   [${warning.category}] ${warning.message}`);
       });
     }
@@ -398,7 +444,7 @@ class SecurityAudit {
     // Final assessment
     const isSecure = this.results.failed === 0 && this.results.mixedContent.length === 0;
     console.log(`\n🎯 SECURITY STATUS: ${isSecure ? 'SECURE ✅' : 'NEEDS ATTENTION ❌'}`);
-    
+
     if (isSecure) {
       console.log('All security checks passed! Site is ready for production.');
     } else {
@@ -413,14 +459,14 @@ class SecurityAudit {
         failed: this.results.failed,
         warnings: this.results.warnings.length,
         securityScore,
-        isSecure
+        isSecure,
       },
       httpsEnforcement: this.results.httpsEnforcement,
       securityHeaders: this.results.securityHeaders,
       mixedContent: this.results.mixedContent,
       safeBrowsing: this.results.safeBrowsing,
       errors: this.results.errors,
-      warnings: this.results.warnings
+      warnings: this.results.warnings,
     };
 
     fs.writeFileSync('security-audit-report.json', JSON.stringify(reportData, null, 2));

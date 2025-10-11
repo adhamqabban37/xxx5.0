@@ -9,7 +9,18 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Globe, Zap, Search, BarChart3, FileText, Download, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import {
+  Loader2,
+  Globe,
+  Zap,
+  Search,
+  BarChart3,
+  FileText,
+  Download,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+} from 'lucide-react';
 
 interface UnifiedAEOAnalysisProps {
   initialUrl?: string;
@@ -26,7 +37,9 @@ interface AnalysisResult {
 
 const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = '' }) => {
   const [url, setUrl] = useState(initialUrl);
-  const [queries, setQueries] = useState('best dentist in Dallas\nlocal dental services\ndentist near me\nemergency dental care');
+  const [queries, setQueries] = useState(
+    'best dentist in Dallas\nlocal dental services\ndentist near me\nemergency dental care'
+  );
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [currentStep, setCurrentStep] = useState('');
@@ -42,9 +55,9 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
     setIsAnalyzing(true);
     setError(null);
     setResults(null);
-    
-    const queryList = queries.split('\n').filter(q => q.trim().length > 0);
-    
+
+    const queryList = queries.split('\n').filter((q) => q.trim().length > 0);
+
     try {
       // Step 1: Crawl the website
       setCurrentStep('Crawling website content...');
@@ -54,8 +67,8 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
         body: JSON.stringify({
           url,
           scanType: 'full',
-          includeContent: true
-        })
+          includeContent: true,
+        }),
       });
 
       if (!crawlResponse.ok) {
@@ -74,8 +87,8 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
           url,
           queries: queryList,
           scanType: 'full',
-          includeSemanticAnalysis: true
-        })
+          includeSemanticAnalysis: true,
+        }),
       });
 
       if (!aeoResponse.ok) {
@@ -93,8 +106,8 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
         body: JSON.stringify({
           url,
           categories: ['performance', 'seo', 'accessibility', 'best-practices'],
-          device: 'mobile'
-        })
+          device: 'mobile',
+        }),
       });
 
       if (!lighthouseResponse.ok) {
@@ -113,9 +126,8 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
         lighthouseAudit,
         overallScore,
         timestamp: new Date().toISOString(),
-        requestId: crawlData.requestId || aeoScore.requestId || lighthouseAudit.requestId
+        requestId: crawlData.requestId || aeoScore.requestId || lighthouseAudit.requestId,
       });
-
     } catch (err) {
       console.error('Analysis failed:', err);
       setError(err instanceof Error ? err.message : 'Analysis failed');
@@ -135,16 +147,12 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
     const semanticScore = aeoScore?.overall_score || 0;
     const seoScore = lighthouse?.scores?.seo || 0;
     const performanceScore = lighthouse?.scores?.performance || 0;
-    
+
     // Content structure score based on crawl data
     const contentScore = calculateContentStructureScore(crawlData);
 
-    const weighted = (
-      (semanticScore * 0.4) +
-      (seoScore * 0.3) +
-      (contentScore * 0.2) +
-      (performanceScore * 0.1)
-    );
+    const weighted =
+      semanticScore * 0.4 + seoScore * 0.3 + contentScore * 0.2 + performanceScore * 0.1;
 
     return Math.round(weighted);
   };
@@ -152,26 +160,26 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
   const calculateContentStructureScore = (crawlData: any) => {
     let score = 0;
     const content = crawlData?.content;
-    
+
     if (!content) return 0;
 
     // Title presence and quality (20 points)
     if (content.title && content.title.length > 10) score += 20;
-    
+
     // Meta description (15 points)
     if (content.metaDescription && content.metaDescription.length > 50) score += 15;
-    
+
     // Heading structure (25 points)
     const headings = content.headings || {};
     if (headings.h1 && headings.h1.length > 0) score += 10;
     if (headings.h2 && headings.h2.length > 0) score += 8;
     if (headings.h3 && headings.h3.length > 0) score += 7;
-    
+
     // Content length (20 points)
     const paragraphs = content.paragraphs || [];
     if (paragraphs.length > 5) score += 20;
     else if (paragraphs.length > 2) score += 10;
-    
+
     // Structured data (20 points)
     if (content.structuredData && content.structuredData.length > 0) score += 20;
 
@@ -180,9 +188,9 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
 
   const exportToPDF = async () => {
     if (!results) return;
-    
+
     setIsExporting(true);
-    
+
     try {
       const response = await fetch('/api/export-pdf', {
         method: 'POST',
@@ -192,7 +200,7 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
         body: JSON.stringify({
           url,
           results,
-          reportTitle: `AEO Analysis Report - ${new Date().toLocaleDateString()}`
+          reportTitle: `AEO Analysis Report - ${new Date().toLocaleDateString()}`,
         }),
       });
 
@@ -210,7 +218,6 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
-      
     } catch (error) {
       console.error('PDF export failed:', error);
       setError(error instanceof Error ? error.message : 'Failed to export PDF');
@@ -224,7 +231,8 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-2">Complete AEO Analysis Platform</h1>
         <p className="text-gray-600">
-          Comprehensive analysis combining content crawling, AI semantic matching, and technical auditing
+          Comprehensive analysis combining content crawling, AI semantic matching, and technical
+          auditing
         </p>
       </div>
 
@@ -250,11 +258,9 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
               disabled={isAnalyzing}
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Test Queries (one per line)
-            </label>
+            <label className="block text-sm font-medium mb-2">Test Queries (one per line)</label>
             <Textarea
               placeholder="Enter queries that your website should answer..."
               value={queries}
@@ -280,11 +286,7 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
             </Button>
 
             {results && (
-              <Button
-                onClick={exportToPDF}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
+              <Button onClick={exportToPDF} variant="outline" className="flex items-center gap-2">
                 <Download className="w-4 h-4" />
                 Export PDF Report
               </Button>
@@ -323,11 +325,15 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
             <CardContent>
               <div className="flex items-center justify-center mb-4">
                 <div className="text-6xl font-bold text-center">
-                  <span className={`${
-                    (results.overallScore || 0) >= 80 ? 'text-green-600' :
-                    (results.overallScore || 0) >= 60 ? 'text-yellow-600' :
-                    'text-red-600'
-                  }`}>
+                  <span
+                    className={`${
+                      (results.overallScore || 0) >= 80
+                        ? 'text-green-600'
+                        : (results.overallScore || 0) >= 60
+                          ? 'text-yellow-600'
+                          : 'text-red-600'
+                    }`}
+                  >
                     {results.overallScore}
                   </span>
                   <span className="text-2xl text-gray-400">/100</span>
@@ -400,7 +406,15 @@ const SemanticAnalysisResults: React.FC<{ data: any }> = ({ data }) => {
               <div key={index} className="border rounded p-3">
                 <div className="flex justify-between items-start mb-2">
                   <span className="font-medium">{query.query}</span>
-                  <Badge variant={query.score >= 70 ? 'default' : query.score >= 40 ? 'secondary' : 'destructive'}>
+                  <Badge
+                    variant={
+                      query.score >= 70
+                        ? 'default'
+                        : query.score >= 40
+                          ? 'secondary'
+                          : 'destructive'
+                    }
+                  >
                     {query.score}%
                   </Badge>
                 </div>
@@ -464,7 +478,9 @@ const ContentStructureResults: React.FC<{ data: any }> = ({ data }) => {
           </div>
           <div>
             <label className="text-sm font-medium text-gray-600">Meta Description</label>
-            <p className="text-sm break-words">{content.metaDescription || 'No meta description found'}</p>
+            <p className="text-sm break-words">
+              {content.metaDescription || 'No meta description found'}
+            </p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-600">Canonical URL</label>
@@ -509,7 +525,15 @@ const SEOAuditResults: React.FC<{ data: any }> = ({ data }) => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             SEO Score
-            <Badge variant={data.scores?.seo >= 80 ? 'default' : data.scores?.seo >= 60 ? 'secondary' : 'destructive'}>
+            <Badge
+              variant={
+                data.scores?.seo >= 80
+                  ? 'default'
+                  : data.scores?.seo >= 60
+                    ? 'secondary'
+                    : 'destructive'
+              }
+            >
               {data.scores?.seo}/100
             </Badge>
           </CardTitle>
@@ -555,7 +579,15 @@ const PerformanceResults: React.FC<{ data: any }> = ({ data }) => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             Performance Score
-            <Badge variant={scores?.performance >= 80 ? 'default' : scores?.performance >= 60 ? 'secondary' : 'destructive'}>
+            <Badge
+              variant={
+                scores?.performance >= 80
+                  ? 'default'
+                  : scores?.performance >= 60
+                    ? 'secondary'
+                    : 'destructive'
+              }
+            >
               {scores?.performance}/100
             </Badge>
           </CardTitle>
@@ -568,21 +600,27 @@ const PerformanceResults: React.FC<{ data: any }> = ({ data }) => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold">{Math.round(metrics.firstContentfulPaint / 1000 * 10) / 10}s</div>
+            <div className="text-2xl font-bold">
+              {Math.round((metrics.firstContentfulPaint / 1000) * 10) / 10}s
+            </div>
             <p className="text-sm text-gray-600">First Contentful Paint</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold">{Math.round(metrics.largestContentfulPaint / 1000 * 10) / 10}s</div>
+            <div className="text-2xl font-bold">
+              {Math.round((metrics.largestContentfulPaint / 1000) * 10) / 10}s
+            </div>
             <p className="text-sm text-gray-600">Largest Contentful Paint</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold">{Math.round(metrics.speedIndex / 1000 * 10) / 10}s</div>
+            <div className="text-2xl font-bold">
+              {Math.round((metrics.speedIndex / 1000) * 10) / 10}s
+            </div>
             <p className="text-sm text-gray-600">Speed Index</p>
           </CardContent>
         </Card>
@@ -596,14 +634,18 @@ const PerformanceResults: React.FC<{ data: any }> = ({ data }) => {
 
         <Card>
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold">{Math.round(metrics.cumulativeLayoutShift * 1000) / 1000}</div>
+            <div className="text-2xl font-bold">
+              {Math.round(metrics.cumulativeLayoutShift * 1000) / 1000}
+            </div>
             <p className="text-sm text-gray-600">Cumulative Layout Shift</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold">{Math.round(metrics.timeToInteractive / 1000 * 10) / 10}s</div>
+            <div className="text-2xl font-bold">
+              {Math.round((metrics.timeToInteractive / 1000) * 10) / 10}s
+            </div>
             <p className="text-sm text-gray-600">Time to Interactive</p>
           </CardContent>
         </Card>

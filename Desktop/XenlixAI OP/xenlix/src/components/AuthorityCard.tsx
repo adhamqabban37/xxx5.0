@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Globe, AlertCircle, Loader2, Clock, RefreshCw } from 'lucide-react';
+import {
+  TrendingUp,
+  TrendingDown,
+  Globe,
+  AlertCircle,
+  Loader2,
+  Clock,
+  RefreshCw,
+} from 'lucide-react';
 
 interface AuthorityResult {
   domain: string;
@@ -54,7 +62,7 @@ function getScoreBg(opr: number): string {
 // Format rank number
 function formatRank(rank: number | null): string {
   if (!rank) return 'N/A';
-  
+
   if (rank >= 1000000) {
     return `${(rank / 1000000).toFixed(1)}M`;
   }
@@ -64,7 +72,11 @@ function formatRank(rank: number | null): string {
   return rank.toLocaleString();
 }
 
-export default function AuthorityCard({ url, competitors = [], className = '' }: AuthorityCardProps) {
+export default function AuthorityCard({
+  url,
+  competitors = [],
+  className = '',
+}: AuthorityCardProps) {
   const [data, setData] = useState<AuthorityResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -120,7 +132,7 @@ export default function AuthorityCard({ url, competitors = [], className = '' }:
           </div>
           <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
         </div>
-        
+
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border">
             <div className="space-y-2">
@@ -129,11 +141,14 @@ export default function AuthorityCard({ url, competitors = [], className = '' }:
             </div>
             <div className="w-16 h-12 bg-gray-200 rounded-lg animate-pulse"></div>
           </div>
-          
+
           {competitors.length > 0 && (
             <div className="space-y-2">
               {competitors.slice(0, 3).map((_, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
+                >
                   <div className="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
                   <div className="w-12 h-6 bg-gray-200 rounded animate-pulse"></div>
                 </div>
@@ -162,11 +177,13 @@ export default function AuthorityCard({ url, competitors = [], className = '' }:
   }
 
   // Find main domain result
-  const mainResult = data?.results.find(r => r.domain === mainDomain);
-  const competitorResults = data?.results.filter(r => r.domain !== mainDomain) || [];
+  const mainResult = data?.results.find((r) => r.domain === mainDomain);
+  const competitorResults = data?.results.filter((r) => r.domain !== mainDomain) || [];
 
   return (
-    <div className={`bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300 ${className}`}>
+    <div
+      className={`bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300 ${className}`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
@@ -185,15 +202,16 @@ export default function AuthorityCard({ url, competitors = [], className = '' }:
         <div className={`p-4 rounded-xl border mb-4 ${getScoreBg(mainResult.opr)}`}>
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="font-medium text-gray-900 mb-1" title={`Authority score for ${mainResult.domain}`}>
+              <h4
+                className="font-medium text-gray-900 mb-1"
+                title={`Authority score for ${mainResult.domain}`}
+              >
                 {mainResult.domain}
               </h4>
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <span>Your Domain</span>
                 {mainResult.globalRank && (
-                  <span className="text-xs">
-                    • Rank #{formatRank(mainResult.globalRank)}
-                  </span>
+                  <span className="text-xs">• Rank #{formatRank(mainResult.globalRank)}</span>
                 )}
               </div>
             </div>
@@ -220,7 +238,7 @@ export default function AuthorityCard({ url, competitors = [], className = '' }:
         <div className="space-y-2">
           <h5 className="text-sm font-medium text-gray-700 mb-2">Competitors</h5>
           {competitorResults.slice(0, 5).map((result) => (
-            <div 
+            <div
               key={result.domain}
               className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors"
             >
@@ -229,9 +247,7 @@ export default function AuthorityCard({ url, competitors = [], className = '' }:
                   {result.domain}
                 </div>
                 {result.globalRank && (
-                  <div className="text-xs text-gray-500">
-                    Rank #{formatRank(result.globalRank)}
-                  </div>
+                  <div className="text-xs text-gray-500">Rank #{formatRank(result.globalRank)}</div>
                 )}
               </div>
               <div className="flex items-center space-x-2">
@@ -264,7 +280,7 @@ export default function AuthorityCard({ url, competitors = [], className = '' }:
               </div>
             </div>
           ))}
-          
+
           {competitorResults.length > 5 && (
             <div className="text-xs text-gray-500 text-center py-2">
               + {competitorResults.length - 5} more competitors

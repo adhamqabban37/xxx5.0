@@ -6,14 +6,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  Brain, 
-  Target, 
-  Search,
-  Loader2,
-  ArrowRight,
-  TrendingUp
-} from 'lucide-react';
+import { Brain, Target, Search, Loader2, ArrowRight, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
 interface QuickAIRankTrackerProps {
@@ -22,7 +15,7 @@ interface QuickAIRankTrackerProps {
 
 const AI_ENGINES = ['ChatGPT', 'Perplexity', 'Bing Copilot', 'Google SGE'];
 
-export function QuickAIRankTracker({ className = "" }: QuickAIRankTrackerProps) {
+export function QuickAIRankTracker({ className = '' }: QuickAIRankTrackerProps) {
   const [urlInput, setUrlInput] = useState('');
   const [queryInput, setQueryInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +25,7 @@ export function QuickAIRankTracker({ className = "" }: QuickAIRankTrackerProps) 
       // Redirect to enhanced dashboard with parameters
       const params = new URLSearchParams({
         url: urlInput.trim(),
-        query: queryInput.trim()
+        query: queryInput.trim(),
       });
       window.location.href = `/dashboard/enhanced?${params.toString()}`;
     }
@@ -46,7 +39,7 @@ export function QuickAIRankTracker({ className = "" }: QuickAIRankTrackerProps) 
             <Brain className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900">AI Rank Tracker</h3>
           </div>
-          <Link 
+          <Link
             href="/dashboard/enhanced"
             className="text-purple-600 hover:text-purple-700 text-sm flex items-center gap-1"
           >

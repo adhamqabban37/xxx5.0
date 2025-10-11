@@ -43,14 +43,14 @@ class EnhancedRedisCache {
       lastHealthCheck: new Date(),
       redisConnected: false,
     };
-    
+
     this.initializeRedis();
   }
 
   private async initializeRedis() {
     try {
       const redisConfig = this.config.redis;
-      
+
       this.redis = new Redis({
         host: redisConfig.host,
         port: redisConfig.port,
@@ -83,7 +83,6 @@ class EnhancedRedisCache {
 
       // Test initial connection
       await this.checkRedisHealth();
-      
     } catch (error) {
       console.error('Failed to initialize Redis:', error);
       this.isConnected = false;
@@ -96,7 +95,7 @@ class EnhancedRedisCache {
    */
   async checkRedisHealth(): Promise<boolean> {
     const now = Date.now();
-    
+
     // Skip if we checked recently
     if (now - this.lastConnectionCheck < this.CONNECTION_CHECK_INTERVAL) {
       return this.isConnected;
@@ -110,11 +109,11 @@ class EnhancedRedisCache {
         const startTime = Date.now();
         await this.redis.ping();
         const responseTime = Date.now() - startTime;
-        
+
         this.isConnected = true;
         this.metrics.redisConnected = true;
         this.updateResponseTime(responseTime);
-        
+
         console.log(`✅ Redis health check passed (${responseTime}ms)`);
         return true;
       }
@@ -170,7 +169,6 @@ class EnhancedRedisCache {
       this.metrics.misses++;
       this.updateResponseTime(Date.now() - startTime);
       return null;
-
     } catch (error) {
       console.error('Cache get error:', error);
       this.metrics.errors++;
@@ -207,15 +205,14 @@ class EnhancedRedisCache {
         ttl,
         key,
       };
-      
+
       this.memoryCache.set(key, entry);
       this.updateResponseTime(Date.now() - startTime);
-      
+
       // Cleanup expired entries periodically
       this.cleanupMemoryCache();
-      
-      return true;
 
+      return true;
     } catch (error) {
       console.error('Cache set error:', error);
       this.metrics.errors++;
@@ -244,7 +241,7 @@ class EnhancedRedisCache {
 
       // Delete from memory cache
       const memoryDeleted = this.memoryCache.delete(key);
-      
+
       return deleted || memoryDeleted;
     } catch (error) {
       console.error('Cache del error:', error);
@@ -256,14 +253,13 @@ class EnhancedRedisCache {
   /**
    * Get cache metrics for monitoring
    */
-  getMetrics(): CacheMetrics & { 
-    hitRate: number; 
+  getMetrics(): CacheMetrics & {
+    hitRate: number;
     memoryCacheSize: number;
     cacheMode: 'redis' | 'memory' | 'hybrid';
   } {
-    const hitRate = this.metrics.totalRequests > 0 
-      ? (this.metrics.hits / this.metrics.totalRequests) * 100 
-      : 0;
+    const hitRate =
+      this.metrics.totalRequests > 0 ? (this.metrics.hits / this.metrics.totalRequests) * 100 : 0;
 
     const cacheMode = this.isConnected ? 'redis' : 'memory';
 
@@ -295,18 +291,20 @@ class EnhancedRedisCache {
    */
   generateCacheKey(prefix: string, url: string, params?: Record<string, any>): string {
     const urlHash = Buffer.from(url).toString('base64').slice(0, 20);
-    const paramsHash = params ? Buffer.from(JSON.stringify(params)).toString('base64').slice(0, 10) : '';
+    const paramsHash = params
+      ? Buffer.from(JSON.stringify(params)).toString('base64').slice(0, 10)
+      : '';
     return `${prefix}:${urlHash}${paramsHash ? ':' + paramsHash : ''}`;
   }
 
   private updateResponseTime(responseTime: number) {
-    this.metrics.avgResponseTime = 
-      (this.metrics.avgResponseTime + responseTime) / 2;
+    this.metrics.avgResponseTime = (this.metrics.avgResponseTime + responseTime) / 2;
   }
 
   private cleanupMemoryCache() {
     // Cleanup expired entries (run occasionally)
-    if (Math.random() < 0.1) { // 10% chance to run cleanup
+    if (Math.random() < 0.1) {
+      // 10% chance to run cleanup
       const now = Date.now();
       for (const [key, entry] of this.memoryCache.entries()) {
         if (now - entry.timestamp > entry.ttl * 1000) {

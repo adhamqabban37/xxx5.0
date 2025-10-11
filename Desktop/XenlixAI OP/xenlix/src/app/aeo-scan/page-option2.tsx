@@ -16,22 +16,22 @@ export default function AEOScanPage() {
     websiteUrl: '',
     businessName: '',
     businessDescription: '',
-    industry: ''
+    industry: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.websiteUrl || !formData.businessName) {
       setError('Please fill in required fields');
       return;
@@ -44,7 +44,7 @@ export default function AEOScanPage() {
       const response = await fetch('/api/aeo-scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
@@ -67,8 +67,13 @@ export default function AEOScanPage() {
       {/* Header - OPTION 2 VERSION */}
       <div className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
         <div className="max-w-4xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-bold text-white mb-2">Is Your Website Invisible to 4 Billion AI Searches?</h1>
-          <p className="text-gray-300">Free audit reveals your Answer Engine Optimization score and shows you exactly which questions your competitors are stealing from you.</p>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Is Your Website Invisible to 4 Billion AI Searches?
+          </h1>
+          <p className="text-gray-300">
+            Free audit reveals your Answer Engine Optimization score and shows you exactly which
+            questions your competitors are stealing from you.
+          </p>
         </div>
       </div>
 
@@ -124,9 +129,7 @@ export default function AEOScanPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Industry
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Industry</label>
                 <select
                   value={formData.industry}
                   onChange={(e) => handleInputChange('industry', e.target.value)}
@@ -146,9 +149,7 @@ export default function AEOScanPage() {
                 </select>
               </div>
 
-              {error && (
-                <div className="text-red-400 text-sm">{error}</div>
-              )}
+              {error && <div className="text-red-400 text-sm">{error}</div>}
 
               <button
                 type="submit"
@@ -203,7 +204,8 @@ export default function AEOScanPage() {
                 <h3 className="text-xl font-bold text-white">Quick & Comprehensive</h3>
               </div>
               <p className="text-gray-300 mb-4">
-                Our AI analyzes your website against the latest Answer Engine Optimization standards.
+                Our AI analyzes your website against the latest Answer Engine Optimization
+                standards.
               </p>
               <div className="flex items-center gap-4 text-sm text-gray-400">
                 <span>✓ 2-minute setup</span>
@@ -215,8 +217,9 @@ export default function AEOScanPage() {
             <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-6">
               <h3 className="text-xl font-bold text-white mb-2">Why This Matters</h3>
               <p className="text-gray-300 text-sm">
-                AI search engines like ChatGPT, Claude, and Perplexity are becoming the new Google. 
-                If your business isn't optimized for AI search, you're invisible to millions of potential customers.
+                AI search engines like ChatGPT, Claude, and Perplexity are becoming the new Google.
+                If your business isn't optimized for AI search, you're invisible to millions of
+                potential customers.
               </p>
             </div>
           </div>

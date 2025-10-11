@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { PrismaClient } from "@prisma/client";
+import { useState } from 'react';
+import { PrismaClient } from '@prisma/client';
 
 interface JsonLdGeneratorProps {
   userEmail: string;
@@ -12,21 +12,21 @@ interface GeneratedResult {
 }
 
 export default function JsonLdGenerator({ userEmail }: JsonLdGeneratorProps) {
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState('');
   const [useFallback, setUseFallback] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [result, setResult] = useState<GeneratedResult | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
     setResult(null);
 
     // Validate URL
     if (!url.trim()) {
-      setError("Please enter a valid URL");
+      setError('Please enter a valid URL');
       setLoading(false);
       return;
     }
@@ -34,7 +34,7 @@ export default function JsonLdGenerator({ userEmail }: JsonLdGeneratorProps) {
     try {
       new URL(url);
     } catch {
-      setError("Please enter a valid URL format (include https://)");
+      setError('Please enter a valid URL format (include https://)');
       setLoading(false);
       return;
     }
@@ -48,10 +48,10 @@ export default function JsonLdGenerator({ userEmail }: JsonLdGeneratorProps) {
         // For now, we'll just send the request without fallback
       }
 
-      const response = await fetch("/api/seo/json-ld", {
-        method: "POST",
+      const response = await fetch('/api/seo/json-ld', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
       });
@@ -59,18 +59,19 @@ export default function JsonLdGenerator({ userEmail }: JsonLdGeneratorProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 502 && data.error === "FETCH_OR_PARSE_FAILED") {
-          setError(`Unable to fetch or parse the webpage. Please check if the URL is accessible and try again.`);
+        if (response.status === 502 && data.error === 'FETCH_OR_PARSE_FAILED') {
+          setError(
+            `Unable to fetch or parse the webpage. Please check if the URL is accessible and try again.`
+          );
         } else {
-          setError(data.error || "Failed to generate JSON-LD");
+          setError(data.error || 'Failed to generate JSON-LD');
         }
         return;
       }
 
       setResult(data);
-
     } catch (err) {
-      setError("Network error. Please try again.");
+      setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -82,12 +83,12 @@ export default function JsonLdGenerator({ userEmail }: JsonLdGeneratorProps) {
     try {
       const jsonString = JSON.stringify(result.blocks, null, 2);
       await navigator.clipboard.writeText(jsonString);
-      
+
       // Show feedback
-      const button = document.getElementById("copy-button");
+      const button = document.getElementById('copy-button');
       if (button) {
         const originalText = button.textContent;
-        button.textContent = "Copied!";
+        button.textContent = 'Copied!';
         setTimeout(() => {
           button.textContent = originalText;
         }, 2000);
@@ -101,12 +102,12 @@ export default function JsonLdGenerator({ userEmail }: JsonLdGeneratorProps) {
     if (!result) return;
 
     const jsonString = JSON.stringify(result.blocks, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
+    const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement("a");
+
+    const a = document.createElement('a');
     a.href = url;
-    a.download = "schema-jsonld.json";
+    a.download = 'schema-jsonld.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -119,7 +120,7 @@ export default function JsonLdGenerator({ userEmail }: JsonLdGeneratorProps) {
     const jsonString = JSON.stringify(result.blocks, null, 2);
     const encodedJson = encodeURIComponent(jsonString);
     const testUrl = `https://search.google.com/test/rich-results?code=${encodedJson}`;
-    window.open(testUrl, "_blank");
+    window.open(testUrl, '_blank');
   };
 
   return (
@@ -175,7 +176,7 @@ export default function JsonLdGenerator({ userEmail }: JsonLdGeneratorProps) {
                 Generating JSON-LD...
               </div>
             ) : (
-              "Generate JSON-LD"
+              'Generate JSON-LD'
             )}
           </button>
         </form>
@@ -210,15 +211,14 @@ export default function JsonLdGenerator({ userEmail }: JsonLdGeneratorProps) {
           </div>
 
           <div className="bg-gray-900/50 rounded-lg p-4 overflow-auto max-h-96">
-            <pre className="text-sm text-gray-300">
-              {JSON.stringify(result.blocks, null, 2)}
-            </pre>
+            <pre className="text-sm text-gray-300">{JSON.stringify(result.blocks, null, 2)}</pre>
           </div>
 
           <div className="mt-4 text-sm text-gray-400">
             <p>
-              Generated {result.blocks.length} schema.org block{result.blocks.length !== 1 ? 's' : ''}. 
-              Copy this JSON-LD and add it to your website&apos;s &lt;head&gt; section.
+              Generated {result.blocks.length} schema.org block
+              {result.blocks.length !== 1 ? 's' : ''}. Copy this JSON-LD and add it to your
+              website&apos;s &lt;head&gt; section.
             </p>
           </div>
         </div>
@@ -230,7 +230,10 @@ export default function JsonLdGenerator({ userEmail }: JsonLdGeneratorProps) {
         <div className="space-y-3 text-sm text-gray-300">
           <p>1. Generate the JSON-LD structured data using the form above</p>
           <p>2. Copy the generated JSON code</p>
-          <p>3. Add it to your website&apos;s HTML within a &lt;script type=&quot;application/ld+json&quot;&gt; tag</p>
+          <p>
+            3. Add it to your website&apos;s HTML within a &lt;script
+            type=&quot;application/ld+json&quot;&gt; tag
+          </p>
           <p>4. Test your implementation using Google&apos;s Rich Results Test</p>
           <p>5. Monitor your search appearance in Google Search Console</p>
         </div>

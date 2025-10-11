@@ -12,9 +12,9 @@ const testAnalytics = async () => {
         metadata: {
           status: 'endpoint_working',
           feature: 'analytics_tracking',
-          timestamp: new Date().toISOString()
-        }
-      })
+          timestamp: new Date().toISOString(),
+        },
+      }),
     });
 
     const data = await response.json();
@@ -22,7 +22,7 @@ const testAnalytics = async () => {
       status: response.status,
       success: data.success,
       message: data.message,
-      eventId: data.eventId
+      eventId: data.eventId,
     });
 
     // Test GET endpoint to retrieve events
@@ -31,13 +31,12 @@ const testAnalytics = async () => {
     console.log('📊 Recent Analytics Events:', {
       count: analytics.count,
       total: analytics.total,
-      recentEvents: analytics.events?.slice(0, 2).map(e => ({
+      recentEvents: analytics.events?.slice(0, 2).map((e) => ({
         event: e.event,
         timestamp: new Date(e.timestamp).toISOString(),
-        url: e.url
-      }))
+        url: e.url,
+      })),
     });
-
   } catch (error) {
     console.error('❌ Analytics Test Error:', error.message);
   }

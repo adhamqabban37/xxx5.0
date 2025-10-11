@@ -6,10 +6,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  TrendingUp, 
-  Target, 
+import {
+  Search,
+  TrendingUp,
+  Target,
   Eye,
   Brain,
   Loader2,
@@ -20,7 +20,7 @@ import {
   AlertCircle,
   CheckCircle,
   Star,
-  ExternalLink
+  ExternalLink,
 } from 'lucide-react';
 
 interface AIEngineResult {
@@ -52,17 +52,17 @@ interface AIRankTrackerProps {
 }
 
 const AI_ENGINE_ICONS = {
-  'ChatGPT': '🤖',
-  'Perplexity': '🔮', 
+  ChatGPT: '🤖',
+  Perplexity: '🔮',
   'Bing Copilot': '🔍',
-  'Google SGE': '🌐'
+  'Google SGE': '🌐',
 };
 
 const AI_ENGINE_COLORS = {
-  'ChatGPT': 'bg-green-100 text-green-800 border-green-200',
-  'Perplexity': 'bg-blue-100 text-blue-800 border-blue-200',
+  ChatGPT: 'bg-green-100 text-green-800 border-green-200',
+  Perplexity: 'bg-blue-100 text-blue-800 border-blue-200',
   'Bing Copilot': 'bg-orange-100 text-orange-800 border-orange-200',
-  'Google SGE': 'bg-purple-100 text-purple-800 border-purple-200'
+  'Google SGE': 'bg-purple-100 text-purple-800 border-purple-200',
 };
 
 export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTrackerProps) {
@@ -114,7 +114,7 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
       return;
     }
 
-    const validQueries = queries.filter(q => q.trim());
+    const validQueries = queries.filter((q) => q.trim());
     if (validQueries.length === 0) {
       setError('Please enter at least one search query');
       return;
@@ -131,8 +131,8 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
         },
         body: JSON.stringify({
           url: url.trim(),
-          queries: validQueries
-        })
+          queries: validQueries,
+        }),
       });
 
       if (!response.ok) {
@@ -140,7 +140,7 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setResults(result.data);
         saveToHistory(result.data);
@@ -183,7 +183,7 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
             Track AEO Performance
           </div>
         </div>
-        
+
         <p className="text-gray-600">
           Monitor your business visibility across ChatGPT, Perplexity, Bing Copilot, and Google SGE
         </p>
@@ -210,9 +210,7 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
           {/* Search Queries */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Search Queries
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Search Queries</label>
               <button
                 onClick={addQuery}
                 className="flex items-center gap-1 px-3 py-1 text-sm text-purple-600 hover:text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-50"
@@ -221,7 +219,7 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
                 Add Query
               </button>
             </div>
-            
+
             <div className="space-y-2">
               {queries.map((query, index) => (
                 <div key={index} className="flex gap-2">
@@ -290,12 +288,8 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-5xl font-bold mb-2">
-                  {results.visibilityScore}%
-                </div>
-                <div className="text-purple-200">
-                  {getScoreLabel(results.visibilityScore)}
-                </div>
+                <div className="text-5xl font-bold mb-2">{results.visibilityScore}%</div>
+                <div className="text-purple-200">{getScoreLabel(results.visibilityScore)}</div>
               </div>
             </div>
           </div>
@@ -311,7 +305,9 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{AI_ENGINE_ICONS[appearance.engine as keyof typeof AI_ENGINE_ICONS]}</span>
+                    <span className="text-lg">
+                      {AI_ENGINE_ICONS[appearance.engine as keyof typeof AI_ENGINE_ICONS]}
+                    </span>
                     <span className="font-medium text-gray-900">{appearance.engine}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -342,9 +338,7 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">
-                    Not found in this engine's results
-                  </p>
+                  <p className="text-sm text-gray-500">Not found in this engine's results</p>
                 )}
               </div>
             ))}
@@ -359,11 +353,12 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {results.competitors.slice(0, 6).map((competitor, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-2 bg-white rounded border"
+                  >
                     <span className="text-sm font-medium">{competitor.name}</span>
-                    <div className="text-xs text-gray-500">
-                      Avg rank: #{competitor.avgRank}
-                    </div>
+                    <div className="text-xs text-gray-500">Avg rank: #{competitor.avgRank}</div>
                   </div>
                 ))}
               </div>
@@ -375,13 +370,23 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="font-medium text-blue-900 mb-2">Tracked Business</h4>
               <div className="text-sm text-blue-800">
-                <p><strong>Name:</strong> {results.businessInfo.name}</p>
-                <p><strong>Industry:</strong> {results.businessInfo.industry}</p>
+                <p>
+                  <strong>Name:</strong> {results.businessInfo.name}
+                </p>
+                <p>
+                  <strong>Industry:</strong> {results.businessInfo.industry}
+                </p>
                 {results.businessInfo.location && (
-                  <p><strong>Location:</strong> {results.businessInfo.location}</p>
+                  <p>
+                    <strong>Location:</strong> {results.businessInfo.location}
+                  </p>
                 )}
-                <p><strong>Queries Tested:</strong> {results.totalQueries}</p>
-                <p><strong>Tracked:</strong> {new Date(results.timestamp).toLocaleString()}</p>
+                <p>
+                  <strong>Queries Tested:</strong> {results.totalQueries}
+                </p>
+                <p>
+                  <strong>Tracked:</strong> {new Date(results.timestamp).toLocaleString()}
+                </p>
               </div>
             </div>
           )}
@@ -397,16 +402,22 @@ export function AIRankTracker({ initialUrl = '', className = '' }: AIRankTracker
           </h3>
           <div className="space-y-3">
             {trackingHistory.slice(0, 5).map((history, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
                 <div>
                   <div className="font-medium text-sm">
                     {history.businessInfo?.name || 'Unknown Business'}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {new Date(history.timestamp).toLocaleDateString()} • {history.totalQueries} queries
+                    {new Date(history.timestamp).toLocaleDateString()} • {history.totalQueries}{' '}
+                    queries
                   </div>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-sm font-medium ${getScoreColor(history.visibilityScore)}`}>
+                <div
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${getScoreColor(history.visibilityScore)}`}
+                >
                   {history.visibilityScore}%
                 </div>
               </div>

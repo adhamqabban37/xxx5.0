@@ -2,7 +2,7 @@
 
 /**
  * Social Preview Validation Script
- * 
+ *
  * This script checks all pages for proper social meta tag implementation
  * and provides validation URLs for manual testing on social platforms.
  */
@@ -20,14 +20,14 @@ const urls = [
   'https://www.xenlixai.com/case-studies/saas-blended-cac-reduction',
   'https://www.xenlixai.com/dallas',
   'https://www.xenlixai.com/signup',
-  'https://www.xenlixai.com/signin'
+  'https://www.xenlixai.com/signin',
 ];
 
 const validators = {
   facebook: 'https://developers.facebook.com/tools/debug/',
   twitter: 'https://cards-dev.twitter.com/validator',
   linkedin: 'https://www.linkedin.com/post-inspector/',
-  opengraph: 'https://www.opengraph.xyz/'
+  opengraph: 'https://www.opengraph.xyz/',
 };
 
 console.log('🔍 XenlixAI Social Preview Validation Script\n');
@@ -59,14 +59,14 @@ console.log('\n🖼️  Required Social Images (9 total):');
 console.log('-'.repeat(40));
 const images = [
   'og-homepage.jpg',
-  'og-contact.jpg', 
+  'og-contact.jpg',
   'og-calculators.jpg',
   'og-seo-analyzer.jpg',
   'og-schema-generator.jpg',
   'og-aeo-scan.jpg',
   'og-case-studies.jpg',
   'og-signup.jpg',
-  'og-signin.jpg'
+  'og-signin.jpg',
 ];
 
 images.forEach((image, index) => {
@@ -83,7 +83,7 @@ console.log('5. Check mobile responsiveness');
 
 console.log('\n🎯 Quick Test URLs:');
 console.log('-'.repeat(20));
-urls.slice(0, 5).forEach(url => {
+urls.slice(0, 5).forEach((url) => {
   console.log(`Facebook: ${validators.facebook}?q=${encodeURIComponent(url)}`);
   console.log(`Twitter: ${validators.twitter}`);
   console.log(`LinkedIn: ${validators.linkedin}?url=${encodeURIComponent(url)}`);

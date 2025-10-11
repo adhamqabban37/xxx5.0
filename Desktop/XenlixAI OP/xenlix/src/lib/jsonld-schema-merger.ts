@@ -88,7 +88,7 @@ export class JsonLdSchemaMerger {
     const existingSameAs = this.extractExistingSameAs(existingSchemas);
 
     // Merge sameAs into schemas
-    const mergedSchemas = existingSchemas.map(schema => {
+    const mergedSchemas = existingSchemas.map((schema) => {
       if (this.shouldUpdateWithSameAs(schema)) {
         return {
           ...schema,
@@ -129,7 +129,7 @@ export class JsonLdSchemaMerger {
   ): Promise<MergedSchemaResult> {
     // Generate base schemas
     const baseSchemas = this.schemaGenerator.generateSchemas(businessProfile);
-    
+
     // Convert to array format
     const schemasArray = this.convertToArray(baseSchemas);
 
@@ -175,7 +175,7 @@ export class JsonLdSchemaMerger {
 
     // Create LocalBusiness schema if we have location data
     const schemas: JsonLdSchema[] = [organizationSchema];
-    
+
     if (businessData.phone || businessData.address) {
       const localBusinessSchema: JsonLdSchema = {
         '@context': 'https://schema.org',
@@ -183,7 +183,8 @@ export class JsonLdSchemaMerger {
         '@id': `${options.canonical}#localbusiness`,
         name: businessData.name,
         url: options.canonical,
-        description: businessData.description || `${businessData.name} - Local professional services`,
+        description:
+          businessData.description || `${businessData.name} - Local professional services`,
       };
 
       if (businessData.phone) {
@@ -227,19 +228,21 @@ export class JsonLdSchemaMerger {
    * Private helper methods
    */
   private shouldUpdateWithSameAs(schema: JsonLdSchema): boolean {
-    return schema['@type'] === 'Organization' || 
-           schema['@type'] === 'LocalBusiness' ||
-           schema['@type'] === 'Restaurant' ||
-           schema['@type'] === 'Store' ||
-           schema['@type'] === 'AutoRepair' ||
-           schema['@type'] === 'MedicalOrganization' ||
-           schema['@type'] === 'LegalService' ||
-           schema['@type'] === 'ProfessionalService';
+    return (
+      schema['@type'] === 'Organization' ||
+      schema['@type'] === 'LocalBusiness' ||
+      schema['@type'] === 'Restaurant' ||
+      schema['@type'] === 'Store' ||
+      schema['@type'] === 'AutoRepair' ||
+      schema['@type'] === 'MedicalOrganization' ||
+      schema['@type'] === 'LegalService' ||
+      schema['@type'] === 'ProfessionalService'
+    );
   }
 
   private extractExistingSameAs(schemas: JsonLdSchema[]): string[] {
     const allSameAs: string[] = [];
-    
+
     for (const schema of schemas) {
       if (schema.sameAs && Array.isArray(schema.sameAs)) {
         allSameAs.push(...schema.sameAs);
@@ -249,7 +252,10 @@ export class JsonLdSchemaMerger {
     return [...new Set(allSameAs)]; // Dedupe
   }
 
-  private calculateDiff(previous: string[], current: string[]): {
+  private calculateDiff(
+    previous: string[],
+    current: string[]
+  ): {
     added: string[];
     removed: string[];
     unchanged: string[];
@@ -258,9 +264,9 @@ export class JsonLdSchemaMerger {
     const currentSet = new Set(current);
 
     return {
-      added: current.filter(url => !previousSet.has(url)),
-      removed: previous.filter(url => !currentSet.has(url)),
-      unchanged: current.filter(url => previousSet.has(url)),
+      added: current.filter((url) => !previousSet.has(url)),
+      removed: previous.filter((url) => !currentSet.has(url)),
+      unchanged: current.filter((url) => previousSet.has(url)),
     };
   }
 
@@ -271,7 +277,7 @@ export class JsonLdSchemaMerger {
   } {
     const prettyJson = JSON.stringify(schemas, null, 2);
     const minifiedJson = JSON.stringify(schemas);
-    
+
     const htmlScript = `<script type="application/ld+json">
 ${prettyJson}
 </script>`;
@@ -355,9 +361,9 @@ ${prettyJson}
     warnings: string[];
   } {
     const richResults = this.validateRichResultsCompatibility(result.schemas);
-    
+
     const recommendations: string[] = [
-      ...result.validation.errors.map(error => `Fix: ${error}`),
+      ...result.validation.errors.map((error) => `Fix: ${error}`),
       ...richResults.recommendations,
     ];
 
@@ -366,7 +372,9 @@ ${prettyJson}
     }
 
     if (result.sameAsResult.summary.withReciprocity === 0) {
-      recommendations.push('Add your website URL to social media profiles for reciprocity verification');
+      recommendations.push(
+        'Add your website URL to social media profiles for reciprocity verification'
+      );
     }
 
     return {
@@ -378,10 +386,7 @@ ${prettyJson}
         richResultsReady: richResults.isCompatible,
       },
       recommendations,
-      warnings: [
-        ...result.sameAsResult.warnings,
-        ...result.validation.warnings,
-      ],
+      warnings: [...result.sameAsResult.warnings, ...result.validation.warnings],
     };
   }
 }

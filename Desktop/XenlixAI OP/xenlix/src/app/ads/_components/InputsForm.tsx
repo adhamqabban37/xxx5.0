@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { GenerateAdsRequest, CustomerProfile } from "@/types/ads";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { GenerateAdsRequest, CustomerProfile } from '@/types/ads';
 
 const formSchema = z.object({
   objective: z.enum(['leads', 'sales', 'visibility']),
@@ -51,12 +51,27 @@ export default function InputsForm({ profile, onSubmit, isLoading }: InputsFormP
         dailyUSD: data.dailyUSD,
         durationDays: data.durationDays,
       },
-      usp: data.usp ? data.usp.split(',').map(s => s.trim()).filter(Boolean) : [],
-      promos: data.promos ? data.promos.split(',').map(s => s.trim()).filter(Boolean) : [],
-      competitors: data.competitors ? data.competitors.split(',').map(s => s.trim()).filter(Boolean) : [],
+      usp: data.usp
+        ? data.usp
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      promos: data.promos
+        ? data.promos
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      competitors: data.competitors
+        ? data.competitors
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
       landingUrl: data.landingUrl || undefined,
     };
-    
+
     onSubmit(requestData);
   };
 
@@ -131,8 +146,8 @@ export default function InputsForm({ profile, onSubmit, isLoading }: InputsFormP
         {/* Total Budget Display */}
         <div className="p-3 bg-blue-50 rounded-md">
           <p className="text-sm text-blue-800">
-            <span className="font-medium">Total Campaign Budget: </span>
-            ${totalBudget.toLocaleString()} over {duration} days
+            <span className="font-medium">Total Campaign Budget: </span>$
+            {totalBudget.toLocaleString()} over {duration} days
           </p>
         </div>
 
@@ -203,11 +218,14 @@ export default function InputsForm({ profile, onSubmit, isLoading }: InputsFormP
           type="submit"
           disabled={!isValid || isLoading}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          aria-describedby={isLoading ? "loading-status" : undefined}
+          aria-describedby={isLoading ? 'loading-status' : undefined}
         >
           {isLoading ? (
             <div className="flex items-center justify-center">
-              <div className="motion-safe:animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" aria-hidden="true"></div>
+              <div
+                className="motion-safe:animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
+                aria-hidden="true"
+              ></div>
               <span id="loading-status">Generating Ads...</span>
             </div>
           ) : (

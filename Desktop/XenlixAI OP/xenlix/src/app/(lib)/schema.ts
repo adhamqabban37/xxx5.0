@@ -1,33 +1,33 @@
 // JSON-LD Schema generators for SEO
 
 export interface OrganizationSchema {
-  "@context": string;
-  "@type": string;
+  '@context': string;
+  '@type': string;
   name: string;
   url?: string;
   logo?: string;
   aggregateRating?: {
-    "@type": string;
+    '@type': string;
     ratingValue: string;
     reviewCount: number;
   };
 }
 
 export interface ReviewSchema {
-  "@context": string;
-  "@type": string;
+  '@context': string;
+  '@type': string;
   itemReviewed: {
-    "@type": string;
+    '@type': string;
     name: string;
     url?: string;
   };
   reviewRating: {
-    "@type": string;
+    '@type': string;
     ratingValue: number;
     bestRating?: number;
   };
   author: {
-    "@type": string;
+    '@type': string;
     name: string;
   };
   reviewBody: string;
@@ -37,21 +37,21 @@ export interface ReviewSchema {
 }
 
 export interface ServiceSchema {
-  "@context": string;
-  "@type": string;
+  '@context': string;
+  '@type': string;
   name: string;
   description: string;
   provider: {
-    "@type": string;
+    '@type': string;
     name: string;
     url: string;
   };
   areaServed?: {
-    "@type": string;
+    '@type': string;
     name: string;
   };
   offers?: {
-    "@type": string;
+    '@type': string;
     availability: string;
     price?: string;
     priceCurrency?: string;
@@ -59,21 +59,21 @@ export interface ServiceSchema {
 }
 
 export function orgAggregateRatingJsonLd(
-  avg: number, 
-  count: number, 
-  orgName: string = "XenlixAI",
-  orgUrl: string = "https://xenlix.ai"
+  avg: number,
+  count: number,
+  orgName: string = 'XenlixAI',
+  orgUrl: string = 'https://xenlix.ai'
 ): OrganizationSchema {
   return {
-    "@context": "https://schema.org",
-    "@type": "Organization",
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
     name: orgName,
     url: orgUrl,
     aggregateRating: {
-      "@type": "AggregateRating",
+      '@type': 'AggregateRating',
       ratingValue: avg.toFixed(1),
-      reviewCount: count
-    }
+      reviewCount: count,
+    },
   };
 }
 
@@ -87,26 +87,26 @@ export function reviewJsonLd(item: {
   image?: string;
 }): ReviewSchema {
   return {
-    "@context": "https://schema.org",
-    "@type": "Review",
+    '@context': 'https://schema.org',
+    '@type': 'Review',
     itemReviewed: {
-      "@type": "CreativeWork",
+      '@type': 'CreativeWork',
       name: item.title,
-      url: item.url
+      url: item.url,
     },
     reviewRating: {
-      "@type": "Rating",
+      '@type': 'Rating',
       ratingValue: item.rating,
-      bestRating: 5
+      bestRating: 5,
     },
     author: {
-      "@type": "Person",
-      name: item.author
+      '@type': 'Person',
+      name: item.author,
     },
     reviewBody: item.quote,
     datePublished: item.date,
     url: item.url,
-    image: item.image
+    image: item.image,
   };
 }
 
@@ -118,29 +118,29 @@ export function serviceJsonLd(service: {
   availability?: string;
 }): ServiceSchema {
   return {
-    "@context": "https://schema.org",
-    "@type": "Service",
+    '@context': 'https://schema.org',
+    '@type': 'Service',
     name: service.name,
     description: service.description,
     provider: {
-      "@type": "Organization",
-      name: "XenlixAI",
-      url: "https://xenlix.ai"
+      '@type': 'Organization',
+      name: 'XenlixAI',
+      url: 'https://xenlix.ai',
     },
     ...(service.city && {
       areaServed: {
-        "@type": "City",
-        name: service.city
-      }
+        '@type': 'City',
+        name: service.city,
+      },
     }),
     offers: {
-      "@type": "Offer",
-      availability: service.availability || "https://schema.org/InStock",
+      '@type': 'Offer',
+      availability: service.availability || 'https://schema.org/InStock',
       ...(service.price && {
         price: service.price,
-        priceCurrency: "USD"
-      })
-    }
+        priceCurrency: 'USD',
+      }),
+    },
   };
 }
 
@@ -156,32 +156,32 @@ export function localBusinessJsonLd(business: {
   url: string;
 }): object {
   return {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
     name: business.name,
     url: business.url,
     ...(business.address && {
       address: {
-        "@type": "PostalAddress",
+        '@type': 'PostalAddress',
         ...(business.address.street && { streetAddress: business.address.street }),
         addressLocality: business.address.city,
         addressRegion: business.address.state,
-        ...(business.address.zip && { postalCode: business.address.zip })
-      }
+        ...(business.address.zip && { postalCode: business.address.zip }),
+      },
     }),
-    ...(business.phone && { telephone: business.phone })
+    ...(business.phone && { telephone: business.phone }),
   };
 }
 
 // Helper to calculate aggregate rating from testimonials
 export function calculateAggregateRating(testimonials: Array<{ rating: number }>) {
   if (testimonials.length === 0) return { average: 0, count: 0 };
-  
+
   const total = testimonials.reduce((sum, testimonial) => sum + testimonial.rating, 0);
   const average = total / testimonials.length;
-  
+
   return {
     average: Math.round(average * 10) / 10, // Round to 1 decimal
-    count: testimonials.length
+    count: testimonials.length,
   };
 }

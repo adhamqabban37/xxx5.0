@@ -11,11 +11,11 @@ const URL_PATTERNS = {
     variants: [
       '/analytics?url=example.com',
       '/analytics?url=example.com&tab=authority',
-      '/analytics?url=example.com&ref=dashboard'
+      '/analytics?url=example.com&ref=dashboard',
     ],
     canonical: '/analytics',
     shouldNoindex: false,
-    notes: 'Premium feature - already has noindex'
+    notes: 'Premium feature - already has noindex',
   },
 
   // AEO Results with various tracking parameters
@@ -25,11 +25,11 @@ const URL_PATTERNS = {
       '/aeo/results?id=123',
       '/aeo/results?id=123&payment_success=true',
       '/aeo/results?id=123&utm_source=email&utm_campaign=follow_up',
-      '/aeo/results?id=123&ref=dashboard'
+      '/aeo/results?id=123&ref=dashboard',
     ],
     canonical: '/aeo/results',
     shouldNoindex: true,
-    notes: 'Dynamic results should not be indexed'
+    notes: 'Dynamic results should not be indexed',
   },
 
   // SEO Results with tracking
@@ -38,11 +38,11 @@ const URL_PATTERNS = {
     variants: [
       '/seo/results?id=456',
       '/seo/results?id=456&source=audit',
-      '/seo/results?id=456&utm_source=google&utm_medium=organic'
+      '/seo/results?id=456&utm_source=google&utm_medium=organic',
     ],
     canonical: '/seo/results',
     shouldNoindex: true,
-    notes: 'Dynamic audit results should not be indexed'
+    notes: 'Dynamic audit results should not be indexed',
   },
 
   // City pages with tracking parameters
@@ -52,11 +52,11 @@ const URL_PATTERNS = {
       '/dallas?utm_source=google',
       '/dallas?ref=homepage',
       '/dallas?campaign=local_seo',
-      '/austin?utm_campaign=expansion'
+      '/austin?utm_campaign=expansion',
     ],
     canonical: '/[city]', // Will be dynamically generated
     shouldNoindex: false,
-    notes: 'City pages should be indexed, but strip tracking params'
+    notes: 'City pages should be indexed, but strip tracking params',
   },
 
   // Authentication pages with redirects
@@ -65,11 +65,11 @@ const URL_PATTERNS = {
     variants: [
       '/signin?message=Premium+access+required',
       '/signin?redirect=/dashboard',
-      '/signin?utm_source=trial_expired'
+      '/signin?utm_source=trial_expired',
     ],
     canonical: '/signin',
     shouldNoindex: true,
-    notes: 'Auth pages already have noindex'
+    notes: 'Auth pages already have noindex',
   },
 
   // Tool pages with parameters
@@ -78,11 +78,11 @@ const URL_PATTERNS = {
     variants: [
       '/tools/json-ld?template=business',
       '/tools/json-ld?source=homepage',
-      '/tools/json-ld?utm_campaign=free_tools'
+      '/tools/json-ld?utm_campaign=free_tools',
     ],
     canonical: '/tools/json-ld',
     shouldNoindex: false,
-    notes: 'Tool pages should be indexed without parameters'
+    notes: 'Tool pages should be indexed without parameters',
   },
 
   // Calculator pages with preset values
@@ -91,18 +91,18 @@ const URL_PATTERNS = {
     variants: [
       '/calculators/roi?industry=restaurants',
       '/calculators/roi?preset=small_business',
-      '/calculators/roi?utm_source=blog'
+      '/calculators/roi?utm_source=blog',
     ],
     canonical: '/calculators/roi',
     shouldNoindex: false,
-    notes: 'Calculator pages should be indexed without preset values'
-  }
+    notes: 'Calculator pages should be indexed without preset values',
+  },
 };
 
 // Common tracking parameters that should be stripped
 const TRACKING_PARAMETERS = [
   'utm_source',
-  'utm_medium', 
+  'utm_medium',
   'utm_campaign',
   'utm_term',
   'utm_content',
@@ -114,32 +114,25 @@ const TRACKING_PARAMETERS = [
   'msclkid',
   'referrer',
   'affiliate',
-  'partner'
+  'partner',
 ];
 
 // Parameters that affect content and should be preserved in canonical
-const CONTENT_PARAMETERS = [
-  'id',
-  'slug',
-  'category',
-  'type',
-  'template',
-  'page'
-];
+const CONTENT_PARAMETERS = ['id', 'slug', 'category', 'type', 'template', 'page'];
 
 // Pages that should always be noindexed regardless of parameters
 const ALWAYS_NOINDEX_PATTERNS = [
   '/dashboard',
   '/dashboard/**',
   '/analytics',
-  '/analytics/**', 
+  '/analytics/**',
   '/aeo/results',
   '/seo/results',
   '/checkout',
   '/checkout/**',
   '/signin',
   '/signup',
-  '/onboarding'
+  '/onboarding',
 ];
 
 // Pages that should be indexed but have parameter variants
@@ -154,7 +147,7 @@ const INDEX_WITH_CANONICAL_PATTERNS = [
   '/ai-seo-automation',
   '/ai-website-builder',
   '/vs-competitors',
-  '/plans'
+  '/plans',
 ];
 
 module.exports = {
@@ -162,5 +155,5 @@ module.exports = {
   TRACKING_PARAMETERS,
   CONTENT_PARAMETERS,
   ALWAYS_NOINDEX_PATTERNS,
-  INDEX_WITH_CANONICAL_PATTERNS
+  INDEX_WITH_CANONICAL_PATTERNS,
 };

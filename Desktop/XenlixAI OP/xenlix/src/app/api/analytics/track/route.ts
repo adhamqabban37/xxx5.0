@@ -18,7 +18,7 @@ const analyticsStore: AnalyticsEvent[] = [];
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Validate required fields
     if (!body.event) {
       return NextResponse.json(
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       referrer: request.headers.get('referer') || '',
       sessionId: body.sessionId || '',
       userId: body.userId || '',
-      metadata: body.metadata || {}
+      metadata: body.metadata || {},
     };
 
     // Store the event (in production, send to analytics service)
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       event: analyticsEvent.event,
       url: analyticsEvent.url,
       timestamp: new Date(analyticsEvent.timestamp).toISOString(),
-      metadata: analyticsEvent.metadata
+      metadata: analyticsEvent.metadata,
     });
 
     // In production, you would send this to services like:
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // - Mixpanel
     // - Amplitude
     // - Custom analytics database
-    
+
     // Example integrations (commented out for development):
     /*
     // Google Analytics 4
@@ -95,17 +95,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Event tracked successfully',
-      eventId: analyticsStore.length
+      eventId: analyticsStore.length,
     });
-
   } catch (error) {
     console.error('❌ Analytics tracking error:', error);
-    
+
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Failed to track analytics event',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
@@ -123,29 +122,26 @@ export async function GET(request: NextRequest) {
 
     // Filter by event type if specified
     if (event) {
-      events = events.filter(e => e.event === event);
+      events = events.filter((e) => e.event === event);
     }
 
     // Get recent events (most recent first)
-    const recentEvents = events
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, limit);
+    const recentEvents = events.sort((a, b) => b.timestamp - a.timestamp).slice(0, limit);
 
     return NextResponse.json({
       success: true,
       count: recentEvents.length,
       total: events.length,
-      events: recentEvents
+      events: recentEvents,
     });
-
   } catch (error) {
     console.error('❌ Analytics retrieval error:', error);
-    
+
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Failed to retrieve analytics data',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

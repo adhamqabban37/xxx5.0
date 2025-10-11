@@ -22,7 +22,7 @@ export default function WebsiteBuilderButton({ websiteBuilderUrl }: WebsiteBuild
         <p className="text-gray-300 mb-6">
           Our AI Website Builder creates professional, SEO-optimized websites in minutes.
         </p>
-        <button 
+        <button
           className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 px-8 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-lg cursor-pointer"
           onClick={handleClick}
           suppressHydrationWarning={true}

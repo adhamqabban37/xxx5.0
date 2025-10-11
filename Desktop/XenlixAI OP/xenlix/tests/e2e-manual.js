@@ -3,7 +3,7 @@
 
 /**
  * E2E Test Flow: Signup → Onboarding → Guidance → Ads → Plans → Dashboard
- * 
+ *
  * Test Steps:
  * 1. Navigate to /signup
  * 2. Fill email and password
@@ -18,7 +18,7 @@
  * 11. Navigate to /plans
  * 12. Select a plan (sandbox mode)
  * 13. Verify redirect to /dashboard with sandbox badge
- * 
+ *
  * Expected Results:
  * - All pages load without errors
  * - Forms submit successfully
@@ -28,7 +28,7 @@
 
 export const testFlow = {
   baseUrl: 'http://localhost:3003',
-  
+
   pages: {
     signup: '/signup',
     login: '/login',
@@ -36,22 +36,22 @@ export const testFlow = {
     onboarding: '/onboarding',
     guidance: '/guidance',
     ads: '/ads',
-    plans: '/plans'
+    plans: '/plans',
   },
-  
+
   testData: {
     email: `test-${Date.now()}@example.com`,
     password: 'TestPassword123!',
-    plan: 'basic'
+    plan: 'basic',
   },
-  
+
   selectors: {
     emailInput: 'input[type="email"]',
     passwordInput: 'input[type="password"]',
     submitButton: 'button[type="submit"]',
     planButton: '[data-plan="basic"]',
-    sandboxBadge: '[data-testid="sandbox-badge"]'
-  }
+    sandboxBadge: '[data-testid="sandbox-badge"]',
+  },
 };
 
 // Manual Test Checklist
@@ -59,7 +59,7 @@ export const manualTestChecklist = [
   '□ Server running on port 3003',
   '□ Health endpoint returns 200',
   '□ Signup form accessible',
-  '□ Login form accessible', 
+  '□ Login form accessible',
   '□ Dashboard loads after auth',
   '□ Onboarding flow functional',
   '□ Guidance page shows recommendations',
@@ -70,11 +70,11 @@ export const manualTestChecklist = [
   '□ All pages have proper H1 tags',
   '□ All images have alt text',
   '□ Forms have proper labels',
-  '□ Focus indicators visible'
+  '□ Focus indicators visible',
 ];
 
 console.log('E2E Test Configuration Loaded');
 console.log('Base URL:', testFlow.baseUrl);
 console.log('Test Data:', testFlow.testData);
 console.log('\nManual Test Checklist:');
-manualTestChecklist.forEach(item => console.log(item));
+manualTestChecklist.forEach((item) => console.log(item));

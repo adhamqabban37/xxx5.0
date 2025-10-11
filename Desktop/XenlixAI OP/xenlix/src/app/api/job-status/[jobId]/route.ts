@@ -13,21 +13,19 @@ export async function GET(
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json(
-        { 
+        {
           error: 'Authentication required',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: 401 }
       );
     }
 
-
-    
     if (!jobId) {
       return NextResponse.json(
-        { 
+        {
           error: 'Job ID is required',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: 400 }
       );
@@ -35,13 +33,13 @@ export async function GET(
 
     // Get job from cache
     const jobData = await kv.get(`job:${jobId}`);
-    
+
     if (!jobData) {
       return NextResponse.json(
-        { 
+        {
           error: 'Job not found or expired',
           jobId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: 404 }
       );
@@ -52,9 +50,9 @@ export async function GET(
     // Verify job belongs to user
     if (job.userId !== session.user.id) {
       return NextResponse.json(
-        { 
+        {
           error: 'Access denied',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         { status: 403 }
       );
@@ -71,17 +69,16 @@ export async function GET(
       error: job.error,
       createdAt: job.createdAt,
       updatedAt: job.updatedAt,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Job status check error:', error);
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to check job status',
         details: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     );

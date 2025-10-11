@@ -9,13 +9,13 @@ interface StatProps {
   className?: string;
 }
 
-export function Stat({ 
-  value, 
-  label, 
-  sublabel, 
-  icon, 
+export function Stat({
+  value,
+  label,
+  sublabel,
+  icon,
   trend = 'neutral',
-  className = '' 
+  className = '',
 }: StatProps) {
   const getTrendColor = () => {
     switch (trend) {
@@ -31,15 +31,33 @@ export function Stat({
   const getTrendIcon = () => {
     if (trend === 'up') {
       return (
-        <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-          <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L10 4.414 4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+        <svg
+          className="w-4 h-4 text-green-600"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+        >
+          <path
+            fillRule="evenodd"
+            d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L10 4.414 4.707 9.707a1 1 0 01-1.414 0z"
+            clipRule="evenodd"
+          />
         </svg>
       );
     }
     if (trend === 'down') {
       return (
-        <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-          <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L10 15.586l5.293-5.293a1 1 0 011.414 0z" clipRule="evenodd" />
+        <svg
+          className="w-4 h-4 text-red-600"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+        >
+          <path
+            fillRule="evenodd"
+            d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L10 15.586l5.293-5.293a1 1 0 011.414 0z"
+            clipRule="evenodd"
+          />
         </svg>
       );
     }
@@ -47,15 +65,17 @@ export function Stat({
   };
 
   return (
-    <div className={`
+    <div
+      className={`
       relative overflow-hidden rounded-xl bg-white/10 backdrop-blur-md border border-white/20 
       p-6 shadow-lg transition-all duration-300 hover:bg-white/15 hover:scale-105 
       focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2
       ${className}
-    `}>
+    `}
+    >
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
-      
+
       <div className="relative z-10">
         {/* Icon */}
         {icon && (
@@ -66,23 +86,15 @@ export function Stat({
 
         {/* Value with Trend */}
         <div className="flex items-center gap-2 mb-2">
-          <span className={`text-3xl sm:text-4xl font-bold ${getTrendColor()}`}>
-            {value}
-          </span>
+          <span className={`text-3xl sm:text-4xl font-bold ${getTrendColor()}`}>{value}</span>
           {getTrendIcon()}
         </div>
 
         {/* Label */}
-        <h3 className="text-lg font-semibold text-white mb-1">
-          {label}
-        </h3>
+        <h3 className="text-lg font-semibold text-white mb-1">{label}</h3>
 
         {/* Sublabel */}
-        {sublabel && (
-          <p className="text-sm text-gray-300 leading-relaxed">
-            {sublabel}
-          </p>
-        )}
+        {sublabel && <p className="text-sm text-gray-300 leading-relaxed">{sublabel}</p>}
       </div>
 
       {/* Decorative Element */}

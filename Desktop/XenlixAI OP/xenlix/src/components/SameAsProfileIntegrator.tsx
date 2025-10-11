@@ -89,7 +89,10 @@ export function SameAsProfileIntegrator({
         body: JSON.stringify({
           handle: handle.trim(),
           canonical: canonical.trim(),
-          extras: extras.split(',').map(s => s.trim()).filter(Boolean),
+          extras: extras
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean),
           existingSchemas,
           businessData,
           options: {
@@ -104,7 +107,7 @@ export function SameAsProfileIntegrator({
 
       if (data.success && data.data) {
         setResult(data.data);
-        
+
         // Notify parent component
         if (onSchemasGenerated) {
           onSchemasGenerated(data.data.schemas, data.data.output.htmlScript);
@@ -132,7 +135,7 @@ export function SameAsProfileIntegrator({
   const getPlatformName = (url: string): string => {
     try {
       const domain = new URL(url).hostname.toLowerCase();
-      
+
       if (domain.includes('instagram')) return 'Instagram';
       if (domain.includes('twitter') || domain.includes('x.com')) return 'X (Twitter)';
       if (domain.includes('facebook')) return 'Facebook';
@@ -144,7 +147,7 @@ export function SameAsProfileIntegrator({
       if (domain.includes('pinterest')) return 'Pinterest';
       if (domain.includes('reddit')) return 'Reddit';
       if (domain.includes('medium')) return 'Medium';
-      
+
       return domain;
     } catch {
       return url;
@@ -184,7 +187,7 @@ export function SameAsProfileIntegrator({
               />
             </div>
           </div>
-          
+
           <div>
             <Label htmlFor="extras">Extra URLs (comma-separated)</Label>
             <Input
@@ -227,7 +230,7 @@ export function SameAsProfileIntegrator({
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 mb-4">{result.report.summary}</p>
-                
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">
@@ -242,17 +245,23 @@ export function SameAsProfileIntegrator({
                     <div className="text-sm text-gray-500">Valid Profiles</div>
                   </div>
                   <div className="text-center">
-                    <div className={`text-2xl font-bold ${
-                      result.report.stats.validationIssues === 0 ? 'text-green-600' : 'text-orange-600'
-                    }`}>
+                    <div
+                      className={`text-2xl font-bold ${
+                        result.report.stats.validationIssues === 0
+                          ? 'text-green-600'
+                          : 'text-orange-600'
+                      }`}
+                    >
                       {result.report.stats.validationIssues}
                     </div>
                     <div className="text-sm text-gray-500">Issues</div>
                   </div>
                   <div className="text-center">
-                    <div className={`text-2xl font-bold ${
-                      result.report.stats.richResultsReady ? 'text-green-600' : 'text-red-600'
-                    }`}>
+                    <div
+                      className={`text-2xl font-bold ${
+                        result.report.stats.richResultsReady ? 'text-green-600' : 'text-red-600'
+                      }`}
+                    >
                       {result.report.stats.richResultsReady ? '✓' : '✗'}
                     </div>
                     <div className="text-sm text-gray-500">Rich Results</div>
@@ -270,7 +279,10 @@ export function SameAsProfileIntegrator({
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {result.sameAs.map((url, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">{getPlatformName(url)}</Badge>
                       <a
@@ -284,7 +296,9 @@ export function SameAsProfileIntegrator({
                       </a>
                     </div>
                     {result.diff.added.includes(url) && (
-                      <Badge variant="default" className="text-xs">New</Badge>
+                      <Badge variant="default" className="text-xs">
+                        New
+                      </Badge>
                     )}
                   </div>
                 ))}
@@ -311,7 +325,7 @@ export function SameAsProfileIntegrator({
                     <AlertDescription>{warning}</AlertDescription>
                   </Alert>
                 ))}
-                
+
                 {result.report?.recommendations.map((rec, index) => (
                   <Alert key={`rec-${index}`}>
                     <AlertDescription>{rec}</AlertDescription>
@@ -341,7 +355,7 @@ export function SameAsProfileIntegrator({
               <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
                 <code>{result.output.prettyJson}</code>
               </pre>
-              
+
               <div className="mt-4 pt-4 border-t">
                 <p className="text-sm text-gray-600 mb-2">HTML Script Tag:</p>
                 <pre className="bg-gray-50 p-3 rounded text-xs overflow-x-auto">

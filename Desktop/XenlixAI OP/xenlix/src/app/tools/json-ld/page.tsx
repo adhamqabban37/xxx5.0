@@ -1,25 +1,27 @@
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { Metadata } from "next";
-import JsonLdGenerator from "./_components/JsonLdGenerator";
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { Metadata } from 'next';
+import JsonLdGenerator from './_components/JsonLdGenerator';
 
 export const metadata: Metadata = {
-  title: "JSON-LD Generator | Free Schema Tool | XenlixAI",
-  description: "Generate JSON-LD schema markup instantly for AI search optimization. Help ChatGPT understand your business with proper structured data. Free tool!",
-  keywords: "JSON-LD generator, AEO structured data, AI search schema, answer engine optimization markup, ChatGPT schema",
-  robots: "noindex, nofollow", // Private tool for authenticated users
+  title: 'JSON-LD Generator | Free Schema Tool | XenlixAI',
+  description:
+    'Generate JSON-LD schema markup instantly for AI search optimization. Help ChatGPT understand your business with proper structured data. Free tool!',
+  keywords:
+    'JSON-LD generator, AEO structured data, AI search schema, answer engine optimization markup, ChatGPT schema',
+  robots: 'noindex, nofollow', // Private tool for authenticated users
   alternates: {
-    canonical: "/tools/json-ld"
-  }
+    canonical: '/tools/json-ld',
+  },
 };
 
 export default async function JsonLdPage() {
   // Server-side authentication check
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.email) {
-    redirect("/signin");
+    redirect('/signin');
   }
 
   return (
@@ -27,7 +29,7 @@ export default async function JsonLdPage() {
       <div className="relative">
         {/* Particles background */}
         <div id="particles-js" className="absolute inset-0 pointer-events-none"></div>
-        
+
         {/* Navigation */}
         <nav className="relative z-10 border-b border-white/10 bg-black/20 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -52,11 +54,9 @@ export default async function JsonLdPage() {
         {/* Main content */}
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-              JSON-LD Generator
-            </h1>
+            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">JSON-LD Generator</h1>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Generate structured data for your business website to improve search engine visibility 
+              Generate structured data for your business website to improve search engine visibility
               and enable rich snippets.
             </p>
           </div>

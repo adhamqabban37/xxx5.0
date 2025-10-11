@@ -18,7 +18,7 @@ export class IndexNowAutoTrigger {
 
   // Auto-submit when page content changes
   static async onContentChange(
-    url: string | string[], 
+    url: string | string[],
     options: AutoTriggerOptions = {}
   ): Promise<void> {
     const { immediate = false, priority = 'normal', reason = 'updated' } = options;
@@ -37,7 +37,7 @@ export class IndexNowAutoTrigger {
       // Submit immediately for high-priority changes
       try {
         const result = await submitToIndexNow(eligibleUrls, { reason, priority });
-        
+
         // Log the submission
         addSubmissionLog(eligibleUrls, result.success, {
           error: result.error,
@@ -51,7 +51,7 @@ export class IndexNowAutoTrigger {
       }
     } else {
       // Queue for batch submission
-      eligibleUrls.forEach(url => this.pendingUrls.add(url));
+      eligibleUrls.forEach((url) => this.pendingUrls.add(url));
       this.scheduleBatchSubmission(reason);
     }
   }
@@ -70,7 +70,7 @@ export class IndexNowAutoTrigger {
 
       try {
         const result = await submitToIndexNow(urlsToSubmit, { reason });
-        
+
         // Log the batch submission
         addSubmissionLog(urlsToSubmit, result.success, {
           error: result.error,
@@ -81,9 +81,9 @@ export class IndexNowAutoTrigger {
         console.info(`IndexNow: Batch submitted ${urlsToSubmit.length} URLs (${reason})`);
       } catch (error) {
         console.error('IndexNow batch submission error:', error);
-        
+
         // Re-add URLs to pending if submission failed
-        urlsToSubmit.forEach(url => this.pendingUrls.add(url));
+        urlsToSubmit.forEach((url) => this.pendingUrls.add(url));
       }
     }, this.BATCH_DELAY);
   }
@@ -102,7 +102,7 @@ export class IndexNowAutoTrigger {
 
     try {
       const result = await submitToIndexNow(urlsToSubmit, { reason: 'updated' });
-      
+
       addSubmissionLog(urlsToSubmit, result.success, {
         error: result.error,
         reason: 'updated',
@@ -123,7 +123,7 @@ export async function triggerOnContentCreated(url: string | string[]): Promise<v
   return IndexNowAutoTrigger.onContentChange(url, {
     immediate: true,
     priority: 'high',
-    reason: 'created'
+    reason: 'created',
   });
 }
 
@@ -132,7 +132,7 @@ export async function triggerOnContentUpdated(url: string | string[]): Promise<v
   return IndexNowAutoTrigger.onContentChange(url, {
     immediate: false,
     priority: 'normal',
-    reason: 'updated'
+    reason: 'updated',
   });
 }
 
@@ -141,7 +141,7 @@ export async function triggerOnContentDeleted(url: string | string[]): Promise<v
   return IndexNowAutoTrigger.onContentChange(url, {
     immediate: true,
     priority: 'normal',
-    reason: 'deleted'
+    reason: 'deleted',
   });
 }
 
@@ -150,7 +150,7 @@ export async function triggerOnSchemaChange(url: string | string[]): Promise<voi
   return IndexNowAutoTrigger.onContentChange(url, {
     immediate: true,
     priority: 'high',
-    reason: 'updated'
+    reason: 'updated',
   });
 }
 
@@ -160,7 +160,7 @@ export async function triggerOnSitemapUpdate(): Promise<void> {
   return IndexNowAutoTrigger.onContentChange(sitemapUrl, {
     immediate: true,
     priority: 'high',
-    reason: 'updated'
+    reason: 'updated',
   });
 }
 
@@ -174,20 +174,17 @@ export async function triggerOnNavigationChange(): Promise<void> {
     `${baseUrl}/case-studies`,
     `${baseUrl}/dallas`,
   ];
-  
+
   return IndexNowAutoTrigger.onContentChange(navUrls, {
     immediate: false,
     priority: 'normal',
-    reason: 'updated'
+    reason: 'updated',
   });
 }
 
 // React hook for automatic IndexNow triggers
 export function useIndexNowTrigger() {
-  const triggerSubmission = async (
-    urls: string | string[],
-    options: AutoTriggerOptions = {}
-  ) => {
+  const triggerSubmission = async (urls: string | string[], options: AutoTriggerOptions = {}) => {
     try {
       await IndexNowAutoTrigger.onContentChange(urls, options);
     } catch (error) {
@@ -197,30 +194,34 @@ export function useIndexNowTrigger() {
 
   // Pre-configured trigger functions
   const triggers = {
-    onContentCreated: (url: string | string[]) => triggerSubmission(url, {
-      immediate: true,
-      priority: 'high',
-      reason: 'created'
-    }),
-    
-    onContentUpdated: (url: string | string[]) => triggerSubmission(url, {
-      immediate: false,
-      priority: 'normal',
-      reason: 'updated'
-    }),
-    
-    onContentDeleted: (url: string | string[]) => triggerSubmission(url, {
-      immediate: true,
-      priority: 'normal',
-      reason: 'deleted'
-    }),
-    
-    onSchemaChange: (url: string | string[]) => triggerSubmission(url, {
-      immediate: true,
-      priority: 'high',
-      reason: 'updated'
-    }),
-    
+    onContentCreated: (url: string | string[]) =>
+      triggerSubmission(url, {
+        immediate: true,
+        priority: 'high',
+        reason: 'created',
+      }),
+
+    onContentUpdated: (url: string | string[]) =>
+      triggerSubmission(url, {
+        immediate: false,
+        priority: 'normal',
+        reason: 'updated',
+      }),
+
+    onContentDeleted: (url: string | string[]) =>
+      triggerSubmission(url, {
+        immediate: true,
+        priority: 'normal',
+        reason: 'deleted',
+      }),
+
+    onSchemaChange: (url: string | string[]) =>
+      triggerSubmission(url, {
+        immediate: true,
+        priority: 'high',
+        reason: 'updated',
+      }),
+
     flushPending: () => IndexNowAutoTrigger.flushPending(),
   };
 
@@ -288,16 +289,16 @@ export async function triggerWithRevalidation(
   options: AutoTriggerOptions = {}
 ): Promise<void> {
   await IndexNowAutoTrigger.onContentChange(urls, options);
-  
+
   // If using Next.js ISR, also revalidate the pages
   const urlArray = Array.isArray(urls) ? urls : [urls];
-  
+
   for (const url of urlArray) {
     try {
       // Extract path from URL for revalidation
       const urlObj = new URL(url);
       const path = urlObj.pathname;
-      
+
       // Note: This would need to be called from an API route with access to revalidatePath
       console.info(`IndexNow: Would revalidate path: ${path}`);
     } catch (error) {

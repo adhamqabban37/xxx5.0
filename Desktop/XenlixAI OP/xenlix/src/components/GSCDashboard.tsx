@@ -55,7 +55,7 @@ interface UrlInspectionData {
 
 export default function GSCDashboard({ className }: GSCDashboardProps) {
   const { data: session, status } = useSession();
-  
+
   // State management
   const [sites, setSites] = useState<GSCSite[]>([]);
   const [selectedSite, setSelectedSite] = useState<string>('');
@@ -92,13 +92,13 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
       setLoading(true);
       const response = await fetch('/api/gsc/sites');
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.message || 'Failed to load sites');
       }
-      
+
       setSites(data.data.sites || []);
-      
+
       // Auto-select current site if available
       const currentSite = data.data.sites.find((site: GSCSite) => site.properties?.current);
       if (currentSite) {
@@ -106,7 +106,6 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
       } else if (data.data.sites.length > 0) {
         setSelectedSite(data.data.sites[0].siteUrl);
       }
-      
     } catch (err) {
       console.error('Failed to load sites:', err);
       setError(err instanceof Error ? err.message : 'Failed to load sites');
@@ -117,11 +116,11 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
 
   const loadAnalytics = async () => {
     if (!selectedSite) return;
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       // Load queries data
       const queriesResponse = await fetch('/api/gsc/search-analytics', {
         method: 'POST',
@@ -133,16 +132,16 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
           rowLimit: 100,
         }),
       });
-      
+
       if (!queriesResponse.ok) {
         const errorData = await queriesResponse.json();
         throw new Error(errorData.message || 'Failed to load queries data');
       }
-      
+
       const queriesData = await queriesResponse.json();
       setQueriesData(queriesData.data.rows || []);
       setTotals(queriesData.data.totals);
-      
+
       // Load pages data
       const pagesResponse = await fetch('/api/gsc/search-analytics', {
         method: 'POST',
@@ -154,16 +153,15 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
           rowLimit: 100,
         }),
       });
-      
+
       if (pagesResponse.ok) {
         const pagesData = await pagesResponse.json();
         setPagesData(pagesData.data.rows || []);
-        
+
         // Load URL inspections for top pages
         const topPages = pagesData.data.rows.slice(0, 10);
         await loadUrlInspections(topPages.map((page: PageData) => page.dimensionValues.page));
       }
-      
     } catch (err) {
       console.error('Failed to load analytics:', err);
       setError(err instanceof Error ? err.message : 'Failed to load analytics data');
@@ -174,11 +172,13 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
 
   const loadUrlInspections = async (urls: string[]) => {
     const inspections: Record<string, UrlInspectionData> = {};
-    
+
     for (const url of urls) {
       try {
-        const response = await fetch(`/api/gsc/url-inspect?siteUrl=${encodeURIComponent(selectedSite)}&url=${encodeURIComponent(url)}`);
-        
+        const response = await fetch(
+          `/api/gsc/url-inspect?siteUrl=${encodeURIComponent(selectedSite)}&url=${encodeURIComponent(url)}`
+        );
+
         if (response.ok) {
           const data = await response.json();
           inspections[url] = data.data;
@@ -187,7 +187,7 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
         console.warn(`Failed to inspect URL ${url}:`, err);
       }
     }
-    
+
     setUrlInspections(inspections);
   };
 
@@ -199,7 +199,7 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
 
   const IndexBadge = ({ url }: { url: string }) => {
     const inspection = urlInspections[url];
-    
+
     if (!inspection) {
       return (
         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -207,7 +207,7 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
         </span>
       );
     }
-    
+
     const { indexStatus } = inspection;
     const colorClasses = {
       green: 'bg-green-100 text-green-800',
@@ -215,9 +215,9 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
       yellow: 'bg-yellow-100 text-yellow-800',
       gray: 'bg-gray-100 text-gray-800',
     };
-    
+
     return (
-      <span 
+      <span
         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colorClasses[indexStatus.badgeColor]}`}
         title={indexStatus.verdict}
       >
@@ -249,7 +249,7 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
             Connect your Google Search Console to view search performance data.
           </p>
           <button
-            onClick={() => window.location.href = '/api/auth/signin'}
+            onClick={() => (window.location.href = '/api/auth/signin')}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Connect Google Search Console
@@ -264,7 +264,7 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Search Console</h2>
-        
+
         <div className="flex items-center space-x-4">
           {/* Date Range Selector */}
           <select
@@ -276,7 +276,7 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
             <option value={28}>Last 28 days</option>
             <option value={90}>Last 90 days</option>
           </select>
-          
+
           {/* Site Selector */}
           <select
             value={selectedSite}
@@ -315,11 +315,15 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <div className="text-sm font-medium text-gray-500">Total Clicks</div>
-            <div className="mt-2 text-3xl font-bold text-gray-900">{formatNumber(totals.clicks)}</div>
+            <div className="mt-2 text-3xl font-bold text-gray-900">
+              {formatNumber(totals.clicks)}
+            </div>
           </div>
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <div className="text-sm font-medium text-gray-500">Total Impressions</div>
-            <div className="mt-2 text-3xl font-bold text-gray-900">{formatNumber(totals.impressions)}</div>
+            <div className="mt-2 text-3xl font-bold text-gray-900">
+              {formatNumber(totals.impressions)}
+            </div>
           </div>
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <div className="text-sm font-medium text-gray-500">Average CTR</div>
@@ -327,7 +331,9 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
           </div>
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <div className="text-sm font-medium text-gray-500">Average Position</div>
-            <div className="mt-2 text-3xl font-bold text-gray-900">{totals.position.toFixed(1)}</div>
+            <div className="mt-2 text-3xl font-bold text-gray-900">
+              {totals.position.toFixed(1)}
+            </div>
           </div>
         </div>
       )}
@@ -373,12 +379,22 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {activeTab === 'queries' ? 'Query' : 'Page'}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clicks</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Impressions</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CTR</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Clicks
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Impressions
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    CTR
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Position
+                  </th>
                   {activeTab === 'pages' && (
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Index Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Index Status
+                    </th>
                   )}
                 </tr>
               </thead>
@@ -386,17 +402,30 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
                 {(activeTab === 'queries' ? queriesData : pagesData).map((row, index) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      <div className="max-w-xs truncate" title={activeTab === 'queries' ? row.dimensionValues.query : row.dimensionValues.page}>
-                        {activeTab === 'queries' ? row.dimensionValues.query : row.dimensionValues.page}
+                      <div
+                        className="max-w-xs truncate"
+                        title={
+                          activeTab === 'queries'
+                            ? (row.dimensionValues as { query: string }).query
+                            : (row.dimensionValues as { page: string }).page
+                        }
+                      >
+                        {activeTab === 'queries'
+                          ? (row.dimensionValues as { query: string }).query
+                          : (row.dimensionValues as { page: string }).page}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">{formatNumber(row.clicks)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{formatNumber(row.impressions)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{row.ctrPercentage.toFixed(1)}%</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {formatNumber(row.impressions)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {row.ctrPercentage.toFixed(1)}%
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-900">{row.position.toFixed(1)}</td>
                     {activeTab === 'pages' && (
                       <td className="px-6 py-4 text-sm text-gray-900">
-                        <IndexBadge url={row.dimensionValues.page} />
+                        <IndexBadge url={(row.dimensionValues as { page: string }).page} />
                       </td>
                     )}
                   </tr>
@@ -405,7 +434,7 @@ export default function GSCDashboard({ className }: GSCDashboardProps) {
             </table>
           </div>
         )}
-        
+
         {!loading && (activeTab === 'queries' ? queriesData : pagesData).length === 0 && (
           <div className="p-8 text-center text-gray-500">
             No data available for the selected time period.

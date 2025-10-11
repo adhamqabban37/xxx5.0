@@ -1,10 +1,22 @@
 // City Management Dashboard
 // Interface for managing local SEO city pages and markets
 
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Plus, Settings, Eye, Download, Trash2, Globe, BarChart3, Search, Filter, ArrowUpDown } from 'lucide-react';
+import {
+  MapPin,
+  Plus,
+  Settings,
+  Eye,
+  Download,
+  Trash2,
+  Globe,
+  BarChart3,
+  Search,
+  Filter,
+  ArrowUpDown,
+} from 'lucide-react';
 import { CityMarket, BulkCityPageGeneration, BulkGenerationResult } from '@/types/local-seo';
 
 interface CityManagementDashboardProps {
@@ -16,192 +28,192 @@ const SAMPLE_CITIES: CityMarket[] = [
   {
     id: '1',
     cityData: {
-      name: "New York",
-      state: "New York",
-      stateAbbreviation: "NY",
-      county: "New York County",
-      region: "Northeast",
-      country: "United States",
-      coordinates: { latitude: 40.7128, longitude: -74.0060 },
-      timezone: "America/New_York",
-      zipCodes: ["10001", "10002", "10003"],
+      name: 'New York',
+      state: 'New York',
+      stateAbbreviation: 'NY',
+      county: 'New York County',
+      region: 'Northeast',
+      country: 'United States',
+      coordinates: { latitude: 40.7128, longitude: -74.006 },
+      timezone: 'America/New_York',
+      zipCodes: ['10001', '10002', '10003'],
       demographics: {
         population: 8336817,
         medianAge: 36.2,
         medianIncome: 67046,
         householdCount: 3736077,
-        businessCount: 285000
+        businessCount: 285000,
       },
       economy: {
-        majorIndustries: ["Financial Services", "Technology", "Media"],
+        majorIndustries: ['Financial Services', 'Technology', 'Media'],
         unemploymentRate: 4.2,
         economicGrowthRate: 2.8,
-        businessFriendlyRating: 8.5
+        businessFriendlyRating: 8.5,
       },
       characteristics: {
-        localKeywords: ["manhattan", "brooklyn", "queens", "nyc"],
-        neighborhoodNames: ["Manhattan", "Brooklyn", "Queens"],
-        landmarkNames: ["Times Square", "Central Park", "Statue of Liberty"],
-        events: ["New Year's Eve Ball Drop", "NYC Marathon"],
-        culture: ["Arts and Theater", "Diverse Cuisine"],
-        climate: "humid subtropical"
-      }
+        localKeywords: ['manhattan', 'brooklyn', 'queens', 'nyc'],
+        neighborhoodNames: ['Manhattan', 'Brooklyn', 'Queens'],
+        landmarkNames: ['Times Square', 'Central Park', 'Statue of Liberty'],
+        events: ["New Year's Eve Ball Drop", 'NYC Marathon'],
+        culture: ['Arts and Theater', 'Diverse Cuisine'],
+        climate: 'humid subtropical',
+      },
     },
     businessLocation: {
       primaryAddress: {
-        street: "123 Business Ave",
-        city: "New York",
-        state: "New York",
-        zipCode: "10001",
-        country: "United States"
+        street: '123 Business Ave',
+        city: 'New York',
+        state: 'New York',
+        zipCode: '10001',
+        country: 'United States',
       },
       serviceAreas: {
-        cities: ["New York", "Manhattan", "Brooklyn"],
-        counties: ["New York County"],
+        cities: ['New York', 'Manhattan', 'Brooklyn'],
+        counties: ['New York County'],
         radiusMiles: 25,
-        specificZipCodes: ["10001", "10002", "10003"]
+        specificZipCodes: ['10001', '10002', '10003'],
       },
       locationSpecific: {
         localCompetitors: [],
         localPartnerships: [],
         communityInvolvement: [],
         localCertifications: [],
-        localAwards: []
-      }
+        localAwards: [],
+      },
     },
     isActive: true,
     priority: 'high',
     competitionLevel: 'high',
     marketPotential: 9,
-    lastUpdated: new Date('2024-01-15')
+    lastUpdated: new Date('2024-01-15'),
   },
   {
     id: '2',
     cityData: {
-      name: "Los Angeles",
-      state: "California",
-      stateAbbreviation: "CA",
-      county: "Los Angeles County",
-      region: "West Coast",
-      country: "United States",
+      name: 'Los Angeles',
+      state: 'California',
+      stateAbbreviation: 'CA',
+      county: 'Los Angeles County',
+      region: 'West Coast',
+      country: 'United States',
       coordinates: { latitude: 34.0522, longitude: -118.2437 },
-      timezone: "America/Los_Angeles",
-      zipCodes: ["90001", "90210", "90028"],
+      timezone: 'America/Los_Angeles',
+      zipCodes: ['90001', '90210', '90028'],
       demographics: {
         population: 3971883,
         medianAge: 35.8,
         medianIncome: 62142,
         householdCount: 1456875,
-        businessCount: 175000
+        businessCount: 175000,
       },
       economy: {
-        majorIndustries: ["Entertainment", "Technology", "Aerospace"],
+        majorIndustries: ['Entertainment', 'Technology', 'Aerospace'],
         unemploymentRate: 4.8,
         economicGrowthRate: 3.2,
-        businessFriendlyRating: 7.8
+        businessFriendlyRating: 7.8,
       },
       characteristics: {
-        localKeywords: ["hollywood", "beverly hills", "santa monica", "la"],
-        neighborhoodNames: ["Hollywood", "Beverly Hills", "Santa Monica"],
-        landmarkNames: ["Hollywood Sign", "Griffith Observatory", "Santa Monica Pier"],
-        events: ["Academy Awards", "LA Film Festival"],
-        culture: ["Entertainment Capital", "Beach Lifestyle"],
-        climate: "Mediterranean"
-      }
+        localKeywords: ['hollywood', 'beverly hills', 'santa monica', 'la'],
+        neighborhoodNames: ['Hollywood', 'Beverly Hills', 'Santa Monica'],
+        landmarkNames: ['Hollywood Sign', 'Griffith Observatory', 'Santa Monica Pier'],
+        events: ['Academy Awards', 'LA Film Festival'],
+        culture: ['Entertainment Capital', 'Beach Lifestyle'],
+        climate: 'Mediterranean',
+      },
     },
     businessLocation: {
       primaryAddress: {
-        street: "456 Business Blvd",
-        city: "Los Angeles",
-        state: "California",
-        zipCode: "90001",
-        country: "United States"
+        street: '456 Business Blvd',
+        city: 'Los Angeles',
+        state: 'California',
+        zipCode: '90001',
+        country: 'United States',
       },
       serviceAreas: {
-        cities: ["Los Angeles", "Hollywood", "Beverly Hills"],
-        counties: ["Los Angeles County"],
+        cities: ['Los Angeles', 'Hollywood', 'Beverly Hills'],
+        counties: ['Los Angeles County'],
         radiusMiles: 30,
-        specificZipCodes: ["90001", "90210", "90028"]
+        specificZipCodes: ['90001', '90210', '90028'],
       },
       locationSpecific: {
         localCompetitors: [],
         localPartnerships: [],
         communityInvolvement: [],
         localCertifications: [],
-        localAwards: []
-      }
+        localAwards: [],
+      },
     },
     isActive: true,
     priority: 'high',
     competitionLevel: 'medium',
     marketPotential: 8,
-    lastUpdated: new Date('2024-01-10')
+    lastUpdated: new Date('2024-01-10'),
   },
   {
     id: '3',
     cityData: {
-      name: "Chicago",
-      state: "Illinois",
-      stateAbbreviation: "IL",
-      county: "Cook County",
-      region: "Midwest",
-      country: "United States",
+      name: 'Chicago',
+      state: 'Illinois',
+      stateAbbreviation: 'IL',
+      county: 'Cook County',
+      region: 'Midwest',
+      country: 'United States',
       coordinates: { latitude: 41.8781, longitude: -87.6298 },
-      timezone: "America/Chicago",
-      zipCodes: ["60601", "60602", "60603"],
+      timezone: 'America/Chicago',
+      zipCodes: ['60601', '60602', '60603'],
       demographics: {
         population: 2693976,
         medianAge: 34.8,
         medianIncome: 58247,
         householdCount: 1061928,
-        businessCount: 125000
+        businessCount: 125000,
       },
       economy: {
-        majorIndustries: ["Manufacturing", "Transportation", "Finance"],
+        majorIndustries: ['Manufacturing', 'Transportation', 'Finance'],
         unemploymentRate: 4.5,
         economicGrowthRate: 2.4,
-        businessFriendlyRating: 8.2
+        businessFriendlyRating: 8.2,
       },
       characteristics: {
-        localKeywords: ["windy city", "chi-town", "the loop"],
-        neighborhoodNames: ["The Loop", "River North", "Lincoln Park"],
-        landmarkNames: ["Millennium Park", "Navy Pier", "Willis Tower"],
-        events: ["Lollapalooza", "Chicago Marathon"],
-        culture: ["Architecture", "Deep Dish Pizza", "Blues and Jazz"],
-        climate: "continental"
-      }
+        localKeywords: ['windy city', 'chi-town', 'the loop'],
+        neighborhoodNames: ['The Loop', 'River North', 'Lincoln Park'],
+        landmarkNames: ['Millennium Park', 'Navy Pier', 'Willis Tower'],
+        events: ['Lollapalooza', 'Chicago Marathon'],
+        culture: ['Architecture', 'Deep Dish Pizza', 'Blues and Jazz'],
+        climate: 'continental',
+      },
     },
     businessLocation: {
       primaryAddress: {
-        street: "789 Business St",
-        city: "Chicago",
-        state: "Illinois",
-        zipCode: "60601",
-        country: "United States"
+        street: '789 Business St',
+        city: 'Chicago',
+        state: 'Illinois',
+        zipCode: '60601',
+        country: 'United States',
       },
       serviceAreas: {
-        cities: ["Chicago", "The Loop", "River North"],
-        counties: ["Cook County"],
+        cities: ['Chicago', 'The Loop', 'River North'],
+        counties: ['Cook County'],
         radiusMiles: 20,
-        specificZipCodes: ["60601", "60602", "60603"]
+        specificZipCodes: ['60601', '60602', '60603'],
       },
       locationSpecific: {
         localCompetitors: [],
         localPartnerships: [],
         communityInvolvement: [],
         localCertifications: [],
-        localAwards: []
-      }
+        localAwards: [],
+      },
     },
     isActive: false,
     priority: 'medium',
     competitionLevel: 'medium',
     marketPotential: 7,
-    lastUpdated: new Date('2024-01-05')
-  }
+    lastUpdated: new Date('2024-01-05'),
+  },
 ];
 
-export default function CityManagementDashboard({ className = "" }: CityManagementDashboardProps) {
+export default function CityManagementDashboard({ className = '' }: CityManagementDashboardProps) {
   const [cities, setCities] = useState<CityMarket[]>(SAMPLE_CITIES);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -214,17 +226,19 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
 
   // Filter and sort cities
   const filteredCities = cities
-    .filter(city => {
-      const matchesSearch = city.cityData.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           city.cityData.state.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesFilter = filterStatus === 'all' || 
-                           (filterStatus === 'active' && city.isActive) ||
-                           (filterStatus === 'inactive' && !city.isActive);
+    .filter((city) => {
+      const matchesSearch =
+        city.cityData.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        city.cityData.state.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter =
+        filterStatus === 'all' ||
+        (filterStatus === 'active' && city.isActive) ||
+        (filterStatus === 'inactive' && !city.isActive);
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
       let aValue: any, bValue: any;
-      
+
       switch (sortBy) {
         case 'name':
           aValue = a.cityData.name;
@@ -251,17 +265,15 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
         const comparison = aValue.localeCompare(bValue);
         return sortOrder === 'asc' ? comparison : -comparison;
       }
-      
+
       const comparison = aValue - bValue;
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
   // Handle city selection
   const handleCitySelect = (cityId: string) => {
-    setSelectedCities(prev => 
-      prev.includes(cityId) 
-        ? prev.filter(id => id !== cityId)
-        : [...prev, cityId]
+    setSelectedCities((prev) =>
+      prev.includes(cityId) ? prev.filter((id) => id !== cityId) : [...prev, cityId]
     );
   };
 
@@ -270,7 +282,7 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
     if (selectedCities.length === filteredCities.length) {
       setSelectedCities([]);
     } else {
-      setSelectedCities(filteredCities.map(city => city.id));
+      setSelectedCities(filteredCities.map((city) => city.id));
     }
   };
 
@@ -280,39 +292,39 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
 
     setIsGenerating(true);
     try {
-      const selectedCityData = cities.filter(city => selectedCities.includes(city.id));
-      
+      const selectedCityData = cities.filter((city) => selectedCities.includes(city.id));
+
       const bulkRequest: BulkCityPageGeneration = {
         cities: selectedCityData,
         globalConfig: {
           template: {
             layout: 'hybrid',
             theme: 'professional',
-            components: ['hero', 'services', 'testimonials', 'faq', 'cta']
+            components: ['hero', 'services', 'testimonials', 'faq', 'cta'],
           },
           seo: {
             enableAEO: true,
             enableVoiceSearch: true,
             targetFeaturedSnippets: true,
             enableLocalSchema: true,
-            customMetaTags: {}
+            customMetaTags: {},
           },
           content: {
             autoGenerateFromProfile: true,
             includeTestimonials: true,
             includeCaseStudies: true,
             generateLocalFAQ: true,
-            localContentDepth: 'comprehensive'
+            localContentDepth: 'comprehensive',
           },
           performance: {
             enableStaticGeneration: true,
             revalidationInterval: 3600,
             enableImageOptimization: true,
-            enableCaching: true
-          }
+            enableCaching: true,
+          },
         },
         generateInParallel: true,
-        maxConcurrency: 3
+        maxConcurrency: 3,
       };
 
       const response = await fetch('/api/local-seo', {
@@ -324,15 +336,15 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         setGenerationResult(result.data);
         // Update city statuses
-        setCities(prev => prev.map(city => 
-          selectedCities.includes(city.id) 
-            ? { ...city, lastUpdated: new Date() }
-            : city
-        ));
+        setCities((prev) =>
+          prev.map((city) =>
+            selectedCities.includes(city.id) ? { ...city, lastUpdated: new Date() } : city
+          )
+        );
       } else {
         // Bulk generation failed
       }
@@ -345,36 +357,44 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
 
   // Handle toggle city status
   const handleToggleCity = (cityId: string) => {
-    setCities(prev => prev.map(city => 
-      city.id === cityId 
-        ? { ...city, isActive: !city.isActive, lastUpdated: new Date() }
-        : city
-    ));
+    setCities((prev) =>
+      prev.map((city) =>
+        city.id === cityId ? { ...city, isActive: !city.isActive, lastUpdated: new Date() } : city
+      )
+    );
   };
 
   // Handle delete city
   const handleDeleteCity = (cityId: string) => {
-    setCities(prev => prev.filter(city => city.id !== cityId));
-    setSelectedCities(prev => prev.filter(id => id !== cityId));
+    setCities((prev) => prev.filter((city) => city.id !== cityId));
+    setSelectedCities((prev) => prev.filter((id) => id !== cityId));
   };
 
   // Priority color mapping
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-red-600 bg-red-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'low': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'high':
+        return 'text-red-600 bg-red-100';
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-100';
+      case 'low':
+        return 'text-green-600 bg-green-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
     }
   };
 
   // Competition level color mapping
   const getCompetitionColor = (level: string) => {
     switch (level) {
-      case 'high': return 'text-red-600 bg-red-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'low': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'high':
+        return 'text-red-600 bg-red-100';
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-100';
+      case 'low':
+        return 'text-green-600 bg-green-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
     }
   };
 
@@ -423,7 +443,7 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Cities</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {cities.filter(city => city.isActive).length}
+                {cities.filter((city) => city.isActive).length}
               </p>
             </div>
           </div>
@@ -437,7 +457,7 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">High Priority</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {cities.filter(city => city.priority === 'high').length}
+                {cities.filter((city) => city.priority === 'high').length}
               </p>
             </div>
           </div>
@@ -451,7 +471,9 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg. Potential</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {(cities.reduce((sum, city) => sum + city.marketPotential, 0) / cities.length).toFixed(1)}
+                {(
+                  cities.reduce((sum, city) => sum + city.marketPotential, 0) / cities.length
+                ).toFixed(1)}
               </p>
             </div>
           </div>
@@ -517,7 +539,9 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={selectedCities.length === filteredCities.length && filteredCities.length > 0}
+                checked={
+                  selectedCities.length === filteredCities.length && filteredCities.length > 0
+                }
                 onChange={handleSelectAll}
                 className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
               />
@@ -579,16 +603,21 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
               <div className="text-sm text-gray-600 dark:text-gray-400">Avg Per Page</div>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             {generationResult.results.map((result, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+              >
                 <span className="font-medium text-gray-900 dark:text-white">{result.cityName}</span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  result.success 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                }`}>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    result.success
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                  }`}
+                >
                   {result.success ? 'Success' : 'Failed'}
                 </span>
               </div>
@@ -648,30 +677,39 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      city.isActive 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                    }`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        city.isActive
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                      }`}
+                    >
                       {city.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(city.priority)}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(city.priority)}`}
+                    >
                       {city.priority.charAt(0).toUpperCase() + city.priority.slice(1)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCompetitionColor(city.competitionLevel)}`}>
-                      {city.competitionLevel.charAt(0).toUpperCase() + city.competitionLevel.slice(1)}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getCompetitionColor(city.competitionLevel)}`}
+                    >
+                      {city.competitionLevel.charAt(0).toUpperCase() +
+                        city.competitionLevel.slice(1)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">{city.marketPotential}/10</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {city.marketPotential}/10
+                      </div>
                       <div className="ml-2 w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                        <div 
-                          className="bg-purple-600 h-2 rounded-full" 
+                        <div
+                          className="bg-purple-600 h-2 rounded-full"
                           style={{ width: `${city.marketPotential * 10}%` }}
                         />
                       </div>
@@ -683,7 +721,12 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => window.open(`/${city.cityData.name.toLowerCase().replace(/\s+/g, '-')}`, '_blank')}
+                        onClick={() =>
+                          window.open(
+                            `/${city.cityData.name.toLowerCase().replace(/\s+/g, '-')}`,
+                            '_blank'
+                          )
+                        }
                         className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
                         title="View Page"
                       >
@@ -717,10 +760,9 @@ export default function CityManagementDashboard({ className = "" }: CityManageme
           <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">No cities found</h3>
           <p className="text-gray-500 dark:text-gray-400">
-            {searchTerm || filterStatus !== 'all' 
+            {searchTerm || filterStatus !== 'all'
               ? 'Try adjusting your search or filter criteria.'
-              : 'Add your first city to get started with local SEO.'
-            }
+              : 'Add your first city to get started with local SEO.'}
           </p>
         </div>
       )}

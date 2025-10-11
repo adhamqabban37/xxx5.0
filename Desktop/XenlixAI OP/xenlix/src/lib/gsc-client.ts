@@ -86,19 +86,19 @@ class GSCCache {
   private static cache = new Map<string, { data: any; expires: number }>();
 
   static set(key: string, data: any, ttlSeconds: number): void {
-    const expires = Date.now() + (ttlSeconds * 1000);
+    const expires = Date.now() + ttlSeconds * 1000;
     this.cache.set(key, { data, expires });
   }
 
   static get<T>(key: string): T | null {
     const cached = this.cache.get(key);
     if (!cached) return null;
-    
+
     if (Date.now() > cached.expires) {
       this.cache.delete(key);
       return null;
     }
-    
+
     return cached.data as T;
   }
 
@@ -125,7 +125,7 @@ export class GSCClient {
   // Check if access token is expired and needs refresh
   private isTokenExpired(): boolean {
     if (!this.expiresAt) return false;
-    return Date.now() >= (this.expiresAt * 1000) - 300000; // Refresh 5 min before expiry
+    return Date.now() >= this.expiresAt * 1000 - 300000; // Refresh 5 min before expiry
   }
 
   // Refresh access token using refresh token
@@ -166,7 +166,7 @@ export class GSCClient {
     const response = await fetch(`https://www.googleapis.com/webmasters/v3${endpoint}`, {
       ...options,
       headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
+        Authorization: `Bearer ${this.accessToken}`,
         'Content-Type': 'application/json',
         ...options.headers,
       },
@@ -192,7 +192,7 @@ export class GSCClient {
   async getSites(): Promise<GSCSite[]> {
     const cacheKey = `gsc:sites:${this.accessToken.slice(-10)}`;
     const cached = GSCCache.get<GSCSite[]>(cacheKey);
-    
+
     if (cached) {
       return cached;
     }
@@ -200,10 +200,10 @@ export class GSCClient {
     try {
       const response = await this.makeRequest<GSCSitesResponse>('/sites');
       const sites = response.siteEntry || [];
-      
+
       // Cache for 1 hour
       GSCCache.set(cacheKey, sites, 3600);
-      
+
       return sites;
     } catch (error) {
       console.error('GSC getSites error:', error);
@@ -213,12 +213,12 @@ export class GSCClient {
 
   // Get search analytics data with caching
   async getSearchAnalytics(
-    siteUrl: string, 
+    siteUrl: string,
     request: GSCSearchAnalyticsRequest
   ): Promise<GSCSearchAnalyticsResponse> {
     const cacheKey = `gsc:analytics:${siteUrl}:${JSON.stringify(request)}`;
     const cached = GSCCache.get<GSCSearchAnalyticsResponse>(cacheKey);
-    
+
     if (cached) {
       return cached;
     }
@@ -235,7 +235,7 @@ export class GSCClient {
 
       // Cache for 24 hours (analytics data)
       GSCCache.set(cacheKey, response, 86400);
-      
+
       return response;
     } catch (error) {
       console.error('GSC getSearchAnalytics error:', error);
@@ -251,7 +251,7 @@ export class GSCClient {
   ): Promise<GSCUrlInspectionResponse> {
     const cacheKey = `gsc:inspect:${siteUrl}:${inspectionUrl}`;
     const cached = GSCCache.get<GSCUrlInspectionResponse>(cacheKey);
-    
+
     if (cached) {
       return cached;
     }
@@ -272,7 +272,7 @@ export class GSCClient {
 
       // Cache for 6 hours (inspection data)
       GSCCache.set(cacheKey, response, 21600);
-      
+
       return response;
     } catch (error) {
       console.error('GSC inspectUrl error:', error);
@@ -320,7 +320,7 @@ export class GSCClient {
     urls: string[]
   ): Promise<Array<{ url: string; result: GSCUrlInspectionResponse | null; error?: string }>> {
     const results = [];
-    
+
     // Process URLs in parallel but with rate limiting
     const chunks = [];
     for (let i = 0; i < urls.length; i += 5) {
@@ -333,20 +333,20 @@ export class GSCClient {
           const result = await this.inspectUrl(siteUrl, url);
           return { url, result };
         } catch (error) {
-          return { 
-            url, 
-            result: null, 
-            error: error instanceof Error ? error.message : 'Unknown error' 
+          return {
+            url,
+            result: null,
+            error: error instanceof Error ? error.message : 'Unknown error',
           };
         }
       });
 
       const chunkResults = await Promise.all(chunkPromises);
       results.push(...chunkResults);
-      
+
       // Small delay between chunks to respect rate limits
       if (chunks.indexOf(chunk) < chunks.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
 
@@ -356,7 +356,7 @@ export class GSCClient {
   // Clear cache for specific site
   static clearSiteCache(siteUrl: string): void {
     const keys = Array.from(GSCCache['cache'].keys());
-    keys.forEach(key => {
+    keys.forEach((key) => {
       if (key.includes(siteUrl)) {
         GSCCache.delete(key);
       }
@@ -378,7 +378,7 @@ export function getDateRange(days: number): { startDate: string; endDate: string
   const endDate = new Date();
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
-  
+
   return {
     startDate: formatDate(startDate),
     endDate: formatDate(endDate),

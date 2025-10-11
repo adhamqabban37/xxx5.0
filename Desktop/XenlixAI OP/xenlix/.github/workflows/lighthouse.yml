@@ -1,0 +1,195 @@
+name: Lighthouse Performance Audit
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'URL to audit (default: deployed app)'
+        required: false
+        default: ''
+      performance_threshold:
+        description: 'Minimum performance score (0-100)'
+        required: false
+        default: '75'
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📋 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 🔧 Install system dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y --no-install-recommends \
+            chromium \
+            libnss3 \
+            libatk-bridge2.0-0 \
+            libdrm2 \
+            libxkbcommon0 \
+            libgbm1 \
+            libasound2
+          
+      - name: ✅ Verify Chrome installation
+        run: |
+          chmod +x scripts/check-chrome.sh
+          ./scripts/check-chrome.sh
+        env:
+          CHROME_PATH: /usr/bin/chromium
+          
+      - name: 📦 Install dependencies
+        run: npm ci
+        
+      - name: 🔨 Build application
+        run: npm run build
+        
+      - name: 🚀 Start application (background)
+        run: |
+          npm run start &
+          sleep 10
+          # Wait for app to be ready
+          timeout 60s bash -c 'until curl -f http://localhost:3000/api/health 2>/dev/null || curl -f http://localhost:3000 2>/dev/null; do sleep 2; done'
+        env:
+          NODE_ENV: production
+          
+      - name: 🔍 Run Lighthouse audit
+        run: |
+          TARGET_URL="${{ github.event.inputs.target_url || 'http://localhost:3000' }}"
+          PERFORMANCE_THRESHOLD="${{ github.event.inputs.performance_threshold || '75' }}"
+          
+          echo "🎯 Auditing: $TARGET_URL"
+          echo "📊 Performance threshold: $PERFORMANCE_THRESHOLD"
+          
+          npm run audit:lighthouse
+        env:
+          CHROME_PATH: /usr/bin/chromium
+          TARGET_URL: ${{ github.event.inputs.target_url || 'http://localhost:3000' }}
+          PERFORMANCE_THRESHOLD: ${{ github.event.inputs.performance_threshold || '75' }}
+          LH_OUTPUT: 'json,html'
+          CI: true
+          
+      - name: 📊 Display Lighthouse version
+        run: npx lighthouse --version
+        
+      - name: 📁 Upload Lighthouse reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-reports-${{ github.run_id }}
+          path: |
+            reports/lighthouse-*.json
+            reports/lighthouse-*.html
+          retention-days: 30
+          
+      - name: 📈 Comment PR with results (if PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            try {
+              // Find the latest Lighthouse JSON report
+              const reportsDir = 'reports';
+              const files = fs.readdirSync(reportsDir).filter(f => f.endsWith('.json'));
+              const latestReport = files.sort().pop();
+              
+              if (!latestReport) {
+                console.log('No Lighthouse report found');
+                return;
+              }
+              
+              const reportPath = path.join(reportsDir, latestReport);
+              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+              
+              const categories = report.categories;
+              const scores = {
+                performance: Math.round(categories.performance?.score * 100) || 0,
+                accessibility: Math.round(categories.accessibility?.score * 100) || 0,
+                'best-practices': Math.round(categories['best-practices']?.score * 100) || 0,
+                seo: Math.round(categories.seo?.score * 100) || 0
+              };
+              
+              const getEmoji = (score) => score >= 90 ? '🟢' : score >= 50 ? '🟡' : '🔴';
+              
+              const comment = `## 🚀 Lighthouse Performance Report
+              
+              | Category | Score | Status |
+              |----------|-------|--------|
+              | Performance | ${scores.performance}/100 | ${getEmoji(scores.performance)} |
+              | Accessibility | ${scores.accessibility}/100 | ${getEmoji(scores.accessibility)} |
+              | Best Practices | ${scores['best-practices']}/100 | ${getEmoji(scores['best-practices'])} |
+              | SEO | ${scores.seo}/100 | ${getEmoji(scores.seo)} |
+              
+              🔗 [View detailed report in artifacts](${context.payload.pull_request.html_url}/checks)
+              
+              ${scores.performance < 75 ? '⚠️ Performance score is below recommended threshold (75)' : '✅ Performance looks good!'}`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.log('Failed to post comment:', error.message);
+            }
+
+  # Optional: Deploy and audit production URL
+  lighthouse-production:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: lighthouse
+    timeout-minutes: 10
+    
+    steps:
+      - name: 📋 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 🔧 Install Chromium
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y --no-install-recommends chromium
+          
+      - name: 📦 Install dependencies (production only)
+        run: npm ci --only=production
+        
+      - name: 🔍 Audit production site
+        if: vars.PRODUCTION_URL
+        run: |
+          echo "🎯 Auditing production: ${{ vars.PRODUCTION_URL }}"
+          npx lighthouse "${{ vars.PRODUCTION_URL }}" \
+            --chrome-flags="--headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage" \
+            --output=json \
+            --output-path=./lighthouse-production.json \
+            --quiet
+        env:
+          CHROME_PATH: /usr/bin/chromium
+          
+      - name: 📁 Upload production audit
+        if: vars.PRODUCTION_URL
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-production-${{ github.run_id }}
+          path: lighthouse-production.json
+          retention-days: 90

@@ -12,7 +12,7 @@ export function DownloadReportButton({ auditData }: { auditData: any }) {
       const res = await fetch('/api/generate-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(auditData)
+        body: JSON.stringify(auditData),
       });
       if (!res.ok) {
         if (res.status === 401) {
@@ -46,7 +46,11 @@ export function DownloadReportButton({ auditData }: { auditData: any }) {
       className={`relative bg-transparent font-semibold py-4 px-6 rounded-lg transition-all duration-300 border-2 hover:shadow-md flex flex-col items-center justify-center ${downloading ? 'cursor-not-allowed opacity-60 border-cyan-400 text-cyan-300' : 'text-cyan-400 hover:text-cyan-300 border-cyan-500 hover:border-cyan-400 hover:bg-cyan-500/10'}`}
     >
       <span className="flex items-center justify-center">
-        {downloading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Download className="w-5 h-5 mr-2" />}
+        {downloading ? (
+          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+        ) : (
+          <Download className="w-5 h-5 mr-2" />
+        )}
         <span>{downloading ? 'Generating...' : 'Download Full Report'}</span>
       </span>
       <div className="text-xs opacity-75 mt-1">Get detailed analysis</div>

@@ -101,7 +101,7 @@ export class SameAsProfileGenerator {
       unchanged: string[];
     };
   } {
-    const updatedSchemas = existingSchemas.map(schema => {
+    const updatedSchemas = existingSchemas.map((schema) => {
       // Only update Organization and LocalBusiness schemas
       if (schema['@type'] === 'Organization' || schema['@type'] === 'LocalBusiness') {
         return {
@@ -116,9 +116,9 @@ export class SameAsProfileGenerator {
     const previousSet = new Set(previousSameAs);
     const currentSet = new Set(sameAsUrls);
 
-    const added = sameAsUrls.filter(url => !previousSet.has(url));
-    const removed = previousSameAs.filter(url => !currentSet.has(url));
-    const unchanged = sameAsUrls.filter(url => previousSet.has(url));
+    const added = sameAsUrls.filter((url) => !previousSet.has(url));
+    const removed = previousSameAs.filter((url) => !currentSet.has(url));
+    const unchanged = sameAsUrls.filter((url) => previousSet.has(url));
 
     return {
       schemas: updatedSchemas,
@@ -258,11 +258,15 @@ export class SameAsProfileGenerator {
     const recommendations: string[] = [];
 
     if (result.sameAs.length < 5) {
-      recommendations.push('Consider adding more social media profiles to reach minimum 5 sameAs URLs');
+      recommendations.push(
+        'Consider adding more social media profiles to reach minimum 5 sameAs URLs'
+      );
     }
 
     if (result.summary.withReciprocity < result.summary.valid / 2) {
-      recommendations.push('Consider adding your website URL to social media profiles for better reciprocity');
+      recommendations.push(
+        'Consider adding your website URL to social media profiles for better reciprocity'
+      );
     }
 
     if (!validation.isValid) {

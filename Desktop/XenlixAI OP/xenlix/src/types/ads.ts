@@ -1,9 +1,9 @@
 // Shared types for ad generation
 export type Channel = 'google' | 'bing' | 'meta' | 'tiktok';
 export type CampaignGoal = 'leads' | 'sales' | 'visibility';
-export type BudgetPlan = { 
-  dailyUSD: number; 
-  durationDays: number; 
+export type BudgetPlan = {
+  dailyUSD: number;
+  durationDays: number;
 };
 
 // Customer Profile (aligned with store structure)

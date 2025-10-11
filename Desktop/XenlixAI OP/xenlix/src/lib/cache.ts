@@ -4,16 +4,16 @@ import { CacheService } from './redis';
 class MockCacheService extends CacheService {
   private cache = new Map<string, { value: any; expires: number }>();
   private static mockInstance: MockCacheService;
-  
+
   static getInstance(): MockCacheService {
     if (!MockCacheService.mockInstance) {
       MockCacheService.mockInstance = new MockCacheService();
     }
     return MockCacheService.mockInstance;
   }
-  
+
   async set(key: string, value: any, ttl: number = 3600): Promise<void> {
-    const expires = Date.now() + (ttl * 1000);
+    const expires = Date.now() + ttl * 1000;
     this.cache.set(key, { value, expires });
     console.log(`[MockCache] Set key: ${key} (TTL: ${ttl}s)`);
   }
@@ -21,12 +21,12 @@ class MockCacheService extends CacheService {
   async get<T>(key: string): Promise<T | null> {
     const item = this.cache.get(key);
     if (!item) return null;
-    
+
     if (Date.now() > item.expires) {
       this.cache.delete(key);
       return null;
     }
-    
+
     console.log(`[MockCache] Get key: ${key}`);
     return item.value;
   }
@@ -46,14 +46,14 @@ class MockCacheService extends CacheService {
 // Mock job queue for development
 export class MockJobQueue {
   private jobs = new Map<string, any>();
-  
+
   constructor(private name: string) {}
 
   async add(name: string, data: any, options?: any): Promise<{ id: string }> {
     const id = `${Date.now()}-${Math.random()}`;
     this.jobs.set(id, { name, data, options, status: 'waiting' });
     console.log(`[MockQueue:${this.name}] Added job: ${name} (ID: ${id})`);
-    
+
     // Simulate async processing
     setTimeout(() => {
       const job = this.jobs.get(id);
@@ -62,7 +62,7 @@ export class MockJobQueue {
         console.log(`[MockQueue:${this.name}] Job completed: ${name} (ID: ${id})`);
       }
     }, 1000);
-    
+
     return { id };
   }
 
@@ -81,11 +81,11 @@ export function createRedisClient() {
   try {
     // Import environment config
     const { getEnvironmentConfig, isServiceAvailable } = require('./env-config');
-    
+
     if (!isServiceAvailable('redis')) {
       return null;
     }
-    
+
     // Try to create real Redis connection
     const Redis = require('ioredis');
     const envConfig = getEnvironmentConfig();
@@ -100,11 +100,14 @@ export function createRedisClient() {
     });
 
     // Test connection
-    redis.ping().then(() => {
-      console.log('✅ Redis connected successfully');
-    }).catch(() => {
-      console.warn('⚠️  Redis server not available, using mock cache');
-    });
+    redis
+      .ping()
+      .then(() => {
+        console.log('✅ Redis connected successfully');
+      })
+      .catch(() => {
+        console.warn('⚠️  Redis server not available, using mock cache');
+      });
 
     return redis;
   } catch (error) {
@@ -116,7 +119,7 @@ export function createRedisClient() {
 // Export cache service (real or mock)
 export function getCacheService(): CacheService {
   const redisAvailable = process.env.REDIS_URL && process.env.NODE_ENV === 'production';
-  
+
   if (redisAvailable) {
     try {
       return CacheService.getInstance();
@@ -125,23 +128,23 @@ export function getCacheService(): CacheService {
       return MockCacheService.getInstance();
     }
   }
-  
+
   return MockCacheService.getInstance();
 }
 
 // Export job queues (real or mock)
 export function createJobQueue(name: string) {
   const redisAvailable = process.env.REDIS_URL && process.env.NODE_ENV === 'production';
-  
+
   if (redisAvailable) {
     try {
-      const Queue = require('bull');
-      return new Queue(name, process.env.REDIS_URL);
+      const { Queue } = require('bullmq');
+      return new Queue(name, { connection: process.env.REDIS_URL });
     } catch {
       console.warn(`Falling back to mock queue for: ${name}`);
       return new MockJobQueue(name);
     }
   }
-  
+
   return new MockJobQueue(name);
 }

@@ -65,18 +65,18 @@ export default function JsonLdImprovement({ analysis, className = '' }: JsonLdIm
   };
 
   return (
-    <div className={`bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 ${className}`}>
+    <div
+      className={`bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 ${className}`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-xl font-semibold text-white mb-2">
-            JSON-LD Schema Analysis
-          </h3>
+          <h3 className="text-xl font-semibold text-white mb-2">JSON-LD Schema Analysis</h3>
           <p className="text-white/60 text-sm">
             Structured data optimization for AI search engines
           </p>
         </div>
-        
+
         {/* Scores */}
         <div className="flex space-x-4">
           <div className={`px-3 py-2 rounded-lg border ${getScoreBg(analysis.completenessScore)}`}>
@@ -103,16 +103,17 @@ export default function JsonLdImprovement({ analysis, className = '' }: JsonLdIm
           </h4>
           <div className="space-y-2">
             {analysis.current.slice(0, showAllSchemas ? undefined : 3).map((schema, index) => (
-              <div key={index} className="bg-black/20 rounded-lg p-3 flex items-center justify-between">
+              <div
+                key={index}
+                className="bg-black/20 rounded-lg p-3 flex items-center justify-between"
+              >
                 <div>
                   <span className="text-green-400 font-medium">{schema['@type']}</span>
                   {schema.name && (
                     <span className="text-white/60 ml-2 text-sm">- {schema.name}</span>
                   )}
                 </div>
-                <div className="text-xs text-white/40">
-                  {Object.keys(schema).length} properties
-                </div>
+                <div className="text-xs text-white/40">{Object.keys(schema).length} properties</div>
               </div>
             ))}
             {analysis.current.length > 3 && (
@@ -165,7 +166,7 @@ export default function JsonLdImprovement({ analysis, className = '' }: JsonLdIm
               <span>Download All</span>
             </button>
           </div>
-          
+
           <div className="space-y-4">
             {analysis.improved.map((schema, index) => (
               <div key={index} className="bg-black/30 rounded-lg overflow-hidden">
@@ -185,7 +186,7 @@ export default function JsonLdImprovement({ analysis, className = '' }: JsonLdIm
                     <span>{copiedIndex === index ? 'Copied!' : 'Copy'}</span>
                   </button>
                 </div>
-                
+
                 <pre className="bg-black/40 p-4 text-xs text-green-300 overflow-x-auto border-t border-white/10">
                   {JSON.stringify(schema, null, 2)}
                 </pre>
@@ -200,7 +201,10 @@ export default function JsonLdImprovement({ analysis, className = '' }: JsonLdIm
         <h5 className="text-blue-400 font-medium mb-2">Implementation Guide</h5>
         <div className="text-white/80 text-sm space-y-1">
           <p>1. Copy the optimized JSON-LD schemas above</p>
-          <p>2. Add them to your website's &lt;head&gt; section inside &lt;script type="application/ld+json"&gt; tags</p>
+          <p>
+            2. Add them to your website's &lt;head&gt; section inside &lt;script
+            type="application/ld+json"&gt; tags
+          </p>
           <p>3. Validate your implementation using Google's Rich Results Test</p>
           <p>4. Monitor improvements in AI search visibility over 2-4 weeks</p>
         </div>

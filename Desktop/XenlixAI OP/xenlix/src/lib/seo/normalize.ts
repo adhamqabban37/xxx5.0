@@ -122,14 +122,17 @@ export function normalizeProfile(input: any): NormalizedBusiness {
   // Optional FAQs
   if (Array.isArray(input.faqs)) {
     const faqs = input.faqs
-      .filter((faq: any) => 
-        faq && 
-        typeof faq.q === 'string' && faq.q.trim() &&
-        typeof faq.a === 'string' && faq.a.trim()
+      .filter(
+        (faq: any) =>
+          faq &&
+          typeof faq.q === 'string' &&
+          faq.q.trim() &&
+          typeof faq.a === 'string' &&
+          faq.a.trim()
       )
       .map((faq: any) => ({
         q: faq.q.trim(),
-        a: faq.a.trim()
+        a: faq.a.trim(),
       }));
     if (faqs.length > 0) {
       normalized.faqs = faqs;

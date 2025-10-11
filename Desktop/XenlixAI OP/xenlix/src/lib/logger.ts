@@ -17,7 +17,7 @@ export interface LogContext {
 
 export class ServerLogger {
   private static instance: ServerLogger;
-  
+
   static getInstance(): ServerLogger {
     if (!ServerLogger.instance) {
       ServerLogger.instance = new ServerLogger();
@@ -38,10 +38,10 @@ export class ServerLogger {
         action: context.action,
         resource: context.resource,
         metadata: context.metadata,
-        request: context.request
-      })
+        request: context.request,
+      }),
     };
-    
+
     return JSON.stringify(logData);
   }
 
@@ -59,9 +59,9 @@ export class ServerLogger {
         error: {
           name: error?.name,
           message: error?.message,
-          stack: error?.stack
-        }
-      }
+          stack: error?.stack,
+        },
+      },
     };
     console.error(this.formatLog('error', message, errorContext));
   }
@@ -82,7 +82,7 @@ export class ServerLogger {
       userId,
       action,
       resource: 'onboarding',
-      metadata: data
+      metadata: data,
     });
   }
 
@@ -91,7 +91,7 @@ export class ServerLogger {
       userId,
       action,
       resource: 'guidance',
-      metadata: data
+      metadata: data,
     });
   }
 
@@ -100,7 +100,7 @@ export class ServerLogger {
       userId,
       action,
       resource: 'ads',
-      metadata: data
+      metadata: data,
     });
   }
 
@@ -109,7 +109,7 @@ export class ServerLogger {
       userId,
       action,
       resource: 'checkout',
-      metadata: data
+      metadata: data,
     });
   }
 
@@ -118,7 +118,7 @@ export class ServerLogger {
       userId,
       action,
       resource: 'subscription',
-      metadata: data
+      metadata: data,
     });
   }
 
@@ -127,7 +127,7 @@ export class ServerLogger {
       email,
       action,
       resource: 'auth',
-      metadata: data
+      metadata: data,
     });
   }
 
@@ -137,9 +137,7 @@ export class ServerLogger {
       method: request.method,
       url: request.url,
       userAgent: request.headers.get('user-agent') || undefined,
-      ip: request.headers.get('x-forwarded-for') || 
-          request.headers.get('x-real-ip') || 
-          'unknown'
+      ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
     };
   }
 }

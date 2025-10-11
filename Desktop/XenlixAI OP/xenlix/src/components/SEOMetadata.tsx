@@ -1,29 +1,26 @@
 import { Metadata } from 'next';
-import { 
-  generateCanonicalUrl, 
-  shouldNoindex as shouldNoindexUtil 
-} from '@/lib/canonical-server';
+import { generateCanonicalUrl, shouldNoindex as shouldNoindexUtil } from '@/lib/canonical-server';
 
 interface SEOMetadataConfig {
   // Basic metadata
   title: string;
   description: string;
   keywords?: string;
-  
+
   // Canonical configuration
   pathname: string;
   searchParams?: { [key: string]: string | string[] | undefined };
   baseUrl?: string;
   preserveParams?: string[];
-  
+
   // Indexing directives
   forceNoindex?: boolean;
   forceIndex?: boolean;
-  
+
   // Open Graph
   ogImage?: string;
   ogType?: 'website' | 'article' | 'book' | 'profile';
-  
+
   // Additional metadata
   alternateLanguages?: { [lang: string]: string };
   verification?: {
@@ -49,19 +46,21 @@ export async function generateSEOMetadata(config: SEOMetadataConfig): Promise<Me
     ogImage,
     ogType = 'website',
     alternateLanguages,
-    verification
+    verification,
   } = config;
 
   // Generate canonical URL
-  const canonicalUrl = await generateCanonicalUrl(
-    pathname,
-    searchParams,
-    { baseUrl, preserveParams, forceHttps: true, forceLowercase: true, removeTrailingSlash: true }
-  );
+  const canonicalUrl = await generateCanonicalUrl(pathname, searchParams, {
+    baseUrl,
+    preserveParams,
+    forceHttps: true,
+    forceLowercase: true,
+    removeTrailingSlash: true,
+  });
 
   // Determine indexing directive
   let shouldNoindex = false;
-  
+
   if (forceNoindex) {
     shouldNoindex = true;
   } else if (forceIndex) {
@@ -73,19 +72,19 @@ export async function generateSEOMetadata(config: SEOMetadataConfig): Promise<Me
 
   // Build robots directive
   const robots = shouldNoindex ? 'noindex, nofollow' : 'index, follow';
-  
+
   // Build metadata object
   const metadata: Metadata = {
     title,
     description,
     keywords,
-    
+
     // Canonical URL
     alternates: {
       canonical: canonicalUrl,
-      ...(alternateLanguages && { languages: alternateLanguages })
+      ...(alternateLanguages && { languages: alternateLanguages }),
     },
-    
+
     // Robots directive
     robots: {
       index: !shouldNoindex,
@@ -98,7 +97,7 @@ export async function generateSEOMetadata(config: SEOMetadataConfig): Promise<Me
         'max-snippet': -1,
       },
     },
-    
+
     // Open Graph
     openGraph: {
       title,
@@ -113,12 +112,12 @@ export async function generateSEOMetadata(config: SEOMetadataConfig): Promise<Me
             url: ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`,
             width: 1200,
             height: 630,
-            alt: title
-          }
-        ]
-      })
+            alt: title,
+          },
+        ],
+      }),
     },
-    
+
     // Twitter Card
     twitter: {
       card: 'summary_large_image',
@@ -126,30 +125,30 @@ export async function generateSEOMetadata(config: SEOMetadataConfig): Promise<Me
       description,
       creator: '@XenlixAI',
       ...(ogImage && {
-        images: [ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`]
-      })
+        images: [ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`],
+      }),
     },
-    
+
     // Additional metadata
     authors: [{ name: 'XenlixAI' }],
     creator: 'XenlixAI',
     publisher: 'XenlixAI',
-    
+
     // Verification
     ...(verification && { verification }),
-    
+
     // Format detection
     formatDetection: {
       email: false,
       address: false,
       telephone: false,
     },
-    
+
     // Additional robots meta
     other: {
-      'robots': robots,
-      ...(shouldNoindex && { 'googlebot': 'noindex, nofollow' })
-    }
+      robots: robots,
+      ...(shouldNoindex && { googlebot: 'noindex, nofollow' }),
+    },
   };
 
   return metadata;
@@ -160,28 +159,31 @@ export async function generateSEOMetadata(config: SEOMetadataConfig): Promise<Me
  */
 export const MetadataTemplates = {
   // Homepage
-  homepage: async (searchParams?: { [key: string]: string | string[] | undefined }): Promise<Metadata> => 
+  homepage: async (searchParams?: {
+    [key: string]: string | string[] | undefined;
+  }): Promise<Metadata> =>
     await generateSEOMetadata({
       title: 'XenlixAI - AI-Powered SEO & AEO Marketing Platform',
-      description: 'Transform your marketing with XenlixAI\'s AI-powered SEO and AEO platform. Get discovered in ChatGPT, Claude, and traditional search engines.',
+      description:
+        "Transform your marketing with XenlixAI's AI-powered SEO and AEO platform. Get discovered in ChatGPT, Claude, and traditional search engines.",
       pathname: '/',
       searchParams,
-      ogImage: '/og-homepage.jpg'
+      ogImage: '/og-homepage.jpg',
     }),
 
   // City pages
   cityPage: async (
-    cityName: string, 
-    stateAbbr: string, 
+    cityName: string,
+    stateAbbr: string,
     pathname: string,
     searchParams?: { [key: string]: string | string[] | undefined }
-  ): Promise<Metadata> => 
+  ): Promise<Metadata> =>
     await generateSEOMetadata({
       title: `AI SEO Services in ${cityName}, ${stateAbbr} | XenlixAI Local Marketing`,
       description: `Professional AI-powered SEO and local marketing services in ${cityName}, ${stateAbbr}. Boost your local visibility and drive more customers with XenlixAI.`,
       pathname,
       searchParams,
-      ogImage: '/og-city-default.jpg'
+      ogImage: '/og-city-default.jpg',
     }),
 
   // Tool pages
@@ -190,13 +192,13 @@ export const MetadataTemplates = {
     toolDescription: string,
     pathname: string,
     searchParams?: { [key: string]: string | string[] | undefined }
-  ): Promise<Metadata> => 
+  ): Promise<Metadata> =>
     await generateSEOMetadata({
       title: `${toolName} | Free SEO Tool - XenlixAI`,
       description: toolDescription,
       pathname,
       searchParams,
-      ogImage: '/og-tools.jpg'
+      ogImage: '/og-tools.jpg',
     }),
 
   // Private/authenticated pages
@@ -205,13 +207,13 @@ export const MetadataTemplates = {
     description: string,
     pathname: string,
     searchParams?: { [key: string]: string | string[] | undefined }
-  ): Promise<Metadata> => 
+  ): Promise<Metadata> =>
     await generateSEOMetadata({
       title,
       description,
       pathname,
       searchParams,
-      forceNoindex: true
+      forceNoindex: true,
     }),
 
   // Case study pages
@@ -220,14 +222,14 @@ export const MetadataTemplates = {
     description: string,
     pathname: string,
     searchParams?: { [key: string]: string | string[] | undefined }
-  ): Promise<Metadata> => 
+  ): Promise<Metadata> =>
     await generateSEOMetadata({
       title: `${title} | Case Study - XenlixAI`,
       description,
       pathname,
       searchParams,
-      ogImage: '/og-case-studies.jpg'
-    })
+      ogImage: '/og-case-studies.jpg',
+    }),
 };
 
 /**
@@ -242,6 +244,6 @@ export async function createMetadataExport(config: SEOMetadataConfig) {
     // Add theme color
     themeColor: '#6366f1',
     // Add manifest
-    manifest: '/site.webmanifest'
+    manifest: '/site.webmanifest',
   };
 }

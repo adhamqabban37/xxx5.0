@@ -6,7 +6,7 @@ export async function getUserSubscriptionStatus(userEmail: string) {
   try {
     const user = await prisma.user.findUnique({
       where: { email: userEmail },
-      include: { subscription: true }
+      include: { subscription: true },
     });
 
     if (!user) {
@@ -24,8 +24,8 @@ export async function getUserSubscriptionStatus(userEmail: string) {
       user: {
         id: user.id,
         email: user.email,
-        stripeCustomerId: user.stripeCustomerId
-      }
+        stripeCustomerId: user.stripeCustomerId,
+      },
     };
   } catch (error) {
     return { hasAccess: false, subscription: null, error: 'Database error' };
@@ -36,10 +36,10 @@ export async function getUserSubscriptionStatus(userEmail: string) {
 
 export async function requireActiveSubscription(userEmail: string) {
   const status = await getUserSubscriptionStatus(userEmail);
-  
+
   if (!status.hasAccess) {
     throw new Error('Active subscription required');
   }
-  
+
   return status;
 }

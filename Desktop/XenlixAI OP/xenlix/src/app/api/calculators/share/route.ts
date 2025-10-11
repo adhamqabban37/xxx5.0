@@ -5,21 +5,27 @@ import { validateRequest, createErrorResponse, createSuccessResponse } from '@/l
 
 // In-memory store for demo purposes
 // In production, you'd use a database like Redis, DynamoDB, or PostgreSQL
-const shareStore = new Map<string, {
-  data: any;
-  createdAt: number;
-  expiresAt: number;
-}>();
+const shareStore = new Map<
+  string,
+  {
+    data: any;
+    createdAt: number;
+    expiresAt: number;
+  }
+>();
 
 // Clean up expired entries every hour
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of shareStore.entries()) {
-    if (now > value.expiresAt) {
-      shareStore.delete(key);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [key, value] of shareStore.entries()) {
+      if (now > value.expiresAt) {
+        shareStore.delete(key);
+      }
     }
-  }
-}, 60 * 60 * 1000);
+  },
+  60 * 60 * 1000
+);
 
 // Validation schemas
 const roiInputsSchema = z.object({
@@ -38,10 +44,9 @@ const pricingInputsSchema = z.object({
 });
 
 const shareSchema = z.object({
-  type: z.enum(['roi', 'pricing']).refine(
-    (val) => ['roi', 'pricing'].includes(val),
-    { message: 'Calculator type must be either "roi" or "pricing"' }
-  ),
+  type: z.enum(['roi', 'pricing']).refine((val) => ['roi', 'pricing'].includes(val), {
+    message: 'Calculator type must be either "roi" or "pricing"',
+  }),
   inputs: z.union([roiInputsSchema, pricingInputsSchema]),
 });
 
@@ -58,21 +63,20 @@ export async function POST(request: NextRequest) {
     // Generate unique short ID
     const shareId = nanoid(8); // 8-character random string
     const createdAt = Date.now();
-    const expiresAt = createdAt + (30 * 24 * 60 * 60 * 1000); // 30 days
+    const expiresAt = createdAt + 30 * 24 * 60 * 60 * 1000; // 30 days
 
     // Store the data
     shareStore.set(shareId, {
       data: { type, inputs },
       createdAt,
-      expiresAt
+      expiresAt,
     });
 
     return createSuccessResponse({
       shareId,
       url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://localhost:3000'}/calculators/${type}?share=${shareId}`,
-      expiresAt: new Date(expiresAt).toISOString()
+      expiresAt: new Date(expiresAt).toISOString(),
     });
-
   } catch (error) {
     return createErrorResponse('Internal server error', 500);
   }
@@ -83,34 +87,25 @@ export async function GET(request: NextRequest) {
   const shareId = searchParams.get('id');
 
   if (!shareId) {
-    return NextResponse.json(
-      { error: 'Missing share ID' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Missing share ID' }, { status: 400 });
   }
 
   const shareData = shareStore.get(shareId);
 
   if (!shareData) {
-    return NextResponse.json(
-      { error: 'Share link not found or expired' },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: 'Share link not found or expired' }, { status: 404 });
   }
 
   // Check if expired
   if (Date.now() > shareData.expiresAt) {
     shareStore.delete(shareId);
-    return NextResponse.json(
-      { error: 'Share link has expired' },
-      { status: 410 }
-    );
+    return NextResponse.json({ error: 'Share link has expired' }, { status: 410 });
   }
 
   return NextResponse.json({
     data: shareData.data,
     createdAt: new Date(shareData.createdAt).toISOString(),
-    expiresAt: new Date(shareData.expiresAt).toISOString()
+    expiresAt: new Date(shareData.expiresAt).toISOString(),
   });
 }
 
@@ -119,20 +114,14 @@ export async function DELETE(request: NextRequest) {
   const shareId = searchParams.get('id');
 
   if (!shareId) {
-    return NextResponse.json(
-      { error: 'Missing share ID' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Missing share ID' }, { status: 400 });
   }
 
   const existed = shareStore.has(shareId);
   shareStore.delete(shareId);
 
   if (!existed) {
-    return NextResponse.json(
-      { error: 'Share link not found' },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: 'Share link not found' }, { status: 404 });
   }
 
   return NextResponse.json({ message: 'Share link deleted successfully' });

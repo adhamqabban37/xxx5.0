@@ -5,14 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Shield, 
-  AlertTriangle, 
-  TrendingUp, 
+import {
+  Shield,
+  AlertTriangle,
+  TrendingUp,
   TrendingDown,
   Eye,
   MessageSquare,
-  ExternalLink
+  ExternalLink,
 } from 'lucide-react';
 
 interface QuickReputationData {
@@ -30,10 +30,10 @@ interface QuickReputationMonitorProps {
   onViewDetails?: () => void;
 }
 
-const QuickReputationMonitor: React.FC<QuickReputationMonitorProps> = ({ 
-  url, 
-  businessName, 
-  onViewDetails 
+const QuickReputationMonitor: React.FC<QuickReputationMonitorProps> = ({
+  url,
+  businessName,
+  onViewDetails,
 }) => {
   const [data, setData] = useState<QuickReputationData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,14 +52,14 @@ const QuickReputationMonitor: React.FC<QuickReputationMonitorProps> = ({
       if (response.ok) {
         const result = await response.json();
         const reputationData = result.data;
-        
+
         setData({
           overallHealth: reputationData.overallHealth,
           newReviews: reputationData.newReviews.length,
           ratingChange: reputationData.ratingChange,
           alertCount: reputationData.alerts.length,
           consistencyStatus: reputationData.entityConsistency.status,
-          lastChecked: reputationData.lastChecked
+          lastChecked: reputationData.lastChecked,
         });
       }
     } catch (error) {
@@ -88,10 +88,14 @@ const QuickReputationMonitor: React.FC<QuickReputationMonitorProps> = ({
 
   const getConsistencyColor = (status: string) => {
     switch (status) {
-      case 'OK': return 'bg-green-50 text-green-700';
-      case 'Minor Issues': return 'bg-yellow-50 text-yellow-700';
-      case 'Major Mismatch': return 'bg-red-50 text-red-700';
-      default: return 'bg-gray-50 text-gray-700';
+      case 'OK':
+        return 'bg-green-50 text-green-700';
+      case 'Minor Issues':
+        return 'bg-yellow-50 text-yellow-700';
+      case 'Major Mismatch':
+        return 'bg-red-50 text-red-700';
+      default:
+        return 'bg-gray-50 text-gray-700';
     }
   };
 
@@ -133,12 +137,7 @@ const QuickReputationMonitor: React.FC<QuickReputationMonitorProps> = ({
             <div className="text-sm text-gray-500 mb-3">
               Add business details to monitor reputation
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onViewDetails}
-              className="text-xs"
-            >
+            <Button variant="outline" size="sm" onClick={onViewDetails} className="text-xs">
               Setup Monitoring
             </Button>
           </div>
@@ -172,9 +171,7 @@ const QuickReputationMonitor: React.FC<QuickReputationMonitorProps> = ({
             </span>
           </div>
           <Progress value={data.overallHealth} className="h-2" />
-          <div className="text-xs text-gray-500 mt-1">
-            {getHealthLabel(data.overallHealth)}
-          </div>
+          <div className="text-xs text-gray-500 mt-1">{getHealthLabel(data.overallHealth)}</div>
         </div>
 
         {/* Key Metrics */}
@@ -186,7 +183,7 @@ const QuickReputationMonitor: React.FC<QuickReputationMonitorProps> = ({
             </div>
             <div className="text-xs text-gray-500">New Reviews</div>
           </div>
-          
+
           <div className="text-center">
             <div className="flex items-center justify-center gap-1">
               {data.ratingChange.startsWith('+') ? (
@@ -194,9 +191,11 @@ const QuickReputationMonitor: React.FC<QuickReputationMonitorProps> = ({
               ) : (
                 <TrendingDown className="h-3 w-3 text-red-500" />
               )}
-              <span className={`text-sm font-semibold ${
-                data.ratingChange.startsWith('+') ? 'text-green-600' : 'text-red-600'
-              }`}>
+              <span
+                className={`text-sm font-semibold ${
+                  data.ratingChange.startsWith('+') ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
                 {data.ratingChange}
               </span>
             </div>
@@ -206,7 +205,7 @@ const QuickReputationMonitor: React.FC<QuickReputationMonitorProps> = ({
 
         {/* Consistency Status */}
         <div>
-          <Badge 
+          <Badge
             className={`text-xs w-full justify-center ${getConsistencyColor(data.consistencyStatus)}`}
             variant="outline"
           >
@@ -215,12 +214,7 @@ const QuickReputationMonitor: React.FC<QuickReputationMonitorProps> = ({
         </div>
 
         {/* Action Button */}
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onViewDetails}
-          className="w-full text-xs"
-        >
+        <Button variant="outline" size="sm" onClick={onViewDetails} className="w-full text-xs">
           <Eye className="h-3 w-3 mr-2" />
           View Details
         </Button>

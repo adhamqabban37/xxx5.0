@@ -7,7 +7,7 @@ import { ExtractionResult, NormalizedBusiness } from '@/types/seo';
  */
 export async function extractFromUrl(url: string): Promise<ExtractionResult> {
   const startTime = Date.now();
-  
+
   try {
     // Validate URL
     if (!url || typeof url !== 'string') {
@@ -32,11 +32,11 @@ export async function extractFromUrl(url: string): Promise<ExtractionResult> {
       signal: controller.signal,
       headers: {
         'User-Agent': 'XenlixAI-SEO-Extractor/1.0',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
         'Accept-Encoding': 'gzip, deflate',
-        'DNT': '1',
-        'Connection': 'keep-alive',
+        DNT: '1',
+        Connection: 'keep-alive',
         'Upgrade-Insecure-Requests': '1',
       },
     });
@@ -91,7 +91,6 @@ export async function extractFromUrl(url: string): Promise<ExtractionResult> {
     const duration = Date.now() - startTime;
 
     return { ok: true, data };
-
   } catch (error) {
     const duration = Date.now() - startTime;
     return { ok: false, reason: 'FETCH_OR_PARSE_FAILED' };
@@ -109,7 +108,7 @@ function extractBusinessName($: cheerio.CheerioAPI, hostname: string): string {
     'h1',
     '.business-name',
     '.company-name',
-    '.logo-text'
+    '.logo-text',
   ];
 
   for (const selector of selectors) {
@@ -146,7 +145,7 @@ function extractLogo($: cheerio.CheerioAPI, origin: string): string | undefined 
     'img.logo',
     'img[alt*="logo" i]',
     '.logo img',
-    'header img'
+    'header img',
   ];
 
   for (const selector of selectors) {
@@ -193,7 +192,7 @@ function extractPhone($: cheerio.CheerioAPI): string | undefined {
 function extractAddress($: cheerio.CheerioAPI): NormalizedBusiness['address'] | undefined {
   // Try structured data first
   const structuredAddress: any = {};
-  
+
   const streetElement = $('[itemProp="streetAddress"]').first();
   if (streetElement.length) {
     structuredAddress.street = streetElement.text().trim();
@@ -229,20 +228,23 @@ function extractAddress($: cheerio.CheerioAPI): NormalizedBusiness['address'] | 
     '.contact-address',
     '.location',
     '[class*="address"]',
-    'address'
+    'address',
   ];
 
   for (const selector of addressSelectors) {
     const addressText = $(selector).first().text().trim();
     if (addressText && addressText.length > 10) {
       // Simple address parsing
-      const lines = addressText.split('\n').map(line => line.trim()).filter(line => line);
+      const lines = addressText
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line);
       if (lines.length >= 2) {
         return {
           street: lines[0],
           city: lines[1].split(',')[0]?.trim(),
           region: lines[1].split(',')[1]?.trim(),
-          country: 'US' // Default assumption
+          country: 'US', // Default assumption
         };
       }
     }
@@ -280,8 +282,8 @@ function extractServices($: cheerio.CheerioAPI): string[] | undefined {
 
   // Remove duplicates and common navigation items
   const filtered = [...new Set(services)]
-    .filter(service => 
-      !service.toLowerCase().match(/^(home|about|contact|blog|news|login|search)$/i)
+    .filter(
+      (service) => !service.toLowerCase().match(/^(home|about|contact|blog|news|login|search)$/i)
     )
     .slice(0, 20); // Limit to 20 services
 
@@ -320,12 +322,7 @@ function extractHours($: cheerio.CheerioAPI): string[] | undefined {
   });
 
   // Common hour patterns
-  const hourSelectors = [
-    '.hours',
-    '.opening-hours',
-    '.business-hours',
-    '[class*="hour"]'
-  ];
+  const hourSelectors = ['.hours', '.opening-hours', '.business-hours', '[class*="hour"]'];
 
   for (const selector of hourSelectors) {
     $(selector).each((_, element) => {
@@ -403,16 +400,18 @@ function extractFAQs($: cheerio.CheerioAPI): { q: string; a: string }[] | undefi
   });
 
   // Common FAQ patterns
-  $('.faq, .faqs, .frequently-asked').find('dt, .question, h3, h4').each((_, questionElement) => {
-    const question = $(questionElement).text().trim();
-    if (question && question.endsWith('?')) {
-      const answerElement = $(questionElement).next('dd, .answer, p');
-      const answer = answerElement.text().trim();
-      if (answer && answer.length > 10) {
-        faqs.push({ q: question, a: answer });
+  $('.faq, .faqs, .frequently-asked')
+    .find('dt, .question, h3, h4')
+    .each((_, questionElement) => {
+      const question = $(questionElement).text().trim();
+      if (question && question.endsWith('?')) {
+        const answerElement = $(questionElement).next('dd, .answer, p');
+        const answer = answerElement.text().trim();
+        if (answer && answer.length > 10) {
+          faqs.push({ q: question, a: answer });
+        }
       }
-    }
-  });
+    });
 
   const unique = faqs.slice(0, 10); // Limit to 10 FAQs
   return unique.length > 0 ? unique : undefined;

@@ -10,7 +10,7 @@ const crawl4aiRequestSchema = z.object({
   url: z.string().url(),
   scan_type: z.enum(['full', 'quick', 'schema-only']).default('full'),
   include_ai_analysis: z.boolean().default(true),
-  user_agent: z.string().default('XenlixAI-Bot/1.0 (+https://xenlix.ai/bot)')
+  user_agent: z.string().default('XenlixAI-Bot/1.0 (+https://xenlix.ai/bot)'),
 });
 
 // Response schemas
@@ -20,7 +20,7 @@ const aeoAnalysisSchema = z.object({
   snippet_optimization_score: z.number(),
   faq_structure_score: z.number(),
   local_optimization_score: z.number(),
-  overall_aeo_score: z.number()
+  overall_aeo_score: z.number(),
 });
 
 const scanResultSchema = z.object({
@@ -41,16 +41,18 @@ const scanResultSchema = z.object({
   twitter_card: z.record(z.string(), z.string().optional()),
   content_analysis: z.record(z.string(), z.any()),
   aeo_analysis: aeoAnalysisSchema.optional(),
-  recommendations: z.array(z.object({
-    priority: z.string(),
-    category: z.string(),
-    issue: z.string(),
-    solution: z.string(),
-    impact: z.string(),
-    effort: z.string()
-  })),
+  recommendations: z.array(
+    z.object({
+      priority: z.string(),
+      category: z.string(),
+      issue: z.string(),
+      solution: z.string(),
+      impact: z.string(),
+      effort: z.string(),
+    })
+  ),
   raw_html: z.string().optional(),
-  extracted_content: z.string().optional()
+  extracted_content: z.string().optional(),
 });
 
 export type ScanRequest = z.infer<typeof crawl4aiRequestSchema>;
@@ -74,7 +76,7 @@ export class Crawl4AIService {
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: AbortSignal.timeout(5000) // 5 second timeout
+        signal: AbortSignal.timeout(5000), // 5 second timeout
       });
 
       return response.ok;
@@ -98,7 +100,7 @@ export class Crawl4AIService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(validatedRequest),
-        signal: AbortSignal.timeout(60000) // 60 second timeout
+        signal: AbortSignal.timeout(60000), // 60 second timeout
       });
 
       if (!response.ok) {
@@ -107,21 +109,20 @@ export class Crawl4AIService {
       }
 
       const result = await response.json();
-      
+
       // Validate response
       return scanResultSchema.parse(result);
-
     } catch (error) {
       console.error('Crawl4AI scan failed:', error);
-      
+
       if (error instanceof z.ZodError) {
         throw new Error(`Invalid response from Crawl4AI service: ${error.message}`);
       }
-      
+
       if (error instanceof Error) {
         throw error;
       }
-      
+
       throw new Error('Unknown error occurred during website scan');
     }
   }
@@ -150,10 +151,10 @@ export class Crawl4AIService {
   private async scanWithLocalFallback(url: string): Promise<ScanResult> {
     const { WebsiteScanner } = await import('@/lib/website-scanner');
     const scanner = new WebsiteScanner();
-    
+
     try {
       const result = await scanner.scanWebsite(url);
-      
+
       // Transform local scanner result to match Crawl4AI format
       return {
         url: result.url,
@@ -178,31 +179,35 @@ export class Crawl4AIService {
           has_location_info: result.contentAnalysis?.hasLocationInfo || false,
           avg_sentence_length: result.contentAnalysis?.avgSentenceLength || 0,
           sentence_count: 0, // Not available in local scanner
-          paragraph_count: 0 // Not available in local scanner
+          paragraph_count: 0, // Not available in local scanner
         },
-        aeo_analysis: result.aeoScore ? {
-          schema_compliance_score: result.aeoScore.schemaCompliance || 0,
-          voice_search_readiness: result.aeoScore.voiceSearchReady || 0,
-          snippet_optimization_score: result.aeoScore.snippetOptimized || 0,
-          faq_structure_score: result.aeoScore.faqStructure || 0,
-          local_optimization_score: result.aeoScore.localOptimization || 0,
-          overall_aeo_score: result.aeoScore.overall || 0
-        } : undefined,
-        recommendations: result.recommendations?.map((rec: any) => ({
-          priority: rec.priority,
-          category: rec.category,
-          issue: rec.issue,
-          solution: rec.solution,
-          impact: rec.impact,
-          effort: rec.effort
-        })) || [],
+        aeo_analysis: result.aeoScore
+          ? {
+              schema_compliance_score: result.aeoScore.schemaCompliance || 0,
+              voice_search_readiness: result.aeoScore.voiceSearchReady || 0,
+              snippet_optimization_score: result.aeoScore.snippetOptimized || 0,
+              faq_structure_score: result.aeoScore.faqStructure || 0,
+              local_optimization_score: result.aeoScore.localOptimization || 0,
+              overall_aeo_score: result.aeoScore.overall || 0,
+            }
+          : undefined,
+        recommendations:
+          result.recommendations?.map((rec: any) => ({
+            priority: rec.priority,
+            category: rec.category,
+            issue: rec.issue,
+            solution: rec.solution,
+            impact: rec.impact,
+            effort: rec.effort,
+          })) || [],
         raw_html: undefined, // Not provided by local scanner
-        extracted_content: undefined // Not available in local scanner
+        extracted_content: undefined, // Not available in local scanner
       };
-      
     } catch (error) {
       console.error('Local scanner fallback failed:', error);
-      throw new Error(`Both Crawl4AI service and local scanner failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Both Crawl4AI service and local scanner failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 }

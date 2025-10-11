@@ -37,8 +37,8 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-      }
-    ]
+      },
+    ],
   },
   async headers() {
     return [
@@ -48,7 +48,7 @@ const nextConfig = {
           // HSTS (HTTP Strict Transport Security)
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload'
+            value: 'max-age=63072000; includeSubDomains; preload',
           },
           // Content Security Policy with upgrade-insecure-requests
           {
@@ -64,53 +64,74 @@ const nextConfig = {
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
-              "upgrade-insecure-requests"
-            ].join('; ')
+              'upgrade-insecure-requests',
+            ].join('; '),
           },
           // Security headers
           {
             key: 'X-Content-Type-Options',
-            value: 'nosniff'
+            value: 'nosniff',
           },
           {
             key: 'X-Frame-Options',
-            value: 'DENY'
+            value: 'DENY',
           },
           {
             key: 'X-XSS-Protection',
-            value: '1; mode=block'
+            value: '1; mode=block',
           },
           {
             key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
+            value: 'strict-origin-when-cross-origin',
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()'
+            value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
           },
           // Preconnect to external domains for performance
           {
             key: 'Link',
-            value: '<https://fonts.googleapis.com>; rel=preconnect, <https://fonts.gstatic.com>; rel=preconnect; crossorigin'
-          }
+            value:
+              '<https://fonts.googleapis.com>; rel=preconnect, <https://fonts.gstatic.com>; rel=preconnect; crossorigin',
+          },
         ],
       },
-    ]
+    ];
   },
   async rewrites() {
     return [
       {
         source: '/api/stripe/webhook',
-        destination: '/api/stripe/webhook'
-      }
-    ]
+        destination: '/api/stripe/webhook',
+      },
+    ];
   },
-  
+
   // Docker standalone build support
   output: 'standalone',
-  
+
   // Optimize for serverless/container environments
   outputFileTracingRoot: __dirname,
-}
 
-module.exports = nextConfig
+  // Externalize lighthouse packages to prevent Turbopack bundling issues
+  serverExternalPackages: ['lighthouse', 'chrome-launcher', 'puppeteer-core', 'puppeteer'],
+
+  // Alternative Turbopack configuration (if needed)
+  // experimental: {
+  //   turbo: {
+  //     rules: {
+  //       '*.{js,jsx,ts,tsx}': {
+  //         loaders: ['builtin:swc-loader'],
+  //         as: '*.js'
+  //       }
+  //     },
+  //     resolveAlias: {
+  //       // Prevent lighthouse from being bundled
+  //       'lighthouse': 'lighthouse',
+  //       'chrome-launcher': 'chrome-launcher'
+  //     }
+  //   }
+  // },
+};
+
+module.exports = nextConfig;

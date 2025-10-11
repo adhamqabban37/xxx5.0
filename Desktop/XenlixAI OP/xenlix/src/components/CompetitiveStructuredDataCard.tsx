@@ -1,19 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  Plus, 
-  X, 
-  Play, 
-  RefreshCw, 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  Plus,
+  X,
+  Play,
+  RefreshCw,
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  CheckCircle,
   Loader2,
   Globe,
   Crown,
-  Target
+  Target,
 } from 'lucide-react';
 
 interface CompetitiveStructuredDataCardProps {
@@ -40,10 +40,10 @@ interface CompetitorAnalysisResponse {
   };
 }
 
-export default function CompetitiveStructuredDataCard({ 
-  url, 
-  defaults = [], 
-  className = '' 
+export default function CompetitiveStructuredDataCard({
+  url,
+  defaults = [],
+  className = '',
 }: CompetitiveStructuredDataCardProps) {
   const [competitors, setCompetitors] = useState<string[]>(defaults);
   const [newCompetitorUrl, setNewCompetitorUrl] = useState('');
@@ -65,7 +65,7 @@ export default function CompetitiveStructuredDataCard({
   // Add competitor URL
   const addCompetitor = () => {
     setUrlError('');
-    
+
     if (!newCompetitorUrl.trim()) {
       setUrlError('Please enter a URL');
       return;
@@ -77,7 +77,7 @@ export default function CompetitiveStructuredDataCard({
     }
 
     const trimmedUrl = newCompetitorUrl.trim();
-    
+
     if (!validateUrl(trimmedUrl)) {
       setUrlError('Please enter a valid HTTPS URL');
       return;
@@ -86,8 +86,8 @@ export default function CompetitiveStructuredDataCard({
     // Check for duplicates by hostname
     try {
       const newHostname = new URL(trimmedUrl).hostname.toLowerCase();
-      const existingHostnames = competitors.map(comp => new URL(comp).hostname.toLowerCase());
-      
+      const existingHostnames = competitors.map((comp) => new URL(comp).hostname.toLowerCase());
+
       if (existingHostnames.includes(newHostname)) {
         setUrlError('This domain is already added');
         return;
@@ -129,7 +129,7 @@ export default function CompetitiveStructuredDataCard({
       const response = await fetch('/api/schema/competitors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, competitors })
+        body: JSON.stringify({ url, competitors }),
       });
 
       if (!response.ok) {
@@ -185,7 +185,7 @@ export default function CompetitiveStructuredDataCard({
         <label htmlFor="competitor-url" className="block text-sm font-medium text-gray-700 mb-2">
           Add Competitor URLs ({competitors.length}/5)
         </label>
-        
+
         {/* URL Input */}
         <div className="flex gap-2 mb-3">
           <div className="flex-1">
@@ -200,7 +200,9 @@ export default function CompetitiveStructuredDataCard({
               disabled={loading || competitors.length >= 5}
             />
             {urlError && (
-              <p className="text-red-600 text-xs mt-1" role="alert">{urlError}</p>
+              <p className="text-red-600 text-xs mt-1" role="alert">
+                {urlError}
+              </p>
             )}
           </div>
           <button
@@ -301,7 +303,7 @@ export default function CompetitiveStructuredDataCard({
           {/* Results Table */}
           <div>
             <h4 className="text-lg font-medium text-gray-900 mb-4">Comparison Results</h4>
-            
+
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-gray-200 rounded-lg">
                 <thead>
@@ -323,8 +325,8 @@ export default function CompetitiveStructuredDataCard({
                 <tbody>
                   {/* Base Site Row */}
                   {(() => {
-                    const allResults = [data.base, ...data.competitors].filter(r => r.success);
-                    const scores = allResults.map(r => r.score);
+                    const allResults = [data.base, ...data.competitors].filter((r) => r.success);
+                    const scores = allResults.map((r) => r.score);
                     const highestScore = Math.max(...scores);
                     const lowestScore = Math.min(...scores);
                     const isHighest = data.base.score === highestScore;
@@ -339,7 +341,9 @@ export default function CompetitiveStructuredDataCard({
                           </div>
                         </td>
                         <td className="border border-gray-200 px-4 py-3 text-center">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getScoreColor(data.base.score, isHighest, isLowest)}`}>
+                          <span
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getScoreColor(data.base.score, isHighest, isLowest)}`}
+                          >
                             {data.base.score}
                             {isHighest && <Crown className="h-3 w-3 ml-1" aria-hidden="true" />}
                           </span>
@@ -347,7 +351,10 @@ export default function CompetitiveStructuredDataCard({
                         <td className="border border-gray-200 px-4 py-3 text-sm">
                           <div className="flex flex-wrap gap-1">
                             {data.base.detectedTypes.slice(0, 3).map((type, i) => (
-                              <span key={i} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
+                              <span
+                                key={i}
+                                className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs"
+                              >
                                 {type}
                               </span>
                             ))}
@@ -373,15 +380,18 @@ export default function CompetitiveStructuredDataCard({
                           <td className="border border-gray-200 px-4 py-3 text-sm">
                             {getDomain(competitor.url)}
                           </td>
-                          <td colSpan={3} className="border border-gray-200 px-4 py-3 text-sm text-red-600">
+                          <td
+                            colSpan={3}
+                            className="border border-gray-200 px-4 py-3 text-sm text-red-600"
+                          >
                             Failed: {competitor.error || 'Unknown error'}
                           </td>
                         </tr>
                       );
                     }
 
-                    const allResults = [data.base, ...data.competitors].filter(r => r.success);
-                    const scores = allResults.map(r => r.score);
+                    const allResults = [data.base, ...data.competitors].filter((r) => r.success);
+                    const scores = allResults.map((r) => r.score);
                     const highestScore = Math.max(...scores);
                     const lowestScore = Math.min(...scores);
                     const isHighest = competitor.score === highestScore;
@@ -393,7 +403,9 @@ export default function CompetitiveStructuredDataCard({
                           {getDomain(competitor.url)}
                         </td>
                         <td className="border border-gray-200 px-4 py-3 text-center">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getScoreColor(competitor.score, isHighest, isLowest)}`}>
+                          <span
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getScoreColor(competitor.score, isHighest, isLowest)}`}
+                          >
                             {competitor.score}
                             {isHighest && <Crown className="h-3 w-3 ml-1" aria-hidden="true" />}
                           </span>
@@ -401,7 +413,10 @@ export default function CompetitiveStructuredDataCard({
                         <td className="border border-gray-200 px-4 py-3 text-sm">
                           <div className="flex flex-wrap gap-1">
                             {competitor.detectedTypes.slice(0, 3).map((type, i) => (
-                              <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                              <span
+                                key={i}
+                                className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
+                              >
                                 {type}
                               </span>
                             ))}
@@ -435,7 +450,10 @@ export default function CompetitiveStructuredDataCard({
                 <ul className="space-y-2">
                   {data.deltas.weLeadOn.map((advantage, index) => (
                     <li key={index} className="flex items-start space-x-2 text-sm text-green-800">
-                      <CheckCircle className="h-3 w-3 mt-0.5 text-green-600 flex-shrink-0" aria-hidden="true" />
+                      <CheckCircle
+                        className="h-3 w-3 mt-0.5 text-green-600 flex-shrink-0"
+                        aria-hidden="true"
+                      />
                       <span>{advantage}</span>
                     </li>
                   ))}
@@ -453,7 +471,10 @@ export default function CompetitiveStructuredDataCard({
                 <ul className="space-y-2">
                   {data.deltas.strongerThanUs.map((opportunity, index) => (
                     <li key={index} className="flex items-start space-x-2 text-sm text-orange-800">
-                      <AlertTriangle className="h-3 w-3 mt-0.5 text-orange-600 flex-shrink-0" aria-hidden="true" />
+                      <AlertTriangle
+                        className="h-3 w-3 mt-0.5 text-orange-600 flex-shrink-0"
+                        aria-hidden="true"
+                      />
                       <span>Consider adding: {opportunity}</span>
                     </li>
                   ))}

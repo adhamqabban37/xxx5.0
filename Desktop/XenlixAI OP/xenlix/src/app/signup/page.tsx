@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { api } from '@/lib/fetcher';
 import { useFetcherToast } from '@/hooks/useFetcherToast';
 
@@ -10,16 +10,16 @@ export default function SignUp() {
   // Connect fetcher to toast system
   useFetcherToast();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
 
     // Validation
@@ -30,24 +30,28 @@ export default function SignUp() {
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      setError('Password must be at least 6 characters long');
       setLoading(false);
       return;
     }
 
     try {
-      await api.post("/api/auth/signup", { email, password }, {
-        showSuccessToast: true,
-        successMessage: "Account created successfully! Redirecting to sign in...",
-      });
-      
+      await api.post(
+        '/api/auth/signup',
+        { email, password },
+        {
+          showSuccessToast: true,
+          successMessage: 'Account created successfully! Redirecting to sign in...',
+        }
+      );
+
       // Redirect to sign in page
       setTimeout(() => {
-        router.push("/signin?message=Account created successfully. Please sign in.");
+        router.push('/signin?message=Account created successfully. Please sign in.');
       }, 1500);
     } catch (error) {
       // Error toast will be shown automatically by fetcher
-      setError("Please check the error message above and try again.");
+      setError('Please check the error message above and try again.');
     } finally {
       setLoading(false);
     }
@@ -123,13 +127,13 @@ export default function SignUp() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? 'Creating account...' : 'Create account'}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-300">
-              Already have an account?{" "}
+              Already have an account?{' '}
               <Link href="/signin" className="text-blue-400 hover:text-blue-300 transition-colors">
                 Sign in here
               </Link>

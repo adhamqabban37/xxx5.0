@@ -2,7 +2,16 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { CheckCircle, Shield, Clock, TrendingUp, Users, DollarSign, AlertTriangle, X } from 'lucide-react';
+import {
+  CheckCircle,
+  Shield,
+  Clock,
+  TrendingUp,
+  Users,
+  DollarSign,
+  AlertTriangle,
+  X,
+} from 'lucide-react';
 
 interface PlanFeature {
   feature: string;
@@ -39,7 +48,7 @@ const plans: Plan[] = [
       { feature: 'Downloadable PDF Report', included: true },
       { feature: 'Priority Action Roadmap', included: true },
       { feature: 'Instant Access', included: true },
-    ]
+    ],
   },
   {
     id: 'premium',
@@ -58,7 +67,7 @@ const plans: Plan[] = [
       { feature: 'Custom JSON-LD Templates', included: true },
       { feature: 'Advanced AI Engine Strategies', included: true },
       { feature: 'Priority Customer Support', included: true },
-    ]
+    ],
   },
   {
     id: 'free',
@@ -77,7 +86,7 @@ const plans: Plan[] = [
       { feature: 'Weekly Reporting', included: true },
       { feature: 'Email Support', included: true },
       { feature: 'No Credit Card Required', included: true },
-    ]
+    ],
   },
   {
     id: 'premium-monthly',
@@ -97,7 +106,7 @@ const plans: Plan[] = [
       { feature: 'Monthly Reporting', included: true },
       { feature: '24/7 Support', included: true },
       { feature: 'ROI Guarantee', included: true },
-    ]
+    ],
   },
   {
     id: 'enterprise',
@@ -115,8 +124,8 @@ const plans: Plan[] = [
       { feature: 'API Access', included: true },
       { feature: 'Priority Support', included: true },
       { feature: 'Custom Training', included: true },
-    ]
-  }
+    ],
+  },
 ];
 
 export default function CheckoutContent() {
@@ -131,60 +140,60 @@ export default function CheckoutContent() {
     name: '',
     company: '',
     phone: '',
-    website: ''
+    website: '',
   });
-  
+
   // Handle hydration and URL params after mount
   useEffect(() => {
     const selectedPlanId = searchParams.get('plan') || 'free';
     const urlParam = searchParams.get('url') || '';
-    
+
     setSelectedPlan(selectedPlanId);
     setAnalysisUrl(urlParam);
     setIsHydrated(true);
-    
+
     // Update form data with URL if provided
     if (urlParam) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        website: urlParam
+        website: urlParam,
       }));
     }
   }, [searchParams]);
 
-  const currentPlan = plans.find(plan => plan.id === selectedPlan) || plans[0];
+  const currentPlan = plans.find((plan) => plan.id === selectedPlan) || plans[0];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       // Check if this is for AEO analysis purchase
       if (analysisUrl && (selectedPlan === 'basic' || selectedPlan === 'premium')) {
         // For AEO analysis purchases, simulate payment success and redirect to results
         // In production, this would integrate with Stripe/PayPal
-        
+
         // Simulate payment processing delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
         // Set access token and redirect to results with payment success flag
         sessionStorage.setItem('aeo_access_token', `aeo_${Date.now()}_${Math.random()}`);
         sessionStorage.setItem('aeo_full_access', 'true');
-        
+
         // Track the purchase (you could add this to analytics)
         console.log('AEO Analysis purchased:', {
           plan: selectedPlan,
           url: analysisUrl,
-          customer: formData
+          customer: formData,
         });
-        
+
         // Redirect to full results with payment success flag
         window.location.href = `/aeo/results?payment_success=true&plan=${selectedPlan}`;
         return;
@@ -198,7 +207,7 @@ export default function CheckoutContent() {
         },
         body: JSON.stringify({
           planId: selectedPlan,
-          customerInfo: formData
+          customerInfo: formData,
         }),
       });
 
@@ -254,11 +263,10 @@ export default function CheckoutContent() {
             <AlertTriangle className="h-6 w-6 text-yellow-400" />
             <span className="text-yellow-400 font-semibold">Limited Time: 50% Off</span>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-4">
-            Choose Your Growth Plan
-          </h1>
+          <h1 className="text-4xl font-bold text-white mb-4">Choose Your Growth Plan</h1>
           <p className="text-xl text-white/80 max-w-3xl mx-auto">
-            Join thousands of businesses already dominating their local markets with AI-powered SEO and AEO
+            Join thousands of businesses already dominating their local markets with AI-powered SEO
+            and AEO
           </p>
         </div>
 
@@ -283,7 +291,7 @@ export default function CheckoutContent() {
                       </span>
                     </div>
                   )}
-                  
+
                   {plan.id === 'free' && (
                     <div className="absolute -top-4 right-8">
                       <span className="bg-gradient-to-r from-green-400 to-emerald-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
@@ -291,34 +299,38 @@ export default function CheckoutContent() {
                       </span>
                     </div>
                   )}
-                  
+
                   <div className="flex items-start justify-between mb-6">
                     <div>
                       <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
                       <p className="text-white/70 mb-4">{plan.description}</p>
                       <div className="flex items-baseline space-x-2">
-                        <span className={`text-4xl font-bold ${
-                          plan.id === 'free' 
-                            ? 'text-green-400' 
-                            : 'text-white'
-                        }`}>{plan.price}</span>
+                        <span
+                          className={`text-4xl font-bold ${
+                            plan.id === 'free' ? 'text-green-400' : 'text-white'
+                          }`}
+                        >
+                          {plan.price}
+                        </span>
                         {plan.originalPrice && (
-                          <span className="text-xl text-white/50 line-through">{plan.originalPrice}</span>
+                          <span className="text-xl text-white/50 line-through">
+                            {plan.originalPrice}
+                          </span>
                         )}
                         <span className="text-white/70">/{plan.interval}</span>
                         {plan.id === 'free' && (
-                          <span className="text-green-400 text-sm font-semibold ml-2">7-Day Trial</span>
+                          <span className="text-green-400 text-sm font-semibold ml-2">
+                            7-Day Trial
+                          </span>
                         )}
                       </div>
                     </div>
-                    <div className={`w-6 h-6 rounded-full border-2 ${
-                      selectedPlan === plan.id
-                        ? 'border-blue-400 bg-blue-400'
-                        : 'border-white/40'
-                    }`}>
-                      {selectedPlan === plan.id && (
-                        <CheckCircle className="h-4 w-4 text-white" />
-                      )}
+                    <div
+                      className={`w-6 h-6 rounded-full border-2 ${
+                        selectedPlan === plan.id ? 'border-blue-400 bg-blue-400' : 'border-white/40'
+                      }`}
+                    >
+                      {selectedPlan === plan.id && <CheckCircle className="h-4 w-4 text-white" />}
                     </div>
                   </div>
 
@@ -340,11 +352,13 @@ export default function CheckoutContent() {
             {/* Order Summary */}
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <h3 className="text-xl font-semibold text-white mb-6">Order Summary</h3>
-              
+
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between items-center">
                   <span className="text-white/80">{currentPlan.name}</span>
-                  <span className="text-white font-semibold">{currentPlan.price}/{currentPlan.interval}</span>
+                  <span className="text-white font-semibold">
+                    {currentPlan.price}/{currentPlan.interval}
+                  </span>
                 </div>
                 {currentPlan.originalPrice && (
                   <div className="flex justify-between items-center text-sm">
@@ -355,7 +369,9 @@ export default function CheckoutContent() {
                 <div className="border-t border-white/20 pt-4">
                   <div className="flex justify-between items-center">
                     <span className="text-white font-semibold">Total</span>
-                    <span className="text-white font-bold text-xl">{currentPlan.price}/{currentPlan.interval}</span>
+                    <span className="text-white font-bold text-xl">
+                      {currentPlan.price}/{currentPlan.interval}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -392,7 +408,7 @@ export default function CheckoutContent() {
             {/* Contact Form */}
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <h3 className="text-xl font-semibold text-white mb-6">Your Information</h3>
-              
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-white/80 text-sm font-medium mb-2">
@@ -441,9 +457,7 @@ export default function CheckoutContent() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-white/80 text-sm font-medium mb-2">
-                      Phone
-                    </label>
+                    <label className="block text-white/80 text-sm font-medium mb-2">Phone</label>
                     <input
                       type="tel"
                       name="phone"
@@ -454,9 +468,7 @@ export default function CheckoutContent() {
                     />
                   </div>
                   <div>
-                    <label className="block text-white/80 text-sm font-medium mb-2">
-                      Website
-                    </label>
+                    <label className="block text-white/80 text-sm font-medium mb-2">Website</label>
                     <input
                       type="url"
                       name="website"
@@ -472,8 +484,8 @@ export default function CheckoutContent() {
                   type="submit"
                   disabled={isLoading}
                   className={`w-full font-semibold py-4 px-6 rounded-lg transition-all duration-200 text-lg ${
-                    isLoading 
-                      ? 'bg-gray-400 cursor-not-allowed' 
+                    isLoading
+                      ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
                   } text-white`}
                 >
@@ -505,36 +517,46 @@ export default function CheckoutContent() {
                 <X className="h-6 w-6" />
               </button>
             </div>
-            
+
             <div className="space-y-4 text-gray-700">
               <div className="flex items-start space-x-3">
                 <CheckCircle className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
                 <div>
                   <p className="font-semibold">100% Risk-Free Trial</p>
-                  <p className="text-sm">Try our service for 30 days with zero risk. If you're not completely satisfied, we'll refund every penny.</p>
+                  <p className="text-sm">
+                    Try our service for 30 days with zero risk. If you're not completely satisfied,
+                    we'll refund every penny.
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start space-x-3">
                 <CheckCircle className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
                 <div>
                   <p className="font-semibold">No Questions Asked</p>
-                  <p className="text-sm">Simply contact our support team within 30 days for an immediate refund. No complicated forms or lengthy processes.</p>
+                  <p className="text-sm">
+                    Simply contact our support team within 30 days for an immediate refund. No
+                    complicated forms or lengthy processes.
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start space-x-3">
                 <CheckCircle className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
                 <div>
                   <p className="font-semibold">Keep Everything</p>
-                  <p className="text-sm">Even if you request a refund, you can keep all the SEO audits, reports, and improvements we've made to your website.</p>
+                  <p className="text-sm">
+                    Even if you request a refund, you can keep all the SEO audits, reports, and
+                    improvements we've made to your website.
+                  </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-sm text-gray-600">
-                We're confident you'll see real results within the first 30 days. Most clients see improved rankings within 2-3 weeks.
+                We're confident you'll see real results within the first 30 days. Most clients see
+                improved rankings within 2-3 weeks.
               </p>
             </div>
           </div>

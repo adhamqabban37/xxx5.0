@@ -58,11 +58,13 @@ export function CEOActionCenter() {
                 <div className="flex items-start space-x-3">
                   <Zap className="w-6 h-6 text-blue-600 mt-0.5" />
                   <div>
-                    <h3 className="font-semibold text-blue-900 mb-2">Beta Version - Coming Soon!</h3>
+                    <h3 className="font-semibold text-blue-900 mb-2">
+                      Beta Version - Coming Soon!
+                    </h3>
                     <p className="text-blue-800 text-sm leading-relaxed">
-                      The CEO Action Center is currently in beta development. This powerful executive dashboard 
-                      will provide high-level insights, strategic recommendations, and executive-level analytics 
-                      for business decision making.
+                      The CEO Action Center is currently in beta development. This powerful
+                      executive dashboard will provide high-level insights, strategic
+                      recommendations, and executive-level analytics for business decision making.
                     </p>
                   </div>
                 </div>
@@ -70,9 +72,10 @@ export function CEOActionCenter() {
 
               {/* Preview Features */}
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">What's Coming in the CEO Action Center</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  What's Coming in the CEO Action Center
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  
                   {/* Executive Analytics */}
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div className="flex items-center space-x-3 mb-3">
@@ -155,11 +158,10 @@ export function CEOActionCenter() {
 
               {/* Early Access CTA */}
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Want Early Access?
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Want Early Access?</h3>
                 <p className="text-gray-600 mb-4">
-                  Premium users will get priority access to the CEO Action Center beta when it launches.
+                  Premium users will get priority access to the CEO Action Center beta when it
+                  launches.
                 </p>
                 <div className="flex space-x-3 justify-center">
                   <button

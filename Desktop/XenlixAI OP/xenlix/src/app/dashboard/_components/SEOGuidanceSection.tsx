@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 
@@ -39,11 +39,13 @@ const PriorityBadge = ({ priority }: { priority: 'high' | 'medium' | 'low' }) =>
   const colors = {
     high: 'bg-red-100 text-red-800 border-red-200',
     medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    low: 'bg-green-100 text-green-800 border-green-200'
+    low: 'bg-green-100 text-green-800 border-green-200',
   };
 
   return (
-    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${colors[priority]}`}>
+    <span
+      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${colors[priority]}`}
+    >
       {priority}
     </span>
   );
@@ -53,11 +55,13 @@ const ImpactBadge = ({ impact }: { impact: 'high' | 'medium' | 'low' }) => {
   const colors = {
     high: 'bg-purple-100 text-purple-800',
     medium: 'bg-blue-100 text-blue-800',
-    low: 'bg-gray-100 text-gray-800'
+    low: 'bg-gray-100 text-gray-800',
   };
 
   return (
-    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colors[impact]}`}>
+    <span
+      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colors[impact]}`}
+    >
       Impact: {impact}
     </span>
   );
@@ -65,8 +69,8 @@ const ImpactBadge = ({ impact }: { impact: 'high' | 'medium' | 'low' }) => {
 
 const ProgressBar = ({ progress }: { progress: number }) => (
   <div className="w-full bg-gray-200 rounded-full h-2">
-    <div 
-      className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+    <div
+      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
       style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
     ></div>
   </div>
@@ -121,7 +125,7 @@ const GuidanceSectionCard = ({ section, color }: { section: GuidanceSection; col
       <div className="p-6">
         <div className="space-y-4">
           {section.items.map((item) => (
-            <div 
+            <div
               key={item.id}
               className={`border rounded-lg p-4 transition-colors ${
                 item.completed ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'
@@ -136,7 +140,9 @@ const GuidanceSectionCard = ({ section, color }: { section: GuidanceSection; col
                 />
                 <div className="flex-1">
                   <div className="flex items-start justify-between mb-2">
-                    <h4 className={`font-medium ${item.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                    <h4
+                      className={`font-medium ${item.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}
+                    >
                       {item.task}
                     </h4>
                     <div className="flex gap-2 ml-4">
@@ -144,8 +150,10 @@ const GuidanceSectionCard = ({ section, color }: { section: GuidanceSection; col
                       <ImpactBadge impact={item.impact} />
                     </div>
                   </div>
-                  
-                  <p className={`text-sm mb-3 ${item.completed ? 'text-gray-400' : 'text-gray-600'}`}>
+
+                  <p
+                    className={`text-sm mb-3 ${item.completed ? 'text-gray-400' : 'text-gray-600'}`}
+                  >
                     {item.description}
                   </p>
 
@@ -161,7 +169,8 @@ const GuidanceSectionCard = ({ section, color }: { section: GuidanceSection; col
                         onClick={() => toggleExpanded(item.id)}
                         className="text-xs text-blue-600 hover:text-blue-700 font-medium"
                       >
-                        {expandedItems.has(item.id) ? 'Hide' : 'Show'} Resources ({item.resources.length})
+                        {expandedItems.has(item.id) ? 'Hide' : 'Show'} Resources (
+                        {item.resources.length})
                       </button>
                       {expandedItems.has(item.id) && (
                         <div className="mt-2 flex flex-wrap gap-1">
@@ -197,7 +206,7 @@ export default function SEOGuidanceSection() {
       try {
         const response = await fetch('/api/ai/guidance');
         const data = await response.json();
-        
+
         if (data.success) {
           setGuidanceData(data.data);
         } else {

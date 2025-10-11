@@ -33,12 +33,12 @@ function toastReducer(state: ToastState, action: ToastAction): ToastState {
     case 'ADD_TOAST':
       return {
         ...state,
-        toasts: [...state.toasts, action.payload as Toast]
+        toasts: [...state.toasts, action.payload as Toast],
       };
     case 'REMOVE_TOAST':
       return {
         ...state,
-        toasts: state.toasts.filter(toast => toast.id !== action.payload)
+        toasts: state.toasts.filter((toast) => toast.id !== action.payload),
       };
     default:
       return state;
@@ -54,7 +54,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     const newToast: Toast = {
       ...toast,
       id,
-      duration: toast.duration ?? 5000
+      duration: toast.duration ?? 5000,
     };
 
     dispatch({ type: 'ADD_TOAST', payload: newToast });
@@ -109,9 +109,7 @@ export function ToastContainer() {
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <h4 className="font-medium text-sm">{toast.title}</h4>
-              {toast.message && (
-                <p className="text-sm mt-1 opacity-90">{toast.message}</p>
-              )}
+              {toast.message && <p className="text-sm mt-1 opacity-90">{toast.message}</p>}
             </div>
             <button
               onClick={() => removeToast(toast.id)}

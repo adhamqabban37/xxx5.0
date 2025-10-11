@@ -1,14 +1,15 @@
 import { Metadata } from 'next';
-import BreadcrumbSchema from '../components/BreadcrumbSchema';
-import VisualBreadcrumbs from '../components/VisualBreadcrumbs';
+import BreadcrumbSchema from '../src/components/BreadcrumbSchema';
+import VisualBreadcrumbs from '../src/components/VisualBreadcrumbs';
 
 export const metadata: Metadata = {
-  title: "Auto Detailing Dallas Case Study | AI Marketing Success Story - XenlixAI",
-  description: "Discover how a Dallas auto detailing business increased leads by 300% using XenlixAI's Answer Engine Optimization and AI marketing automation.",
-  robots: "index, follow",
+  title: 'Auto Detailing Dallas Case Study | AI Marketing Success Story - XenlixAI',
+  description:
+    "Discover how a Dallas auto detailing business increased leads by 300% using XenlixAI's Answer Engine Optimization and AI marketing automation.",
+  robots: 'index, follow',
   alternates: {
-    canonical: "/case-studies/auto-detailing-dallas"
-  }
+    canonical: '/case-studies/auto-detailing-dallas',
+  },
 };
 
 export default function CaseStudyExample() {
@@ -16,27 +17,28 @@ export default function CaseStudyExample() {
   const customBreadcrumbs = [
     { name: 'Home', url: '/', position: 1 },
     { name: 'Success Stories', url: '/case-studies', position: 2 },
-    { name: 'Auto Detailing Dallas', url: '/case-studies/auto-detailing-dallas', position: 3 }
+    { name: 'Auto Detailing Dallas', url: '/case-studies/auto-detailing-dallas', position: 3 },
   ];
 
   return (
     <>
       {/* Breadcrumb Schema + WebPage Schema */}
-      <BreadcrumbSchema 
+      <BreadcrumbSchema
         customBreadcrumbs={customBreadcrumbs}
         webPageProps={{
-          name: "Auto Detailing Dallas Case Study | XenlixAI Success Stories",
-          description: "Discover how a Dallas auto detailing business increased leads by 300% using XenlixAI's Answer Engine Optimization and AI marketing automation.",
-          datePublished: "2024-02-15",
-          dateModified: "2024-09-21",
+          name: 'Auto Detailing Dallas Case Study | XenlixAI Success Stories',
+          description:
+            "Discover how a Dallas auto detailing business increased leads by 300% using XenlixAI's Answer Engine Optimization and AI marketing automation.",
+          datePublished: '2024-02-15',
+          dateModified: '2024-09-21',
           author: {
-            "@type": "Organization",
-            "@id": "https://xenlix.ai#organization"
+            '@type': 'Organization',
+            '@id': 'https://xenlix.ai#organization',
           },
           publisher: {
-            "@type": "Organization",
-            "@id": "https://xenlix.ai#organization"
-          }
+            '@type': 'Organization',
+            '@id': 'https://xenlix.ai#organization',
+          },
         }}
       />
 
@@ -54,7 +56,8 @@ export default function CaseStudyExample() {
               Auto Detailing Dallas: 300% Lead Increase
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              How a local auto detailing business transformed their online presence and tripled their leads with AI marketing automation.
+              How a local auto detailing business transformed their online presence and tripled
+              their leads with AI marketing automation.
             </p>
           </div>
 
@@ -81,15 +84,13 @@ export default function CaseStudyExample() {
           <div className="prose prose-lg max-w-none">
             <h2>The Challenge</h2>
             <p>
-              Dallas Auto Detailing Plus was struggling to compete in the crowded Dallas market. 
-              Their website wasn't appearing in AI search results, and they were losing potential 
+              Dallas Auto Detailing Plus was struggling to compete in the crowded Dallas market.
+              Their website wasn't appearing in AI search results, and they were losing potential
               customers to competitors who had better online visibility.
             </p>
 
             <h2>The Solution</h2>
-            <p>
-              XenlixAI implemented a comprehensive Answer Engine Optimization strategy:
-            </p>
+            <p>XenlixAI implemented a comprehensive Answer Engine Optimization strategy:</p>
             <ul>
               <li>AI-optimized content for ChatGPT and Claude visibility</li>
               <li>Local SEO optimization for Dallas auto detailing keywords</li>
@@ -99,8 +100,8 @@ export default function CaseStudyExample() {
 
             <h2>The Results</h2>
             <p>
-              Within 90 days, Dallas Auto Detailing Plus saw transformational results that 
-              exceeded all expectations and set new benchmarks in their industry.
+              Within 90 days, Dallas Auto Detailing Plus saw transformational results that exceeded
+              all expectations and set new benchmarks in their industry.
             </p>
           </div>
         </div>

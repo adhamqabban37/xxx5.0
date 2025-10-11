@@ -1,24 +1,26 @@
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "../api/auth/[...nextauth]/route";
-import { normalizeUrl } from "@/lib/normalizeUrl";
-import AuthorityCard from "@/components/AuthorityCard";
-import PerformanceCard from "@/components/PerformanceCard";
-import StructuredDataCard from "@/components/StructuredDataCard";
-import CompetitiveStructuredDataCard from "@/components/CompetitiveStructuredDataCard";
-import { Metadata } from "next";
-import { Globe, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { MetadataTemplates } from "@/components/SEOMetadata";
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { authOptions } from '../api/auth/[...nextauth]/route';
+import { normalizeUrl } from '@/lib/normalizeUrl';
+import AuthorityCard from '@/components/AuthorityCard';
+import PerformanceCard from '@/components/PerformanceCard';
+import StructuredDataCard from '@/components/StructuredDataCard';
+import CompetitiveStructuredDataCard from '@/components/CompetitiveStructuredDataCard';
+import { Metadata } from 'next';
+import { Globe, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { MetadataTemplates } from '@/components/SEOMetadata';
 
 // Generate metadata with proper canonical and noindex for private analytics
-export async function generateMetadata({ searchParams }: { 
-  searchParams: { [key: string]: string | string[] | undefined } 
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
 }): Promise<Metadata> {
   return MetadataTemplates.privatePage(
-    "Premium Analytics | XenlixAI - Real-Time Performance Metrics",
+    'Premium Analytics | XenlixAI - Real-Time Performance Metrics',
     "Real-time analytics for your website's authority scores and performance metrics powered by Open PageRank and Google PageSpeed Insights.",
-    "/analytics",
+    '/analytics',
     searchParams
   );
 }
@@ -30,9 +32,9 @@ interface AnalyticsPageProps {
 export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps) {
   // Server-side authentication check
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.email) {
-    redirect("/signin");
+    redirect('/signin');
   }
 
   // Extract and normalize the URL from search params
@@ -43,14 +45,14 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Background Effects */}
       <div className="fixed inset-0 bg-gradient-to-br from-transparent via-blue-800/30 to-transparent pointer-events-none"></div>
-      
+
       <div className="relative z-10 min-h-screen">
         {/* Header */}
         <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <Link 
+                <Link
                   href="/dashboard"
                   className="flex items-center text-blue-400 hover:text-blue-300 transition-colors"
                 >
@@ -62,9 +64,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
                   <p className="text-gray-400">Real-time performance insights</p>
                 </div>
               </div>
-              <div className="text-sm text-gray-400">
-                {session.user.email}
-              </div>
+              <div className="text-sm text-gray-400">{session.user.email}</div>
             </div>
           </div>
         </header>
@@ -77,7 +77,8 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
               <Globe className="w-16 h-16 text-slate-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-white mb-4">No Website Selected</h2>
               <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                Provide a URL parameter to analyze real-time performance metrics and authority scores.
+                Provide a URL parameter to analyze real-time performance metrics and authority
+                scores.
               </p>
               <div className="bg-slate-700/50 rounded-lg p-4 text-sm text-gray-300 font-mono mb-6">
                 /analytics?url=example.com
@@ -97,9 +98,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
                       <Globe className="w-6 h-6 mr-3 text-blue-400" />
                       Analytics for {siteUrl}
                     </h2>
-                    <p className="text-gray-400">
-                      Real-time authority and performance metrics
-                    </p>
+                    <p className="text-gray-400">Real-time authority and performance metrics</p>
                   </div>
                   <div className="bg-green-900/20 border border-green-600 rounded-lg px-4 py-2">
                     <span className="text-green-400 font-semibold text-sm">✅ Premium Access</span>
@@ -110,32 +109,30 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
               {/* Performance Metrics */}
               <div className="space-y-8">
                 {/* Performance Insights Card */}
-                <PerformanceCard 
-                  url={siteUrl}
-                  className="w-full"
-                />
+                <PerformanceCard url={siteUrl} className="w-full" />
 
                 {/* Authority Score Card */}
-                <AuthorityCard 
+                <AuthorityCard
                   url={siteUrl}
-                  competitors={[
-                    // TODO: Fetch real competitor data from user's settings or industry analysis
-                  ]}
+                  competitors={
+                    [
+                      // TODO: Fetch real competitor data from user's settings or industry analysis
+                    ]
+                  }
                   className="w-full"
                 />
 
                 {/* Structured Data Analysis Card */}
-                <StructuredDataCard 
-                  url={siteUrl}
-                  className="w-full"
-                />
+                <StructuredDataCard url={siteUrl} className="w-full" />
 
                 {/* Competitive Structured Data Analysis Card */}
-                <CompetitiveStructuredDataCard 
+                <CompetitiveStructuredDataCard
                   url={siteUrl}
-                  defaults={[
-                    // TODO: Fetch user's competitors from database
-                  ]}
+                  defaults={
+                    [
+                      // TODO: Fetch user's competitors from database
+                    ]
+                  }
                   className="w-full"
                 />
 
@@ -150,8 +147,9 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
                         SEO Strategy Analyzer
                       </h3>
                       <p className="text-gray-300 mb-4">
-                        Get comprehensive SEO recommendations and optimization strategies for your business. 
-                        Analyze your industry, location, and competitors to create a custom SEO action plan.
+                        Get comprehensive SEO recommendations and optimization strategies for your
+                        business. Analyze your industry, location, and competitors to create a
+                        custom SEO action plan.
                       </p>
                       <div className="flex items-center space-x-4">
                         <span className="bg-purple-900/30 border border-purple-600 rounded-full px-3 py-1 text-purple-300 text-sm font-medium">
@@ -162,7 +160,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
                         </span>
                       </div>
                     </div>
-                    <Link 
+                    <Link
                       href="/seo-analyzer"
                       className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-lg hover:shadow-purple-500/25"
                     >

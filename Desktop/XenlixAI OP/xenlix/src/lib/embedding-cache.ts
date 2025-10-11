@@ -1,5 +1,17 @@
 import { db } from '@/lib/firebase';
-import { collection, doc, getDoc, setDoc, query, where, orderBy, limit, getDocs, Timestamp } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
+  Timestamp,
+  deleteDoc,
+} from 'firebase/firestore';
 import crypto from 'crypto';
 
 export interface CachedEmbedding {
@@ -57,7 +69,7 @@ class EmbeddingCacheService {
    * Generate a hash for query array
    */
   private generateQueriesHash(queries: string[]): string {
-    const sortedQueries = queries.map(q => q.trim().toLowerCase()).sort();
+    const sortedQueries = queries.map((q) => q.trim().toLowerCase()).sort();
     return crypto.createHash('sha256').update(JSON.stringify(sortedQueries)).digest('hex');
   }
 
@@ -72,26 +84,30 @@ class EmbeddingCacheService {
 
       if (docSnap.exists()) {
         const data = docSnap.data() as CachedEmbedding;
-        
+
         // Check if not expired
         const now = Timestamp.now();
         const ageMs = now.toMillis() - data.createdAt.toMillis();
-        
+
         if (ageMs < this.EMBEDDING_TTL) {
           // Update usage stats
-          await setDoc(docRef, {
-            ...data,
-            lastUsed: now,
-            useCount: data.useCount + 1
-          }, { merge: true });
-          
+          await setDoc(
+            docRef,
+            {
+              ...data,
+              lastUsed: now,
+              useCount: data.useCount + 1,
+            },
+            { merge: true }
+          );
+
           return data.embedding;
         }
       }
     } catch (error) {
       console.error('Error getting cached embedding:', error);
     }
-    
+
     return null;
   }
 
@@ -102,7 +118,7 @@ class EmbeddingCacheService {
     try {
       const textHash = this.generateTextHash(text);
       const now = Timestamp.now();
-      
+
       const cachedEmbedding: CachedEmbedding = {
         id: `${textHash}_${modelUsed}`,
         text: text.length > 1000 ? text.substring(0, 1000) + '...' : text, // Truncate for storage
@@ -111,7 +127,7 @@ class EmbeddingCacheService {
         modelUsed,
         createdAt: now,
         lastUsed: now,
-        useCount: 1
+        useCount: 1,
       };
 
       const docRef = doc(db, this.EMBEDDINGS_COLLECTION, cachedEmbedding.id);
@@ -124,7 +140,10 @@ class EmbeddingCacheService {
   /**
    * Get cached embeddings for multiple texts
    */
-  async getCachedEmbeddings(texts: string[], modelUsed: string): Promise<{ embeddings: (number[] | null)[], cacheHits: number }> {
+  async getCachedEmbeddings(
+    texts: string[],
+    modelUsed: string
+  ): Promise<{ embeddings: (number[] | null)[]; cacheHits: number }> {
     const embeddings: (number[] | null)[] = [];
     let cacheHits = 0;
 
@@ -140,9 +159,13 @@ class EmbeddingCacheService {
   /**
    * Cache multiple embeddings
    */
-  async cacheMultipleEmbeddings(texts: string[], embeddings: number[][], modelUsed: string): Promise<void> {
+  async cacheMultipleEmbeddings(
+    texts: string[],
+    embeddings: number[][],
+    modelUsed: string
+  ): Promise<void> {
     const promises = [];
-    
+
     for (let i = 0; i < texts.length && i < embeddings.length; i++) {
       promises.push(this.cacheEmbedding(texts[i], embeddings[i], modelUsed));
     }
@@ -158,43 +181,52 @@ class EmbeddingCacheService {
       const urlHash = this.generateUrlHash(url);
       const queriesHash = this.generateQueriesHash(queries);
       const docId = `${urlHash}_${queriesHash}`;
-      
+
       const docRef = doc(db, this.AEO_RESULTS_COLLECTION, docId);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
         const data = docSnap.data() as CachedAEOResult;
         const now = Timestamp.now();
-        
+
         // Check if not expired
         if (now.toMillis() < data.expiresAt.toMillis()) {
           // Update usage stats
-          await setDoc(docRef, {
-            ...data,
-            lastUsed: now,
-            useCount: data.useCount + 1
-          }, { merge: true });
-          
+          await setDoc(
+            docRef,
+            {
+              ...data,
+              lastUsed: now,
+              useCount: data.useCount + 1,
+            },
+            { merge: true }
+          );
+
           return data.result;
         }
       }
     } catch (error) {
       console.error('Error getting cached AEO result:', error);
     }
-    
+
     return null;
   }
 
   /**
    * Cache AEO result
    */
-  async cacheAEOResult(url: string, queries: string[], result: any, modelUsed: string): Promise<void> {
+  async cacheAEOResult(
+    url: string,
+    queries: string[],
+    result: any,
+    modelUsed: string
+  ): Promise<void> {
     try {
       const urlHash = this.generateUrlHash(url);
       const queriesHash = this.generateQueriesHash(queries);
       const docId = `${urlHash}_${queriesHash}`;
       const now = Timestamp.now();
-      
+
       const cachedResult: CachedAEOResult = {
         id: docId,
         url,
@@ -206,7 +238,7 @@ class EmbeddingCacheService {
         createdAt: now,
         lastUsed: now,
         useCount: 1,
-        expiresAt: Timestamp.fromMillis(now.toMillis() + this.RESULT_TTL)
+        expiresAt: Timestamp.fromMillis(now.toMillis() + this.RESULT_TTL),
       };
 
       const docRef = doc(db, this.AEO_RESULTS_COLLECTION, docId);
@@ -228,9 +260,9 @@ class EmbeddingCacheService {
         orderBy('createdAt', 'desc'),
         limit(limitCount)
       );
-      
+
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => doc.data() as CachedAEOResult);
+      return querySnapshot.docs.map((doc) => doc.data() as CachedAEOResult);
     } catch (error) {
       console.error('Error getting recent AEO results:', error);
       return [];
@@ -240,64 +272,67 @@ class EmbeddingCacheService {
   /**
    * Clean up expired cache entries
    */
-  async cleanupExpiredCache(): Promise<{ embeddingsDeleted: number, resultsDeleted: number }> {
+  async cleanupExpiredCache(): Promise<{ embeddingsDeleted: number; resultsDeleted: number }> {
     let embeddingsDeleted = 0;
     let resultsDeleted = 0;
-    
+
     try {
       const now = Timestamp.now();
-      
+
       // Clean up expired embeddings
       const embeddingsQuery = query(
         collection(db, this.EMBEDDINGS_COLLECTION),
         where('createdAt', '<', Timestamp.fromMillis(now.toMillis() - this.EMBEDDING_TTL)),
         limit(100)
       );
-      
+
       const embeddingsSnapshot = await getDocs(embeddingsQuery);
       for (const doc of embeddingsSnapshot.docs) {
-        await doc.ref.delete();
+        await deleteDoc(doc.ref);
         embeddingsDeleted++;
       }
-      
+
       // Clean up expired AEO results
       const resultsQuery = query(
         collection(db, this.AEO_RESULTS_COLLECTION),
         where('expiresAt', '<', now),
         limit(100)
       );
-      
+
       const resultsSnapshot = await getDocs(resultsQuery);
       for (const doc of resultsSnapshot.docs) {
-        await doc.ref.delete();
+        await deleteDoc(doc.ref);
         resultsDeleted++;
       }
-      
     } catch (error) {
       console.error('Error cleaning up expired cache:', error);
     }
-    
+
     return { embeddingsDeleted, resultsDeleted };
   }
 
   /**
    * Get cache statistics
    */
-  async getCacheStats(): Promise<{ embeddingCount: number, resultCount: number, totalSize: number }> {
+  async getCacheStats(): Promise<{
+    embeddingCount: number;
+    resultCount: number;
+    totalSize: number;
+  }> {
     try {
       const [embeddingsSnapshot, resultsSnapshot] = await Promise.all([
         getDocs(query(collection(db, this.EMBEDDINGS_COLLECTION), limit(1000))),
-        getDocs(query(collection(db, this.AEO_RESULTS_COLLECTION), limit(1000)))
+        getDocs(query(collection(db, this.AEO_RESULTS_COLLECTION), limit(1000))),
       ]);
-      
+
       // Estimate size (rough approximation)
       const embeddingSize = embeddingsSnapshot.size * 2048; // ~2KB per embedding doc
       const resultSize = resultsSnapshot.size * 10240; // ~10KB per result doc
-      
+
       return {
         embeddingCount: embeddingsSnapshot.size,
         resultCount: resultsSnapshot.size,
-        totalSize: embeddingSize + resultSize
+        totalSize: embeddingSize + resultSize,
       };
     } catch (error) {
       console.error('Error getting cache stats:', error);

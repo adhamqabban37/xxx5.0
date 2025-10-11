@@ -194,12 +194,12 @@ export interface AlertEvent {
   thresholdId: string;
   url: string;
   metricType: string;
-  value: number;
-  threshold: number;
-  severity: AlertSeverity;
-  message: string;
+  currentValue: number;
+  thresholdValue: number;
+  severity: string;
+  sent: boolean;
+  sentAt: Date | null;
   createdAt: Date;
-  acknowledged: boolean;
   threshold?: AlertThreshold;
 }
 

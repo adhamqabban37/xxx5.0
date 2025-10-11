@@ -15,7 +15,7 @@ const limiter = rateLimit({
 const scanRequestSchema = z.object({
   url: z.string().url('Please provide a valid URL'),
   priority: z.enum(['high', 'normal', 'low']).default('normal'),
-  scanType: z.enum(['full', 'quick']).default('full')
+  scanType: z.enum(['full', 'quick']).default('full'),
 });
 
 export async function POST(request: NextRequest) {
@@ -23,21 +23,22 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     // Rate limiting
-    const identifier = session.user.email || request.ip || 'anonymous';
+    const identifier =
+      session.user.email ||
+      request.headers.get('x-forwarded-for') ||
+      request.headers.get('x-real-ip') ||
+      'anonymous';
     try {
       await limiter.check(3, identifier); // 3 requests per minute per user
     } catch {
       return NextResponse.json(
-        { 
+        {
           error: 'Rate limit exceeded. Please wait before making another scan request.',
-          retryAfter: 60 
+          retryAfter: 60,
         },
         { status: 429 }
       );
@@ -59,26 +60,25 @@ export async function POST(request: NextRequest) {
       scanId,
       status: 'queued',
       message: 'Scan added to queue. Check status using the scanId.',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Scan API error:', error);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid request data',
-          details: error.issues
+          details: error.issues,
         },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { 
+      {
         error: 'Scan failed. Please try again.',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
@@ -90,10 +90,7 @@ export async function GET(request: NextRequest) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     // Get scan history for user
@@ -110,15 +107,11 @@ export async function GET(request: NextRequest) {
       scans: scanHistory,
       total: 0,
       limit,
-      offset
+      offset,
     });
-
   } catch (error) {
     console.error('Scan history API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch scan history' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch scan history' }, { status: 500 });
   }
 }
 

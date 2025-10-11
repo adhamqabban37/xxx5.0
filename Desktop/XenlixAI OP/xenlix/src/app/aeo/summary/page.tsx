@@ -8,6 +8,7 @@ import BusinessInfoCard from '@/components/BusinessInfoCard';
 import MapCard from '@/components/MapCard';
 import OptimizationScore from '@/components/OptimizationScore';
 import JsonLdImprovement from '@/components/JsonLdImprovement';
+import DiagnosticsPanel from '@/components/DiagnosticsPanel';
 import { computePreviewScore, generateMockTimeseries, buildPreviewBenefits } from '@/lib/scoring';
 
 interface BusinessInfo {
@@ -60,47 +61,102 @@ function AEOSummaryContent() {
   const [data, setData] = useState<PreviewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // Add a small delay to ensure searchParams are properly initialized
+  const checkUrlAndFetch = async (attempt: number = 1) => {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const url = searchParams.get('url');
+
+    if (!url) {
+      setError('No URL provided. Please provide a URL parameter.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      if (attempt === 1) {
+        setError(null);
+        setRetryCount(0);
+      }
+
+      // Create AbortController for request timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 30000); // 30 second timeout for frontend request
+
+      const response = await fetch(`/api/analyze/preview?url=${encodeURIComponent(url)}`, {
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+
+        // Handle timeout errors with retry logic
+        if (response.status === 408 && attempt < 3) {
+          console.log(`Timeout on attempt ${attempt}, retrying...`);
+          setRetryCount(attempt);
+          await new Promise((resolve) => setTimeout(resolve, 2000 * attempt)); // Progressive delay
+          return checkUrlAndFetch(attempt + 1);
+        }
+
+        // Handle specific timeout errors
+        if (response.status === 408) {
+          throw new Error(
+            errorData.error ||
+              'The website is taking too long to respond. This could be due to slow server response. Please verify the URL is accessible and try again later.'
+          );
+        }
+
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to analyze website`);
+      }
+
+      const previewData = await response.json();
+      setData(previewData);
+      setRetryCount(0); // Reset retry count on success
+    } catch (err) {
+      console.error('Error fetching preview data:', err);
+
+      // Handle AbortError (timeout) with retry logic
+      if (err instanceof Error && err.name === 'AbortError' && attempt < 3) {
+        console.log(`Request aborted on attempt ${attempt}, retrying...`);
+        setRetryCount(attempt);
+        await new Promise((resolve) => setTimeout(resolve, 3000 * attempt)); // Progressive delay
+        return checkUrlAndFetch(attempt + 1);
+      }
+
+      // Final error handling
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError(
+          'Request timed out after multiple attempts. The website appears to be very slow or unresponsive. Please try again later or verify the URL is accessible.'
+        );
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to fetch preview data');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Add a small delay to ensure searchParams are properly initialized
-    const checkUrlAndFetch = async () => {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const url = searchParams.get('url');
-      
-      if (!url) {
-        setError('No URL provided. Please provide a URL parameter.');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await fetch(`/api/analyze/preview?url=${encodeURIComponent(url)}`);
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `HTTP ${response.status}: Failed to analyze website`);
-        }
-        
-        const previewData = await response.json();
-        setData(previewData);
-      } catch (err) {
-        console.error('Error fetching preview data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch preview data');
-      } finally {
-        setLoading(false);
-      }
-    };
+    checkUrlAndFetch();
 
     checkUrlAndFetch();
   }, [searchParams]);
 
   const handleUpgradeClick = (planType: string) => {
     const url = searchParams.get('url');
-    router.push(`/checkout?plan=${planType}&source=aeo_summary${url ? `&url=${encodeURIComponent(url)}` : ''}`);
+    router.push(
+      `/checkout?plan=${planType}&source=aeo_summary${url ? `&url=${encodeURIComponent(url)}` : ''}`
+    );
   };
 
   // Prefetch checkout route for performance
@@ -121,7 +177,7 @@ function AEOSummaryContent() {
               <div className="h-6 bg-gray-200 rounded-lg mx-auto max-w-3xl"></div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-2xl mx-auto mb-16">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-300 rounded-lg mb-8 mx-auto max-w-xs"></div>
@@ -131,12 +187,60 @@ function AEOSummaryContent() {
                 <div className="h-4 bg-gray-200 rounded-lg"></div>
                 <div className="h-4 bg-gray-200 rounded-lg max-w-3/4"></div>
               </div>
+              {retryCount > 0 && (
+                <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="flex items-center justify-center space-x-2 text-yellow-700">
+                    <svg
+                      className="animate-spin h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span className="text-sm font-medium">
+                      Retry attempt {retryCount}/3 - Website is slow to respond
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          
+
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-[var(--brand-500)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600 leading-relaxed">Analyzing your website...</p>
+            <p className="text-gray-600 leading-relaxed">
+              Analyzing your website...
+              {searchParams.get('url') && (
+                <>
+                  <br />
+                  <span className="text-sm text-gray-500">
+                    {
+                      new URL(
+                        searchParams.get('url')!.startsWith('http')
+                          ? searchParams.get('url')!
+                          : `https://${searchParams.get('url')!}`
+                      ).hostname
+                    }
+                  </span>
+                </>
+              )}
+            </p>
+            <p className="text-xs text-gray-400 mt-2">
+              This may take 10-30 seconds depending on website complexity
+            </p>
           </div>
         </div>
       </div>
@@ -149,16 +253,28 @@ function AEOSummaryContent() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center relative">
         {/* Subtle brand background overlay */}
         <div className="absolute inset-0 bg-brand-gradient opacity-5"></div>
-        <div className="relative text-center">
+        <div className="relative text-center max-w-md mx-auto px-6">
           <AlertCircle className="h-16 w-16 text-[var(--brand-500)] mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Analysis Error</h1>
-          <p className="text-gray-600 mb-6 max-w-md leading-relaxed">{error}</p>
-          <button
-            onClick={() => router.push('/aeo')}
-            className="bg-[var(--brand-500)] text-white px-6 py-3 rounded-lg hover:bg-[var(--brand-600)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand shadow-lg hover:shadow-xl"
-          >
-            Try Another URL
-          </button>
+          <p className="text-gray-600 mb-6 leading-relaxed">{error}</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => {
+                setError(null);
+                setRetryCount(0);
+                checkUrlAndFetch();
+              }}
+              className="bg-[var(--brand-500)] text-white px-6 py-3 rounded-lg hover:bg-[var(--brand-600)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand shadow-lg hover:shadow-xl"
+            >
+              Retry Analysis
+            </button>
+            <button
+              onClick={() => router.push('/aeo')}
+              className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 border border-gray-200"
+            >
+              Try Another URL
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -173,7 +289,9 @@ function AEOSummaryContent() {
         <div className="relative text-center">
           <AlertCircle className="h-16 w-16 text-[var(--brand-500)] mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">No Data Available</h1>
-          <p className="text-gray-600 mb-6 leading-relaxed">We couldn't retrieve preview data for this URL.</p>
+          <p className="text-gray-600 mb-6 leading-relaxed">
+            We couldn't retrieve preview data for this URL.
+          </p>
           <button
             onClick={() => router.push('/aeo')}
             className="bg-[var(--brand-500)] text-white px-6 py-3 rounded-lg hover:bg-[var(--brand-600)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand shadow-lg hover:shadow-xl"
@@ -190,7 +308,6 @@ function AEOSummaryContent() {
       {/* Subtle brand background overlay */}
       <div className="absolute inset-0 bg-brand-gradient opacity-6"></div>
       <div className="relative max-w-6xl mx-auto px-6 py-12">
-        
         {/* Top Hook Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -210,7 +327,8 @@ function AEOSummaryContent() {
                 See How AI Engines See Your Business
               </h2>
               <p className="text-gray-600 text-sm lg:text-base leading-relaxed max-w-prose">
-                Instant preview of your AI visibility, strengths, and quick wins—tuned to your brand.
+                Instant preview of your AI visibility, strengths, and quick wins—tuned to your
+                brand.
               </p>
             </div>
             <div className="flex-shrink-0">
@@ -237,8 +355,8 @@ function AEOSummaryContent() {
               Your AEO Analysis Summary
             </h1>
             <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto mb-4 leading-relaxed max-w-prose">
-              Here's a preview of your website's AI Answer Engine Optimization potential. 
-              Unlock the complete action plan to see exactly how to dominate AI search results.
+              Here's a preview of your website's AI Answer Engine Optimization potential. Unlock the
+              complete action plan to see exactly how to dominate AI search results.
             </p>
             <p className="text-sm text-gray-500 leading-relaxed">
               Analysis for: <span className="font-semibold">{data.businessInfo.website}</span>
@@ -267,10 +385,10 @@ function AEOSummaryContent() {
             <div className="hover:scale-105 transition-transform duration-300">
               <BusinessInfoCard data={data.businessInfo} />
             </div>
-            
+
             {/* Map Card */}
             <div className="hover:scale-105 transition-transform duration-300">
-              <MapCard 
+              <MapCard
                 lat={data.businessInfo.lat}
                 lng={data.businessInfo.lng}
                 address={data.businessInfo.address}
@@ -293,7 +411,7 @@ function AEOSummaryContent() {
                 Get optimized structured data schemas for better AI search visibility
               </p>
             </motion.div>
-            
+
             <div className="hover:scale-105 transition-transform duration-300">
               <JsonLdImprovement analysis={data.jsonLdAnalysis} />
             </div>
@@ -327,7 +445,9 @@ function AEOSummaryContent() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Answer Quality Score</span>
-                    <span className="font-semibold text-green-600">{Math.round(data.jsonLdAnalysis.aeoScore * 0.8)}/100</span>
+                    <span className="font-semibold text-green-600">
+                      {Math.round(data.jsonLdAnalysis.aeoScore * 0.8)}/100
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Content Depth</span>
@@ -335,7 +455,8 @@ function AEOSummaryContent() {
                   </div>
                   <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                     <p className="text-xs text-gray-600 italic">
-                      "Your content shows good foundational elements but could benefit from more conversational Q&A sections..."
+                      "Your content shows good foundational elements but could benefit from more
+                      conversational Q&A sections..."
                     </p>
                     <div className="mt-2 text-center">
                       <Lock className="h-4 w-4 text-gray-400 mx-auto" />
@@ -356,7 +477,9 @@ function AEOSummaryContent() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Citation Potential</span>
-                    <span className="font-semibold text-orange-600">{Math.round(data.jsonLdAnalysis.completenessScore * 0.9)}/100</span>
+                    <span className="font-semibold text-orange-600">
+                      {Math.round(data.jsonLdAnalysis.completenessScore * 0.9)}/100
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Authority Signals</span>
@@ -364,7 +487,8 @@ function AEOSummaryContent() {
                   </div>
                   <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                     <p className="text-xs text-gray-600 italic">
-                      "Missing key authoritative markers that would make this a preferred source for factual answers..."
+                      "Missing key authoritative markers that would make this a preferred source for
+                      factual answers..."
                     </p>
                     <div className="mt-2 text-center">
                       <Lock className="h-4 w-4 text-gray-400 mx-auto" />
@@ -389,11 +513,14 @@ function AEOSummaryContent() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Query Match Rate</span>
-                    <span className="font-semibold text-green-600">{Math.round(data.jsonLdAnalysis.aeoScore * 0.75)}/100</span>
+                    <span className="font-semibold text-green-600">
+                      {Math.round(data.jsonLdAnalysis.aeoScore * 0.75)}/100
+                    </span>
                   </div>
                   <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                     <p className="text-xs text-gray-600 italic">
-                      "Your content appears in search results but isn't prioritized for direct answers. Here's why..."
+                      "Your content appears in search results but isn't prioritized for direct
+                      answers. Here's why..."
                     </p>
                     <div className="mt-2 text-center">
                       <Lock className="h-4 w-4 text-gray-400 mx-auto" />
@@ -409,12 +536,17 @@ function AEOSummaryContent() {
               <div className="text-center mb-6">
                 <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Critical Issues Found</h3>
-                <p className="text-gray-600">These are blocking your AI search visibility right now</p>
+                <p className="text-gray-600">
+                  These are blocking your AI search visibility right now
+                </p>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
                 {data.quickFindings.slice(0, 4).map((finding, index) => (
-                  <div key={index} className="flex items-start space-x-3 bg-white rounded-lg p-4 border border-red-100">
+                  <div
+                    key={index}
+                    className="flex items-start space-x-3 bg-white rounded-lg p-4 border border-red-100"
+                  >
                     <div className="flex-shrink-0 mt-1">
                       <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs font-bold">!</span>
@@ -430,7 +562,7 @@ function AEOSummaryContent() {
                   </div>
                 ))}
               </div>
-              
+
               {data.quickFindings.length > 4 && (
                 <div className="text-center mt-6">
                   <div className="inline-flex items-center px-4 py-2 bg-white border border-red-200 rounded-lg shadow-sm">
@@ -446,13 +578,14 @@ function AEOSummaryContent() {
 
           <div className="text-center mt-8">
             <p className="text-gray-600 mb-6 leading-relaxed max-w-prose mx-auto">
-              Want to see exactly what's missing and get a step-by-step action plan to improve your visibility?
+              Want to see exactly what's missing and get a step-by-step action plan to improve your
+              visibility?
             </p>
-            <motion.button 
+            <motion.button
               onClick={() => {
-                document.querySelector('.pricing-section')?.scrollIntoView({ 
+                document.querySelector('.pricing-section')?.scrollIntoView({
                   behavior: 'smooth',
-                  block: 'center'
+                  block: 'center',
                 });
               }}
               className="inline-flex items-center px-8 py-4 bg-[#F97316] hover:bg-[#EA580C] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40"
@@ -483,9 +616,16 @@ function AEOSummaryContent() {
 
           <div className="max-w-4xl mx-auto">
             <div className="hover:scale-105 transition-transform duration-300">
-              <OptimizationScore 
-                scoreData={computePreviewScore(data.techSignals, data.seoSnippets, data.businessInfo)}
-                timeseriesData={generateMockTimeseries(computePreviewScore(data.techSignals, data.seoSnippets, data.businessInfo).totalScore)}
+              <OptimizationScore
+                scoreData={computePreviewScore(
+                  data.techSignals,
+                  data.seoSnippets,
+                  data.businessInfo
+                )}
+                timeseriesData={generateMockTimeseries(
+                  computePreviewScore(data.techSignals, data.seoSnippets, data.businessInfo)
+                    .totalScore
+                )}
               />
             </div>
           </div>
@@ -503,28 +643,28 @@ function AEOSummaryContent() {
               What You're Missing in the Full Dashboard
             </h2>
             <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              This preview only scratches the surface. See what's waiting in your complete analytics dashboard.
+              This preview only scratches the surface. See what's waiting in your complete analytics
+              dashboard.
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            
             {/* Competitor Analysis Preview */}
             <div className="relative bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200">
               <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent z-10"></div>
               <div className="absolute inset-0 backdrop-blur-sm z-20"></div>
-              
+
               <div className="relative z-30 p-8">
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
                     </svg>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900">Competitor Analysis</h3>
                   <Lock className="h-5 w-5 text-gray-400 ml-auto" />
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
                     <span className="text-sm text-gray-600">vs. competitor1.com</span>
@@ -539,7 +679,7 @@ function AEOSummaryContent() {
                     <span className="text-red-600 font-semibold">-15 points</span>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-600 mb-2 font-medium">Key Insights:</p>
                   <ul className="text-xs text-gray-500 space-y-1">
@@ -548,7 +688,7 @@ function AEOSummaryContent() {
                     <li>• 3 competitors have better entity recognition</li>
                   </ul>
                 </div>
-                
+
                 <div className="absolute bottom-4 left-8 right-8">
                   <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-center">
                     <Lock className="h-6 w-6 text-gray-400 mx-auto mb-2" />
@@ -563,46 +703,62 @@ function AEOSummaryContent() {
             <div className="relative bg-gray-900 rounded-2xl overflow-hidden shadow-lg">
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent z-10"></div>
               <div className="absolute inset-0 backdrop-blur-sm z-20"></div>
-              
+
               <div className="relative z-30 p-8">
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3">
                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z"/>
-                      <path d="M8 1v6m8-6v6"/>
+                      <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                      <path d="M8 1v6m8-6v6" />
                     </svg>
                   </div>
                   <h3 className="text-xl font-bold text-white">Raw JSON Analytics</h3>
                   <Lock className="h-5 w-5 text-gray-400 ml-auto" />
                 </div>
-                
+
                 <div className="bg-gray-800 rounded-lg p-4 font-mono text-sm">
                   <div className="text-green-400">
-                    <span className="text-gray-500">{"{"}</span><br />
-                    <span className="ml-2 text-blue-400">"aiEngineScores"</span>: <span className="text-gray-500">{"{"}</span><br />
-                    <span className="ml-4 text-blue-400">"chatgpt"</span>: <span className="text-yellow-400">78.5</span>,<br />
-                    <span className="ml-4 text-blue-400">"claude"</span>: <span className="text-yellow-400">82.1</span>,<br />
-                    <span className="ml-4 text-blue-400">"perplexity"</span>: <span className="text-yellow-400">65.3</span><br />
-                    <span className="ml-2 text-gray-500">{"}"}</span>,<br />
-                    <span className="ml-2 text-blue-400">"entities"</span>: <span className="text-gray-500">[</span><br />
-                    <span className="ml-4 text-gray-400">// 47 entities detected...</span><br />
+                    <span className="text-gray-500">{'{'}</span>
+                    <br />
+                    <span className="ml-2 text-blue-400">"aiEngineScores"</span>:{' '}
+                    <span className="text-gray-500">{'{'}</span>
+                    <br />
+                    <span className="ml-4 text-blue-400">"chatgpt"</span>:{' '}
+                    <span className="text-yellow-400">78.5</span>,<br />
+                    <span className="ml-4 text-blue-400">"claude"</span>:{' '}
+                    <span className="text-yellow-400">82.1</span>,<br />
+                    <span className="ml-4 text-blue-400">"perplexity"</span>:{' '}
+                    <span className="text-yellow-400">65.3</span>
+                    <br />
+                    <span className="ml-2 text-gray-500">{'}'}</span>,<br />
+                    <span className="ml-2 text-blue-400">"entities"</span>:{' '}
+                    <span className="text-gray-500">[</span>
+                    <br />
+                    <span className="ml-4 text-gray-400">// 47 entities detected...</span>
+                    <br />
                     <span className="ml-2 text-gray-500">]</span>,<br />
-                    <span className="ml-2 text-blue-400">"improvements"</span>: <span className="text-gray-500">[</span><br />
-                    <span className="ml-4 text-gray-400">// 23 specific fixes...</span><br />
-                    <span className="ml-2 text-gray-500">]</span><br />
-                    <span className="text-gray-500">{"}"}</span>
+                    <span className="ml-2 text-blue-400">"improvements"</span>:{' '}
+                    <span className="text-gray-500">[</span>
+                    <br />
+                    <span className="ml-4 text-gray-400">// 23 specific fixes...</span>
+                    <br />
+                    <span className="ml-2 text-gray-500">]</span>
+                    <br />
+                    <span className="text-gray-500">{'}'}</span>
                   </div>
                 </div>
-                
+
                 <div className="mt-4 p-3 bg-gray-800 rounded-lg">
                   <p className="text-gray-300 text-sm font-medium mb-2">Export Options:</p>
                   <div className="flex space-x-2">
-                    <span className="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded">JSON</span>
+                    <span className="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded">
+                      JSON
+                    </span>
                     <span className="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded">CSV</span>
                     <span className="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded">PDF</span>
                   </div>
                 </div>
-                
+
                 <div className="absolute bottom-4 left-8 right-8">
                   <div className="bg-gray-800/90 backdrop-blur-sm border border-gray-600 rounded-lg p-3 text-center">
                     <Lock className="h-6 w-6 text-gray-400 mx-auto mb-2" />
@@ -617,7 +773,7 @@ function AEOSummaryContent() {
             <div className="relative bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200">
               <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent z-10"></div>
               <div className="absolute inset-0 backdrop-blur-sm z-20"></div>
-              
+
               <div className="relative z-30 p-8">
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
@@ -626,7 +782,7 @@ function AEOSummaryContent() {
                   <h3 className="text-xl font-bold text-gray-900">Progress Tracking</h3>
                   <Lock className="h-5 w-5 text-gray-400 ml-auto" />
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-4 h-4 bg-green-500 rounded-full"></div>
@@ -644,17 +800,17 @@ function AEOSummaryContent() {
                     <span className="text-gray-500 text-sm font-medium ml-auto">+8 pts</span>
                   </div>
                 </div>
-                
+
                 <div className="mt-6">
                   <div className="flex justify-between text-sm text-gray-600 mb-2">
                     <span>Overall Progress</span>
                     <span>34%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-purple-500 h-2 rounded-full" style={{width: '34%'}}></div>
+                    <div className="bg-purple-500 h-2 rounded-full" style={{ width: '34%' }}></div>
                   </div>
                 </div>
-                
+
                 <div className="absolute bottom-4 left-8 right-8">
                   <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-center">
                     <Lock className="h-6 w-6 text-gray-400 mx-auto mb-2" />
@@ -669,19 +825,19 @@ function AEOSummaryContent() {
             <div className="relative bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200">
               <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent z-10"></div>
               <div className="absolute inset-0 backdrop-blur-sm z-20"></div>
-              
+
               <div className="relative z-30 p-8">
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center mr-3">
                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M3 3v18h18v-2H5V3H3z"/>
-                      <path d="M7 12l4-4 4 4 4-4"/>
+                      <path d="M3 3v18h18v-2H5V3H3z" />
+                      <path d="M7 12l4-4 4 4 4-4" />
                     </svg>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900">Historical Analytics</h3>
                   <Lock className="h-5 w-5 text-gray-400 ml-auto" />
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div className="p-3 bg-gray-50 rounded-lg">
@@ -697,7 +853,7 @@ function AEOSummaryContent() {
                       <div className="text-xs text-gray-600">Avg Score</div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="text-sm text-gray-600">Query Performance Trends:</div>
                     <div className="space-y-1">
@@ -716,7 +872,7 @@ function AEOSummaryContent() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="absolute bottom-4 left-8 right-8">
                   <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-center">
                     <Lock className="h-6 w-6 text-gray-400 mx-auto mb-2" />
@@ -733,18 +889,18 @@ function AEOSummaryContent() {
         <div className="pricing-section bg-brand-gradient rounded-3xl p-12 text-white relative overflow-hidden shadow-2xl">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">
-            
             <div className="text-center mb-12">
               <h2 className="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
                 Unlock Your Complete Analytics Dashboard
               </h2>
               <p className="text-lg lg:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed max-w-prose">
-                Access your full AEO dashboard with real-time analytics, competitor tracking, JSON exports, and step-by-step implementation guides.
+                Access your full AEO dashboard with real-time analytics, competitor tracking, JSON
+                exports, and step-by-step implementation guides.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm">
                 <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z"/>
+                    <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
                   </svg>
                   <span className="text-white">Raw JSON Data Export</span>
                 </div>
@@ -754,7 +910,7 @@ function AEOSummaryContent() {
                 </div>
                 <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 3v18h18v-2H5V3H3z"/>
+                    <path d="M3 3v18h18v-2H5V3H3z" />
                   </svg>
                   <span className="text-white">Progress Analytics</span>
                 </div>
@@ -777,7 +933,7 @@ function AEOSummaryContent() {
                   {buildPreviewBenefits({
                     techSignals: data.techSignals,
                     businessInfo: data.businessInfo,
-                    quickFindings: data.quickFindings
+                    quickFindings: data.quickFindings,
                   }).map((benefit, index) => (
                     <motion.div
                       key={index}
@@ -788,14 +944,23 @@ function AEOSummaryContent() {
                     >
                       <div className="flex-shrink-0 mt-1">
                         <div className="w-6 h-6 bg-gradient-to-r from-[var(--brand-purple-400)] to-[#F97316] rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                          <svg
+                            className="w-4 h-4 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M5 13l4 4L19 7"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              fill="none"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
                           </svg>
                         </div>
                       </div>
-                      <p className="text-white/95 text-sm font-medium leading-relaxed">
-                        {benefit}
-                      </p>
+                      <p className="text-white/95 text-sm font-medium leading-relaxed">{benefit}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -814,21 +979,24 @@ function AEOSummaryContent() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-                
                 {/* Ready-to-Use JSON-LD */}
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 hover:scale-105 transition-all duration-300 hover:shadow-xl">
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
                       <div className="w-16 h-16 bg-gradient-to-r from-[var(--brand-purple-500)] to-[var(--brand-purple-600)] rounded-xl flex items-center justify-center shadow-lg">
                         <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                         </svg>
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-lg lg:text-xl font-bold text-white mb-3 leading-tight">Ready-to-Use JSON-LD</h4>
+                      <h4 className="text-lg lg:text-xl font-bold text-white mb-3 leading-tight">
+                        Ready-to-Use JSON-LD
+                      </h4>
                       <p className="text-white/90 text-sm leading-relaxed">
-                        Get automatically generated schema code to copy and paste for immediate rich snippet eligibility. No technical expertise required—just copy, paste, and watch your search visibility improve.
+                        Get automatically generated schema code to copy and paste for immediate rich
+                        snippet eligibility. No technical expertise required—just copy, paste, and
+                        watch your search visibility improve.
                       </p>
                     </div>
                   </div>
@@ -840,14 +1008,18 @@ function AEOSummaryContent() {
                     <div className="flex-shrink-0">
                       <div className="w-16 h-16 bg-gradient-to-r from-[#F97316] to-[#EA580C] rounded-xl flex items-center justify-center shadow-lg">
                         <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-lg lg:text-xl font-bold text-white mb-3 leading-tight">Step-by-Step AEO Guide</h4>
+                      <h4 className="text-lg lg:text-xl font-bold text-white mb-3 leading-tight">
+                        Step-by-Step AEO Guide
+                      </h4>
                       <p className="text-white/90 text-sm leading-relaxed">
-                        A personalized, prioritized checklist that tells you exactly what to fix and how. Each recommendation comes with clear instructions and expected impact on your AI search visibility.
+                        A personalized, prioritized checklist that tells you exactly what to fix and
+                        how. Each recommendation comes with clear instructions and expected impact
+                        on your AI search visibility.
                       </p>
                     </div>
                   </div>
@@ -859,15 +1031,19 @@ function AEOSummaryContent() {
                     <div className="flex-shrink-0">
                       <div className="w-16 h-16 bg-gradient-to-r from-[var(--brand-500)] to-[var(--brand-600)] rounded-xl flex items-center justify-center shadow-lg">
                         <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                          <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                          <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-lg lg:text-xl font-bold text-white mb-3 leading-tight">Competitor Intelligence Report</h4>
+                      <h4 className="text-lg lg:text-xl font-bold text-white mb-3 leading-tight">
+                        Competitor Intelligence Report
+                      </h4>
                       <p className="text-white/90 text-sm leading-relaxed">
-                        See the exact AEO strategies your competitors are using to outrank you. Discover their hidden advantages and learn how to surpass them in AI search results.
+                        See the exact AEO strategies your competitors are using to outrank you.
+                        Discover their hidden advantages and learn how to surpass them in AI search
+                        results.
                       </p>
                     </div>
                   </div>
@@ -879,14 +1055,18 @@ function AEOSummaryContent() {
                     <div className="flex-shrink-0">
                       <div className="w-16 h-16 bg-gradient-to-r from-[var(--brand-purple-400)] to-[var(--brand-500)] rounded-xl flex items-center justify-center shadow-lg">
                         <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                          <path d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-lg lg:text-xl font-bold text-white mb-3 leading-tight">Advanced SEO Optimizations</h4>
+                      <h4 className="text-lg lg:text-xl font-bold text-white mb-3 leading-tight">
+                        Advanced SEO Optimizations
+                      </h4>
                       <p className="text-white/90 text-sm leading-relaxed">
-                        Actionable steps for technical SEO, content structure, and entity mapping. Transform your site architecture to align with how AI engines understand and process information.
+                        Actionable steps for technical SEO, content structure, and entity mapping.
+                        Transform your site architecture to align with how AI engines understand and
+                        process information.
                       </p>
                     </div>
                   </div>
@@ -899,44 +1079,79 @@ function AEOSummaryContent() {
                   ⚡ Immediate Implementation Ready
                 </h4>
                 <p className="text-white/90 max-w-3xl mx-auto text-base lg:text-lg leading-relaxed max-w-prose">
-                  Stop guessing what's holding your site back. Get precise, actionable recommendations you can implement today to start dominating AI search results tomorrow.
+                  Stop guessing what's holding your site back. Get precise, actionable
+                  recommendations you can implement today to start dominating AI search results
+                  tomorrow.
                 </p>
               </div>
             </div>
 
             {/* Pricing Plans */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              
               {/* Basic Plan */}
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 hover:scale-105 transition-all duration-300 hover:shadow-xl">
                 <div className="text-center mb-6">
-                  <h3 className="text-xl lg:text-2xl font-bold mb-2 leading-tight">Complete Report</h3>
+                  <h3 className="text-xl lg:text-2xl font-bold mb-2 leading-tight">
+                    Complete Report
+                  </h3>
                   <div className="text-3xl lg:text-4xl font-bold mb-1">$47</div>
                   <p className="text-white/80">One-time payment</p>
                 </div>
-                
+
                 <ul className="space-y-4 mb-8 text-left">
                   <li className="flex items-center">
-                    <svg className="h-4 w-4 mr-2 text-[var(--brand-purple-400)] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4 mr-2 text-[var(--brand-purple-400)] flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span className="text-sm leading-relaxed">Detailed AEO Action Plan</span>
                   </li>
                   <li className="flex items-center">
-                    <svg className="h-4 w-4 mr-2 text-[var(--brand-purple-400)] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4 mr-2 text-[var(--brand-purple-400)] flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span className="text-sm leading-relaxed">Technical SEO Audit</span>
                   </li>
                   <li className="flex items-center">
-                    <svg className="h-4 w-4 mr-2 text-[var(--brand-purple-400)] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4 mr-2 text-[var(--brand-purple-400)] flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span className="text-sm leading-relaxed">Content Optimization Guide</span>
                   </li>
                   <li className="flex items-center">
-                    <svg className="h-4 w-4 mr-2 text-[var(--brand-purple-400)] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4 mr-2 text-[var(--brand-purple-400)] flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span className="text-sm leading-relaxed">14-Day Email Support</span>
                   </li>
@@ -951,7 +1166,7 @@ function AEOSummaryContent() {
                 <div className="mt-3 text-center">
                   <div className="inline-flex items-center text-xs text-white/80 bg-white/10 rounded-lg px-3 py-1">
                     <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                     </svg>
                     Limited time: 67% off regular price
                   </div>
@@ -965,41 +1180,83 @@ function AEOSummaryContent() {
                     MOST POPULAR
                   </div>
                 </div>
-                
+
                 <div className="text-center mb-6">
-                  <h3 className="text-xl lg:text-2xl font-bold mb-2 leading-tight">Premium Analysis</h3>
+                  <h3 className="text-xl lg:text-2xl font-bold mb-2 leading-tight">
+                    Premium Analysis
+                  </h3>
                   <div className="text-3xl lg:text-4xl font-bold mb-1">$97</div>
                   <p className="text-white/80">Complete optimization package</p>
                 </div>
-                
+
                 <ul className="space-y-4 mb-8 text-left">
                   <li className="flex items-center">
-                    <svg className="h-4 w-4 mr-2 text-[#F97316] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4 mr-2 text-[#F97316] flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span className="text-sm leading-relaxed">Everything in Complete Report</span>
                   </li>
                   <li className="flex items-center">
-                    <svg className="h-4 w-4 mr-2 text-[#F97316] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4 mr-2 text-[#F97316] flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span className="text-sm leading-relaxed">Custom Implementation Roadmap</span>
                   </li>
                   <li className="flex items-center">
-                    <svg className="h-4 w-4 mr-2 text-[#F97316] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4 mr-2 text-[#F97316] flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span className="text-sm leading-relaxed">Priority Keyword Strategy</span>
                   </li>
                   <li className="flex items-center">
-                    <svg className="h-4 w-4 mr-2 text-[#F97316] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4 mr-2 text-[#F97316] flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span className="text-sm leading-relaxed">30-Day Implementation Support</span>
                   </li>
                   <li className="flex items-center">
-                    <svg className="h-4 w-4 mr-2 text-[#F97316] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4 mr-2 text-[#F97316] flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span className="text-sm leading-relaxed">Monthly Re-scan (3 months)</span>
                   </li>
@@ -1032,11 +1289,14 @@ function AEOSummaryContent() {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-orange-600/20"></div>
             <div className="relative z-10">
-              
               <div className="text-center mb-8">
                 <div className="inline-flex items-center px-4 py-2 bg-orange-500/20 border border-orange-500/30 rounded-full mb-4">
-                  <svg className="w-4 h-4 mr-2 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  <svg
+                    className="w-4 h-4 mr-2 text-orange-400"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                   </svg>
                   <span className="text-orange-400 font-medium text-sm">Limited Time Offer</span>
                 </div>
@@ -1044,19 +1304,18 @@ function AEOSummaryContent() {
                   Dashboard Access Expires in 24 Hours
                 </h3>
                 <p className="text-gray-300 max-w-2xl mx-auto">
-                  This exclusive preview access and special pricing are only available for today. 
+                  This exclusive preview access and special pricing are only available for today.
                   After 24 hours, you'll need to restart the analysis process.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                
                 {/* Real-time Monitoring */}
                 <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
                   <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M3 3v18h18v-2H5V3H3z"/>
-                      <path d="M7 12l4-4 4 4 4-4"/>
+                      <path d="M3 3v18h18v-2H5V3H3z" />
+                      <path d="M7 12l4-4 4 4 4-4" />
                     </svg>
                   </div>
                   <h4 className="font-bold text-white mb-2">Real-time Monitoring</h4>
@@ -1064,9 +1323,10 @@ function AEOSummaryContent() {
                     Track your AI search visibility 24/7 with automated alerts when rankings change.
                   </p>
                   <div className="text-green-400 text-xs">
-                    ✓ Live ranking updates<br/>
-                    ✓ Competitor alerts<br/>
-                    ✓ Performance notifications
+                    ✓ Live ranking updates
+                    <br />
+                    ✓ Competitor alerts
+                    <br />✓ Performance notifications
                   </div>
                 </div>
 
@@ -1074,18 +1334,20 @@ function AEOSummaryContent() {
                 <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
                   <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z"/>
-                      <path d="M8 1v6m8-6v6"/>
+                      <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                      <path d="M8 1v6m8-6v6" />
                     </svg>
                   </div>
                   <h4 className="font-bold text-white mb-2">API & Export Tools</h4>
                   <p className="text-gray-400 text-sm mb-3">
-                    Connect your analytics to other tools with full JSON API access and automated exports.
+                    Connect your analytics to other tools with full JSON API access and automated
+                    exports.
                   </p>
                   <div className="text-green-400 text-xs">
-                    ✓ REST API endpoint<br/>
-                    ✓ Webhook integrations<br/>
-                    ✓ Scheduled exports
+                    ✓ REST API endpoint
+                    <br />
+                    ✓ Webhook integrations
+                    <br />✓ Scheduled exports
                   </div>
                 </div>
 
@@ -1096,12 +1358,14 @@ function AEOSummaryContent() {
                   </div>
                   <h4 className="font-bold text-white mb-2">Priority Support</h4>
                   <p className="text-gray-400 text-sm mb-3">
-                    Get direct access to our AEO specialists for implementation guidance and optimization tips.
+                    Get direct access to our AEO specialists for implementation guidance and
+                    optimization tips.
                   </p>
                   <div className="text-green-400 text-xs">
-                    ✓ Same-day email response<br/>
-                    ✓ Implementation guidance<br/>
-                    ✓ Custom recommendations
+                    ✓ Same-day email response
+                    <br />
+                    ✓ Implementation guidance
+                    <br />✓ Custom recommendations
                   </div>
                 </div>
               </div>
@@ -1125,10 +1389,11 @@ function AEOSummaryContent() {
                     <ArrowRight className="h-5 w-5 ml-2" />
                   </button>
                 </div>
-                
+
                 <div className="mt-4 text-center">
                   <p className="text-gray-400 text-sm">
-                    <span className="text-orange-400 font-medium">⚡ Flash Sale:</span> 67% off regular pricing ends in 24 hours
+                    <span className="text-orange-400 font-medium">⚡ Flash Sale:</span> 67% off
+                    regular pricing ends in 24 hours
                   </p>
                   <p className="text-gray-500 text-xs mt-1">
                     Regular price: $149 (Basic) / $299 (Premium) - Save $102 to $202 today
@@ -1139,6 +1404,8 @@ function AEOSummaryContent() {
           </motion.div>
         </div>
 
+        {/* Diagnostics Panel (dev only) */}
+        <DiagnosticsPanel />
       </div>
     </div>
   );
@@ -1146,16 +1413,18 @@ function AEOSummaryContent() {
 
 export default function AEOSummaryPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center relative">
-        {/* Subtle brand background overlay */}
-        <div className="absolute inset-0 bg-brand-gradient opacity-5"></div>
-        <div className="relative text-center">
-          <div className="w-16 h-16 border-4 border-[var(--brand-500)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 leading-relaxed">Loading analysis...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center relative">
+          {/* Subtle brand background overlay */}
+          <div className="absolute inset-0 bg-brand-gradient opacity-5"></div>
+          <div className="relative text-center">
+            <div className="w-16 h-16 border-4 border-[var(--brand-500)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 leading-relaxed">Loading analysis...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <AEOSummaryContent />
     </Suspense>
   );

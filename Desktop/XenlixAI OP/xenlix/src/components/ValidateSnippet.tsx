@@ -1,5 +1,5 @@
-"use client"
-import React, { useState } from "react";
+'use client';
+import React, { useState } from 'react';
 
 type Strategy = 'exact' | 'normalized' | 'fuzzy';
 
@@ -9,8 +9,12 @@ interface ValidateSnippetProps {
   defaultStrategy?: Strategy;
 }
 
-export default function ValidateSnippet({ snippet, targetUrl, defaultStrategy = 'exact' }: ValidateSnippetProps) {
-  const [status, setStatus] = useState("Not Validated");
+export default function ValidateSnippet({
+  snippet,
+  targetUrl,
+  defaultStrategy = 'exact',
+}: ValidateSnippetProps) {
+  const [status, setStatus] = useState('Not Validated');
   const [loading, setLoading] = useState(false);
   const [strategy, setStrategy] = useState<Strategy>(defaultStrategy);
   const [threshold, setThreshold] = useState(0.85);
@@ -19,21 +23,21 @@ export default function ValidateSnippet({ snippet, targetUrl, defaultStrategy = 
 
   const handleValidate = async () => {
     setLoading(true);
-    setStatus("Validating...");
+    setStatus('Validating...');
     setScore(null);
     setDiagnostics(null);
     try {
-      const res = await fetch("/api/validate-snippet", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/validate-snippet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetUrl, snippet, strategy, threshold }),
       });
       const data = await res.json();
-      setStatus(data.status === "pass" ? "Pass" : "Fail");
+      setStatus(data.status === 'pass' ? 'Pass' : 'Fail');
       if (typeof data.score === 'number') setScore(data.score);
       if (data.diagnostics) setDiagnostics(data.diagnostics);
     } catch (e) {
-      setStatus("Error");
+      setStatus('Error');
     }
     setLoading(false);
   };
@@ -43,14 +47,17 @@ export default function ValidateSnippet({ snippet, targetUrl, defaultStrategy = 
       <h2 className="text-lg font-bold mb-2">Paste this code on your site:</h2>
       <pre className="bg-slate-900 p-4 rounded text-sm mb-4 overflow-x-auto">{snippet}</pre>
       <div className="mb-4 text-gray-400">
-        <strong>Where to paste this:</strong> In your website’s <code>&lt;head&gt;</code> or as instructed.
+        <strong>Where to paste this:</strong> In your website’s <code>&lt;head&gt;</code> or as
+        instructed.
       </div>
       <div className="flex flex-col md:flex-row md:items-end gap-4 mb-4">
         <div className="flex-1">
-          <label className="block text-xs uppercase tracking-wide text-gray-400 mb-1">Validation Mode</label>
+          <label className="block text-xs uppercase tracking-wide text-gray-400 mb-1">
+            Validation Mode
+          </label>
           <select
             value={strategy}
-            onChange={e => setStrategy(e.target.value as Strategy)}
+            onChange={(e) => setStrategy(e.target.value as Strategy)}
             className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500"
           >
             <option value="exact">Exact</option>
@@ -58,19 +65,21 @@ export default function ValidateSnippet({ snippet, targetUrl, defaultStrategy = 
             <option value="fuzzy">Fuzzy (Token %)</option>
           </select>
           <p className="text-[11px] text-gray-500 mt-1">
-            Exact: raw substring. Normalized: whitespace & case ignored. Fuzzy: token overlap %. 
+            Exact: raw substring. Normalized: whitespace & case ignored. Fuzzy: token overlap %.
           </p>
         </div>
         {strategy === 'fuzzy' && (
           <div className="w-full md:w-48">
-            <label className="block text-xs uppercase tracking-wide text-gray-400 mb-1">Threshold ({Math.round(threshold*100)}%)</label>
+            <label className="block text-xs uppercase tracking-wide text-gray-400 mb-1">
+              Threshold ({Math.round(threshold * 100)}%)
+            </label>
             <input
               type="range"
               min={0.5}
               max={0.99}
               step={0.01}
               value={threshold}
-              onChange={e => setThreshold(parseFloat(e.target.value))}
+              onChange={(e) => setThreshold(parseFloat(e.target.value))}
               className="w-full"
             />
             <p className="text-[11px] text-gray-500 mt-1">Minimum token match % to pass.</p>
@@ -82,7 +91,7 @@ export default function ValidateSnippet({ snippet, targetUrl, defaultStrategy = 
             onClick={handleValidate}
             disabled={loading}
           >
-            {loading ? "Validating..." : "Validate"}
+            {loading ? 'Validating...' : 'Validate'}
           </button>
         </div>
       </div>
@@ -90,18 +99,19 @@ export default function ValidateSnippet({ snippet, targetUrl, defaultStrategy = 
         <span>Status: </span>
         <span
           className={
-            status === "Pass"
-              ? "text-green-400 font-bold"
-              : status === "Fail"
-              ? "text-red-400 font-bold"
-              : "text-gray-400"
+            status === 'Pass'
+              ? 'text-green-400 font-bold'
+              : status === 'Fail'
+                ? 'text-red-400 font-bold'
+                : 'text-gray-400'
           }
         >
           {status}
         </span>
         {strategy === 'fuzzy' && score !== null && (
           <div className="mt-2 text-sm text-gray-400">
-            Score: <span className="text-cyan-400 font-semibold">{(score*100).toFixed(1)}%</span> (needs ≥ {(threshold*100).toFixed(0)}%)
+            Score: <span className="text-cyan-400 font-semibold">{(score * 100).toFixed(1)}%</span>{' '}
+            (needs ≥ {(threshold * 100).toFixed(0)}%)
             {diagnostics && (
               <div className="mt-1 text-[11px] text-gray-500">
                 Matched tokens {diagnostics.matchedTokens}/{diagnostics.totalTokens}

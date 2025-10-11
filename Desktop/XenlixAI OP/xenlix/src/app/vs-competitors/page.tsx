@@ -1,129 +1,117 @@
-import Link from "next/link";
-import { Metadata } from "next";
+import Link from 'next/link';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "XenlixAI vs Competitors | AI Marketing Compare | XenlixAI",
-  description: "Compare XenlixAI vs Jasper AI vs SurferSEO vs Writesonic. See features, pricing, and which AI marketing platform is best for your business needs.",
-  keywords: "XenlixAI vs Jasper, AI marketing comparison, SurferSEO alternative, best AI marketing platform",
+  title: 'XenlixAI vs Competitors | AI Marketing Compare | XenlixAI',
+  description:
+    'Compare XenlixAI vs Jasper AI vs SurferSEO vs Writesonic. See features, pricing, and which AI marketing platform is best for your business needs.',
+  keywords:
+    'XenlixAI vs Jasper, AI marketing comparison, SurferSEO alternative, best AI marketing platform',
 };
 
 export default function CompetitorComparisonPage() {
   const comparisonSchema = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "XenlixAI vs Competitors: Complete Feature Comparison",
-    "description": "Detailed comparison of XenlixAI against Jasper AI, SurferSEO, and other AI marketing platforms.",
-    "author": {
-      "@type": "Organization",
-      "name": "XenlixAI"
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: 'XenlixAI vs Competitors: Complete Feature Comparison',
+    description:
+      'Detailed comparison of XenlixAI against Jasper AI, SurferSEO, and other AI marketing platforms.',
+    author: {
+      '@type': 'Organization',
+      name: 'XenlixAI',
     },
-    "publisher": {
-      "@type": "Organization",
-      "name": "XenlixAI"
-    }
+    publisher: {
+      '@type': 'Organization',
+      name: 'XenlixAI',
+    },
   };
 
   const competitors = [
     {
-      name: "XenlixAI",
-      logo: "🚀",
-      pricing: "$29-199/mo",
+      name: 'XenlixAI',
+      logo: '🚀',
+      pricing: '$29-199/mo',
       features: {
-        websiteBuilder: "✅ One-click AI builder",
-        seoAutomation: "✅ Full automation",
-        adCreation: "✅ Multi-platform",
-        analytics: "✅ Real-time dashboard",
-        support: "✅ Priority support",
-        integration: "✅ All-in-one platform"
+        websiteBuilder: '✅ One-click AI builder',
+        seoAutomation: '✅ Full automation',
+        adCreation: '✅ Multi-platform',
+        analytics: '✅ Real-time dashboard',
+        support: '✅ Priority support',
+        integration: '✅ All-in-one platform',
       },
       pros: [
-        "Complete marketing automation suite",
-        "Most affordable for full feature set",
-        "True one-click website builder",
-        "Built for small businesses",
-        "No technical knowledge required"
+        'Complete marketing automation suite',
+        'Most affordable for full feature set',
+        'True one-click website builder',
+        'Built for small businesses',
+        'No technical knowledge required',
       ],
-      cons: [
-        "Newer platform (less brand recognition)",
-        "Focused on SMBs vs enterprise"
-      ],
-      bestFor: "Small businesses wanting complete marketing automation"
+      cons: ['Newer platform (less brand recognition)', 'Focused on SMBs vs enterprise'],
+      bestFor: 'Small businesses wanting complete marketing automation',
     },
     {
-      name: "Jasper AI",
-      logo: "✏️",
-      pricing: "$49-125/mo",
+      name: 'Jasper AI',
+      logo: '✏️',
+      pricing: '$49-125/mo',
       features: {
-        websiteBuilder: "❌ Content only",
-        seoAutomation: "⚠️ Limited",
-        adCreation: "✅ Copy only",
-        analytics: "❌ No analytics",
-        support: "⚠️ Chat only",
-        integration: "⚠️ Content focus"
+        websiteBuilder: '❌ Content only',
+        seoAutomation: '⚠️ Limited',
+        adCreation: '✅ Copy only',
+        analytics: '❌ No analytics',
+        support: '⚠️ Chat only',
+        integration: '⚠️ Content focus',
       },
-      pros: [
-        "Excellent long-form content",
-        "Strong brand recognition",
-        "Good for copywriting"
-      ],
+      pros: ['Excellent long-form content', 'Strong brand recognition', 'Good for copywriting'],
       cons: [
-        "No website building",
-        "Limited SEO features",
-        "Higher cost for features",
-        "Requires other tools"
+        'No website building',
+        'Limited SEO features',
+        'Higher cost for features',
+        'Requires other tools',
       ],
-      bestFor: "Content creators and copywriters"
+      bestFor: 'Content creators and copywriters',
     },
     {
-      name: "SurferSEO",
-      logo: "🏄",
-      pricing: "$89-239/mo",
+      name: 'SurferSEO',
+      logo: '🏄',
+      pricing: '$89-239/mo',
       features: {
-        websiteBuilder: "❌ SEO only",
-        seoAutomation: "✅ Advanced SEO",
-        adCreation: "❌ No ad tools",
-        analytics: "⚠️ SEO focused",
-        support: "✅ Good support",
-        integration: "⚠️ SEO tools only"
+        websiteBuilder: '❌ SEO only',
+        seoAutomation: '✅ Advanced SEO',
+        adCreation: '❌ No ad tools',
+        analytics: '⚠️ SEO focused',
+        support: '✅ Good support',
+        integration: '⚠️ SEO tools only',
       },
-      pros: [
-        "Advanced SEO analysis",
-        "Great content optimization",
-        "Detailed SERP analysis"
-      ],
+      pros: ['Advanced SEO analysis', 'Great content optimization', 'Detailed SERP analysis'],
       cons: [
-        "SEO only, no other marketing",
-        "Expensive for single feature",
-        "Steep learning curve",
-        "No website building"
+        'SEO only, no other marketing',
+        'Expensive for single feature',
+        'Steep learning curve',
+        'No website building',
       ],
-      bestFor: "SEO specialists and agencies"
+      bestFor: 'SEO specialists and agencies',
     },
     {
-      name: "Writesonic",
-      logo: "🎯",
-      pricing: "$16-499/mo",
+      name: 'Writesonic',
+      logo: '🎯',
+      pricing: '$16-499/mo',
       features: {
-        websiteBuilder: "❌ Content only",
-        seoAutomation: "⚠️ Basic",
-        adCreation: "✅ Good ad copy",
-        analytics: "❌ No analytics",
-        support: "⚠️ Limited",
-        integration: "⚠️ Content focus"
+        websiteBuilder: '❌ Content only',
+        seoAutomation: '⚠️ Basic',
+        adCreation: '✅ Good ad copy',
+        analytics: '❌ No analytics',
+        support: '⚠️ Limited',
+        integration: '⚠️ Content focus',
       },
-      pros: [
-        "Good ad copywriting",
-        "Affordable entry pricing",
-        "Multiple content types"
-      ],
+      pros: ['Good ad copywriting', 'Affordable entry pricing', 'Multiple content types'],
       cons: [
-        "No website building",
-        "Limited automation",
-        "Basic SEO features",
-        "Requires multiple tools"
+        'No website building',
+        'Limited automation',
+        'Basic SEO features',
+        'Requires multiple tools',
       ],
-      bestFor: "Freelancers and content creators"
-    }
+      bestFor: 'Freelancers and content creators',
+    },
   ];
 
   return (
@@ -134,7 +122,7 @@ export default function CompetitorComparisonPage() {
           __html: JSON.stringify(comparisonSchema),
         }}
       />
-      
+
       {/* Navigation */}
       <nav className="p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -145,7 +133,10 @@ export default function CompetitorComparisonPage() {
             <Link href="/" className="text-gray-300 hover:text-white transition-colors">
               Home
             </Link>
-            <Link href="/ai-seo-automation" className="text-gray-300 hover:text-white transition-colors">
+            <Link
+              href="/ai-seo-automation"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
               SEO Automation
             </Link>
             <Link href="/plans" className="text-gray-300 hover:text-white transition-colors">
@@ -162,7 +153,8 @@ export default function CompetitorComparisonPage() {
             XenlixAI vs Competitors: Complete Feature Comparison
           </h1>
           <p className="text-xl text-gray-300 mb-8">
-            See how XenlixAI stacks up against Jasper AI, SurferSEO, Writesonic, and other AI marketing platforms. Find the best solution for your business needs.
+            See how XenlixAI stacks up against Jasper AI, SurferSEO, Writesonic, and other AI
+            marketing platforms. Find the best solution for your business needs.
           </p>
         </div>
       </section>
@@ -173,13 +165,18 @@ export default function CompetitorComparisonPage() {
           <h2 className="text-4xl font-bold text-white text-center mb-16">
             Feature Comparison Matrix
           </h2>
-          
+
           {/* Mobile-friendly cards for each competitor */}
           <div className="grid lg:grid-cols-2 gap-8">
             {competitors.map((competitor, index) => (
-              <div key={index} className={`bg-slate-800/50 backdrop-blur-sm border rounded-xl p-8 ${
-                competitor.name === 'XenlixAI' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-700'
-              }`}>
+              <div
+                key={index}
+                className={`bg-slate-800/50 backdrop-blur-sm border rounded-xl p-8 ${
+                  competitor.name === 'XenlixAI'
+                    ? 'border-purple-500 ring-2 ring-purple-500/20'
+                    : 'border-slate-700'
+                }`}
+              >
                 {competitor.name === 'XenlixAI' && (
                   <div className="text-center mb-4">
                     <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold">
@@ -187,7 +184,7 @@ export default function CompetitorComparisonPage() {
                     </span>
                   </div>
                 )}
-                
+
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-2">{competitor.logo}</div>
                   <h3 className="text-2xl font-bold text-white mb-2">{competitor.name}</h3>
@@ -197,11 +194,15 @@ export default function CompetitorComparisonPage() {
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Website Builder</span>
-                    <span className="text-sm text-gray-300">{competitor.features.websiteBuilder}</span>
+                    <span className="text-sm text-gray-300">
+                      {competitor.features.websiteBuilder}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">SEO Automation</span>
-                    <span className="text-sm text-gray-300">{competitor.features.seoAutomation}</span>
+                    <span className="text-sm text-gray-300">
+                      {competitor.features.seoAutomation}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-300">Ad Creation</span>
@@ -272,42 +273,49 @@ export default function CompetitorComparisonPage() {
           <h2 className="text-4xl font-bold text-white text-center mb-16">
             Which Platform is Right for You?
           </h2>
-          
+
           <div className="space-y-8">
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
               <h3 className="text-2xl font-bold text-white mb-4">Small Business Owner</h3>
               <p className="text-gray-300 mb-4">
-                <strong>Recommendation: XenlixAI</strong> - You need a complete marketing solution that handles everything from website creation to ad campaigns. XenlixAI provides the most value with all features in one affordable platform.
+                <strong>Recommendation: XenlixAI</strong> - You need a complete marketing solution
+                that handles everything from website creation to ad campaigns. XenlixAI provides the
+                most value with all features in one affordable platform.
               </p>
               <div className="text-sm text-gray-400">
                 Alternative: Multiple tools (expensive and complex to manage)
               </div>
             </div>
-            
+
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
               <h3 className="text-2xl font-bold text-white mb-4">Content Creator / Blogger</h3>
               <p className="text-gray-300 mb-4">
-                <strong>Recommendation: Jasper AI</strong> - If you only need content writing and have other tools for website/SEO, Jasper excels at long-form content creation.
+                <strong>Recommendation: Jasper AI</strong> - If you only need content writing and
+                have other tools for website/SEO, Jasper excels at long-form content creation.
               </p>
               <div className="text-sm text-gray-400">
                 Alternative: XenlixAI for complete business presence beyond just content
               </div>
             </div>
-            
+
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
               <h3 className="text-2xl font-bold text-white mb-4">SEO Agency / Specialist</h3>
               <p className="text-gray-300 mb-4">
-                <strong>Recommendation: SurferSEO</strong> - Deep SEO analysis and optimization tools for professionals who live and breathe SEO.
+                <strong>Recommendation: SurferSEO</strong> - Deep SEO analysis and optimization
+                tools for professionals who live and breathe SEO.
               </p>
               <div className="text-sm text-gray-400">
-                Alternative: XenlixAI for agencies serving small business clients who need full marketing
+                Alternative: XenlixAI for agencies serving small business clients who need full
+                marketing
               </div>
             </div>
-            
+
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
               <h3 className="text-2xl font-bold text-white mb-4">Startup / Entrepreneur</h3>
               <p className="text-gray-300 mb-4">
-                <strong>Recommendation: XenlixAI</strong> - You need to move fast and build a complete online presence quickly. XenlixAI automates everything so you can focus on product and customers.
+                <strong>Recommendation: XenlixAI</strong> - You need to move fast and build a
+                complete online presence quickly. XenlixAI automates everything so you can focus on
+                product and customers.
               </p>
               <div className="text-sm text-gray-400">
                 Alternative: Building piecemeal with multiple tools (slower and more expensive)

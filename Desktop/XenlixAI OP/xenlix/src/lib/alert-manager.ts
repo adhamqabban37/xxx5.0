@@ -1,31 +1,9 @@
 // Alert manager for threshold-based monitoring and notifications
 import { PrismaClient } from '@prisma/client';
 import { SnapshotWriter } from './snapshot-writer';
+import { AlertThreshold, AlertOperator, AlertEvent } from '../types/aeo';
 
 const prisma = new PrismaClient();
-
-export interface AlertThreshold {
-  id: string;
-  url: string;
-  metricType: string;
-  operator: 'lt' | 'gt' | 'eq' | 'lte' | 'gte';
-  threshold: number;
-  enabled: boolean;
-  lastTriggered?: Date;
-}
-
-export interface AlertEvent {
-  id: string;
-  thresholdId: string;
-  url: string;
-  metricType: string;
-  currentValue: number;
-  thresholdValue: number;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  sent: boolean;
-  sentAt?: Date;
-  createdAt: Date;
-}
 
 export interface AlertResult {
   alertsTriggered: number;
@@ -45,7 +23,7 @@ export interface AlertResult {
 
 export class AlertManager {
   private static instance: AlertManager;
-  private readonly snapshotWriter: SnapshotWriter;
+  private readonly snapshotWriter!: SnapshotWriter;
   private readonly cooldownPeriod = 4 * 60 * 60 * 1000; // 4 hours in ms
   private readonly maxAlertsPerHour = 10;
 
@@ -78,9 +56,12 @@ export class AlertManager {
 
       for (const threshold of thresholds) {
         try {
-          const thresholdResult = await this.checkThreshold(threshold);
+          const thresholdResult = await this.checkThreshold({
+            ...threshold,
+            operator: threshold.operator as AlertOperator,
+          });
           result.thresholds.push(thresholdResult);
-          
+
           if (thresholdResult.triggered) {
             result.alertsTriggered++;
           }
@@ -98,9 +79,10 @@ export class AlertManager {
         }
       }
 
-      console.log(`Threshold check completed: ${result.alertsTriggered} alerts triggered, ${result.errors} errors`);
+      console.log(
+        `Threshold check completed: ${result.alertsTriggered} alerts triggered, ${result.errors} errors`
+      );
       return result;
-
     } catch (error) {
       console.error('Failed to check thresholds:', error);
       throw error;
@@ -134,7 +116,7 @@ export class AlertManager {
 
       // Get current value for the metric
       const currentValue = await this.getCurrentMetricValue(threshold.url, threshold.metricType);
-      
+
       if (currentValue === null) {
         return {
           id: threshold.id,
@@ -147,12 +129,20 @@ export class AlertManager {
       }
 
       // Check if threshold is violated
-      const isTriggered = this.evaluateThreshold(currentValue, threshold.operator, threshold.threshold);
-      
+      const isTriggered = this.evaluateThreshold(
+        currentValue,
+        threshold.operator,
+        threshold.threshold
+      );
+
       if (isTriggered) {
         // Create alert event
-        const severity = this.calculateSeverity(threshold.metricType, currentValue, threshold.threshold);
-        
+        const severity = this.calculateSeverity(
+          threshold.metricType,
+          currentValue,
+          threshold.threshold
+        );
+
         await this.createAlertEvent({
           thresholdId: threshold.id,
           url: threshold.url,
@@ -168,7 +158,9 @@ export class AlertManager {
           data: { lastTriggered: new Date() },
         });
 
-        console.log(`Alert triggered for ${threshold.url} - ${threshold.metricType}: ${currentValue} ${threshold.operator} ${threshold.threshold}`);
+        console.log(
+          `Alert triggered for ${threshold.url} - ${threshold.metricType}: ${currentValue} ${threshold.operator} ${threshold.threshold}`
+        );
       }
 
       return {
@@ -179,9 +171,10 @@ export class AlertManager {
         currentValue,
         thresholdValue: threshold.threshold,
       };
-
     } catch (error) {
-      throw new Error(`Failed to check threshold ${threshold.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to check threshold ${threshold.id}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -192,47 +185,47 @@ export class AlertManager {
         case 'psi_performance':
           const psiSnapshot = await this.snapshotWriter.getLatestPSISnapshot(url);
           return psiSnapshot?.performance || null;
-        
+
         case 'psi_accessibility':
           const psiSnapshotAcc = await this.snapshotWriter.getLatestPSISnapshot(url);
           return psiSnapshotAcc?.accessibility || null;
-        
+
         case 'psi_seo':
           const psiSnapshotSeo = await this.snapshotWriter.getLatestPSISnapshot(url);
           return psiSnapshotSeo?.seo || null;
-        
+
         case 'psi_lcp':
           const psiSnapshotLcp = await this.snapshotWriter.getLatestPSISnapshot(url);
           return psiSnapshotLcp?.lcp || null;
-        
+
         case 'psi_cls':
           const psiSnapshotCls = await this.snapshotWriter.getLatestPSISnapshot(url);
           return psiSnapshotCls?.cls || null;
-        
+
         case 'opr_clicks':
           const oprSnapshot = await this.snapshotWriter.getLatestOPRSnapshot(url);
           return oprSnapshot?.totalClicks || null;
-        
+
         case 'opr_impressions':
           const oprSnapshotImp = await this.snapshotWriter.getLatestOPRSnapshot(url);
           return oprSnapshotImp?.totalImpressions || null;
-        
+
         case 'opr_ctr':
           const oprSnapshotCtr = await this.snapshotWriter.getLatestOPRSnapshot(url);
           return oprSnapshotCtr?.averageCTR || null;
-        
+
         case 'opr_position':
           const oprSnapshotPos = await this.snapshotWriter.getLatestOPRSnapshot(url);
           return oprSnapshotPos?.averagePosition || null;
-        
+
         case 'schema_errors':
           const schemaSnapshot = await this.snapshotWriter.getLatestSchemaSnapshot(url);
           return schemaSnapshot?.invalidSchemas || null;
-        
+
         case 'schema_total':
           const schemaSnapshotTotal = await this.snapshotWriter.getLatestSchemaSnapshot(url);
           return schemaSnapshotTotal?.schemasFound || null;
-        
+
         default:
           throw new Error(`Unknown metric type: ${metricType}`);
       }
@@ -245,22 +238,36 @@ export class AlertManager {
   // Evaluate threshold condition
   private evaluateThreshold(currentValue: number, operator: string, threshold: number): boolean {
     switch (operator) {
-      case 'lt': return currentValue < threshold;
-      case 'lte': return currentValue <= threshold;
-      case 'gt': return currentValue > threshold;
-      case 'gte': return currentValue >= threshold;
-      case 'eq': return currentValue === threshold;
-      default: return false;
+      case 'lt':
+        return currentValue < threshold;
+      case 'lte':
+        return currentValue <= threshold;
+      case 'gt':
+        return currentValue > threshold;
+      case 'gte':
+        return currentValue >= threshold;
+      case 'eq':
+        return currentValue === threshold;
+      default:
+        return false;
     }
   }
 
   // Calculate alert severity
-  private calculateSeverity(metricType: string, currentValue: number, threshold: number): 'low' | 'medium' | 'high' | 'critical' {
+  private calculateSeverity(
+    metricType: string,
+    currentValue: number,
+    threshold: number
+  ): 'low' | 'medium' | 'high' | 'critical' {
     const difference = Math.abs(currentValue - threshold);
     const percentDiff = (difference / threshold) * 100;
 
     // Performance metrics (higher is better)
-    if (metricType.startsWith('psi_') && !metricType.includes('lcp') && !metricType.includes('cls')) {
+    if (
+      metricType.startsWith('psi_') &&
+      !metricType.includes('lcp') &&
+      !metricType.includes('cls')
+    ) {
       if (percentDiff > 50) return 'critical';
       if (percentDiff > 25) return 'high';
       if (percentDiff > 10) return 'medium';
@@ -335,10 +342,7 @@ export class AlertManager {
       const pendingAlerts = await prisma.alertEvent.findMany({
         where: { sent: false },
         include: { threshold: true },
-        orderBy: [
-          { severity: 'desc' },
-          { createdAt: 'asc' },
-        ],
+        orderBy: [{ severity: 'desc' }, { createdAt: 'asc' }],
         take: this.maxAlertsPerHour - recentAlerts, // Respect rate limit
       });
 
@@ -348,16 +352,16 @@ export class AlertManager {
       for (const alert of pendingAlerts) {
         try {
           await this.sendAlert(alert);
-          
+
           // Mark as sent
           await prisma.alertEvent.update({
             where: { id: alert.id },
-            data: { 
+            data: {
               sent: true,
               sentAt: new Date(),
             },
           });
-          
+
           sent++;
         } catch (error) {
           console.error(`Failed to send alert ${alert.id}:`, error);
@@ -367,7 +371,6 @@ export class AlertManager {
 
       console.log(`Alert sending completed: ${sent} sent, ${failed} failed`);
       return { sent, failed };
-
     } catch (error) {
       console.error('Failed to send pending alerts:', error);
       throw error;
@@ -408,33 +411,39 @@ export class AlertManager {
   // Generate alert message
   private generateAlertMessage(alert: any): string {
     const metricNames: Record<string, string> = {
-      'psi_performance': 'Performance Score',
-      'psi_accessibility': 'Accessibility Score', 
-      'psi_seo': 'SEO Score',
-      'psi_lcp': 'Largest Contentful Paint',
-      'psi_cls': 'Cumulative Layout Shift',
-      'opr_clicks': 'Total Clicks',
-      'opr_impressions': 'Total Impressions',
-      'opr_ctr': 'Click-Through Rate',
-      'opr_position': 'Average Position',
-      'schema_errors': 'Schema Errors',
-      'schema_total': 'Total Schemas',
+      psi_performance: 'Performance Score',
+      psi_accessibility: 'Accessibility Score',
+      psi_seo: 'SEO Score',
+      psi_lcp: 'Largest Contentful Paint',
+      psi_cls: 'Cumulative Layout Shift',
+      opr_clicks: 'Total Clicks',
+      opr_impressions: 'Total Impressions',
+      opr_ctr: 'Click-Through Rate',
+      opr_position: 'Average Position',
+      schema_errors: 'Schema Errors',
+      schema_total: 'Total Schemas',
     };
 
     const metricName = metricNames[alert.metricType] || alert.metricType;
     const operatorText = this.getOperatorText(alert.threshold.operator);
-    
+
     return `${metricName} alert for ${alert.url}: Current value ${alert.currentValue} is ${operatorText} threshold of ${alert.thresholdValue}`;
   }
 
   private getOperatorText(operator: string): string {
     switch (operator) {
-      case 'lt': return 'below';
-      case 'lte': return 'at or below';
-      case 'gt': return 'above';
-      case 'gte': return 'at or above';
-      case 'eq': return 'equal to';
-      default: return 'compared to';
+      case 'lt':
+        return 'below';
+      case 'lte':
+        return 'at or below';
+      case 'gt':
+        return 'above';
+      case 'gte':
+        return 'at or above';
+      case 'eq':
+        return 'equal to';
+      default:
+        return 'compared to';
     }
   }
 
@@ -443,9 +452,9 @@ export class AlertManager {
     // This would integrate with your email service (SendGrid, SES, etc.)
     const emailTo = process.env.ALERT_EMAIL_TO || 'alerts@xenlix.ai';
     const emailFrom = process.env.ALERT_EMAIL_FROM || 'noreply@xenlix.ai';
-    
+
     console.log(`Sending email alert to ${emailTo}:`, alertData.message);
-    
+
     // TODO: Implement actual email sending
     // Example with a generic email service:
     /*
@@ -496,20 +505,29 @@ export class AlertManager {
       },
     });
 
-    return threshold;
+    return {
+      ...threshold,
+      operator: threshold.operator as AlertOperator,
+    };
   }
 
-  async updateThreshold(id: string, data: Partial<{
-    threshold: number;
-    enabled: boolean;
-    operator: 'lt' | 'gt' | 'eq' | 'lte' | 'gte';
-  }>): Promise<AlertThreshold> {
+  async updateThreshold(
+    id: string,
+    data: Partial<{
+      threshold: number;
+      enabled: boolean;
+      operator: 'lt' | 'gt' | 'eq' | 'lte' | 'gte';
+    }>
+  ): Promise<AlertThreshold> {
     const threshold = await prisma.alertThreshold.update({
       where: { id },
       data,
     });
 
-    return threshold;
+    return {
+      ...threshold,
+      operator: threshold.operator as AlertOperator,
+    };
   }
 
   async deleteThreshold(id: string): Promise<void> {
@@ -519,17 +537,22 @@ export class AlertManager {
   }
 
   async getThresholds(url?: string): Promise<AlertThreshold[]> {
-    return await prisma.alertThreshold.findMany({
+    const thresholds = await prisma.alertThreshold.findMany({
       where: url ? { url } : undefined,
       orderBy: { createdAt: 'desc' },
     });
+
+    return thresholds.map((threshold) => ({
+      ...threshold,
+      operator: threshold.operator as AlertOperator,
+    }));
   }
 
   async getAlertHistory(url?: string, days = 30): Promise<AlertEvent[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    return await prisma.alertEvent.findMany({
+    const events = await prisma.alertEvent.findMany({
       where: {
         url: url || undefined,
         createdAt: { gte: startDate },
@@ -537,5 +560,15 @@ export class AlertManager {
       include: { threshold: true },
       orderBy: { createdAt: 'desc' },
     });
+
+    return events.map((event) => ({
+      ...event,
+      threshold: event.threshold
+        ? {
+            ...event.threshold,
+            operator: event.threshold.operator as AlertOperator,
+          }
+        : undefined,
+    }));
   }
 }

@@ -3,7 +3,7 @@ const http = require('http');
 
 const testAnalyzeAPI = () => {
   const data = JSON.stringify({
-    url: 'https://example.com'
+    url: 'https://example.com',
   });
 
   const options = {
@@ -13,19 +13,19 @@ const testAnalyzeAPI = () => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(data)
-    }
+      'Content-Length': Buffer.byteLength(data),
+    },
   };
 
   const req = http.request(options, (res) => {
     console.log(`Status: ${res.statusCode}`);
     console.log(`Headers: ${JSON.stringify(res.headers)}`);
-    
+
     let responseData = '';
     res.on('data', (chunk) => {
       responseData += chunk;
     });
-    
+
     res.on('end', () => {
       console.log('Response body:');
       try {

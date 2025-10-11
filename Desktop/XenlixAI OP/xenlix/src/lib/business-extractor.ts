@@ -15,13 +15,13 @@ export const BusinessInfoSchema = z.object({
   legalName: z.string().optional(),
   dbaName: z.string().optional(),
   description: z.string().optional(),
-  
+
   // Industry classification
   industry: z.string(),
   subIndustry: z.string().optional(),
   naicsCode: z.string().optional(),
   sicCode: z.string().optional(),
-  
+
   // Location data
   location: z.object({
     address: z.object({
@@ -30,85 +30,101 @@ export const BusinessInfoSchema = z.object({
       state: z.string().optional(),
       zipCode: z.string().optional(),
       country: z.string().default('US'),
-      formattedAddress: z.string().optional()
+      formattedAddress: z.string().optional(),
     }),
-    coordinates: z.object({
-      latitude: z.number(),
-      longitude: z.number()
-    }).optional(),
+    coordinates: z
+      .object({
+        latitude: z.number(),
+        longitude: z.number(),
+      })
+      .optional(),
     serviceArea: z.array(z.string()).default([]),
-    timezone: z.string().optional()
+    timezone: z.string().optional(),
   }),
-  
+
   // Contact information
   contact: z.object({
     phone: z.string().optional(),
     email: z.string().email().optional(),
     website: z.string().url().optional(),
     fax: z.string().optional(),
-    tollFree: z.string().optional()
+    tollFree: z.string().optional(),
   }),
-  
+
   // Services and offerings
   services: z.array(z.string()).default([]),
   products: z.array(z.string()).default([]),
   specialties: z.array(z.string()).default([]),
-  
+
   // Business attributes
   attributes: z.object({
     yearEstablished: z.number().optional(),
     employeeCount: z.number().optional(),
     annualRevenue: z.string().optional(),
-    businessType: z.enum(['Corporation', 'LLC', 'Partnership', 'Sole Proprietorship', 'Other']).optional(),
+    businessType: z
+      .enum(['Corporation', 'LLC', 'Partnership', 'Sole Proprietorship', 'Other'])
+      .optional(),
     licenseNumber: z.string().optional(),
     certifications: z.array(z.string()).default([]),
-    awards: z.array(z.string()).default([])
+    awards: z.array(z.string()).default([]),
   }),
-  
+
   // Operating details
-  hours: z.object({
-    monday: z.string().optional(),
-    tuesday: z.string().optional(),
-    wednesday: z.string().optional(),
-    thursday: z.string().optional(),
-    friday: z.string().optional(),
-    saturday: z.string().optional(),
-    sunday: z.string().optional(),
-    holidayHours: z.string().optional()
-  }).optional(),
-  
+  hours: z
+    .object({
+      monday: z.string().optional(),
+      tuesday: z.string().optional(),
+      wednesday: z.string().optional(),
+      thursday: z.string().optional(),
+      friday: z.string().optional(),
+      saturday: z.string().optional(),
+      sunday: z.string().optional(),
+      holidayHours: z.string().optional(),
+    })
+    .optional(),
+
   // Online presence
-  socialMedia: z.object({
-    facebook: z.string().optional(),
-    instagram: z.string().optional(),
-    twitter: z.string().optional(),
-    linkedin: z.string().optional(),
-    youtube: z.string().optional(),
-    tiktok: z.string().optional(),
-    pinterest: z.string().optional()
-  }).optional(),
-  
+  socialMedia: z
+    .object({
+      facebook: z.string().optional(),
+      instagram: z.string().optional(),
+      twitter: z.string().optional(),
+      linkedin: z.string().optional(),
+      youtube: z.string().optional(),
+      tiktok: z.string().optional(),
+      pinterest: z.string().optional(),
+    })
+    .optional(),
+
   // Reviews and reputation
   averageRating: z.number().min(0).max(5).optional(), // Direct property for easy access
-  reviews: z.array(z.object({
-    text: z.string(),
-    rating: z.number().min(1).max(5),
-    author: z.string().optional(),
-    date: z.string().optional(),
-    platform: z.string().optional()
-  })).default([]), // Direct property for easy access
-  reputation: z.object({
-    averageRating: z.number().min(0).max(5),
-    totalReviews: z.number().min(0),
-    platforms: z.object({
-      google: z.object({ rating: z.number(), count: z.number() }).optional(),
-      yelp: z.object({ rating: z.number(), count: z.number() }).optional(),
-      facebook: z.object({ rating: z.number(), count: z.number() }).optional(),
-      bbb: z.object({ rating: z.string(), accredited: z.boolean() }).optional()
-    }).optional(),
-    sentiment: z.enum(['positive', 'neutral', 'negative']).optional()
-  }).optional(),
-  
+  reviews: z
+    .array(
+      z.object({
+        text: z.string(),
+        rating: z.number().min(1).max(5),
+        author: z.string().optional(),
+        date: z.string().optional(),
+        platform: z.string().optional(),
+      })
+    )
+    .default([]), // Direct property for easy access
+  reputation: z
+    .object({
+      averageRating: z.number().min(0).max(5),
+      totalReviews: z.number().min(0),
+      platforms: z
+        .object({
+          google: z.object({ rating: z.number(), count: z.number() }).optional(),
+          yelp: z.object({ rating: z.number(), count: z.number() }).optional(),
+          facebook: z.object({ rating: z.number(), count: z.number() }).optional(),
+          bbb: z.object({ rating: z.string(), accredited: z.boolean() }).optional(),
+        })
+        .optional(),
+      sentiment: z.enum(['positive', 'neutral', 'negative']).optional(),
+    })
+    .optional(),
+
   // SEO and marketing data
   marketing: z.object({
     targetKeywords: z.array(z.string()).default([]),
@@ -116,9 +132,9 @@ export const BusinessInfoSchema = z.object({
     targetAudience: z.array(z.string()).default([]),
     uniqueSellingPoints: z.array(z.string()).default([]),
     brandVoice: z.string().optional(),
-    valueProposition: z.string().optional()
+    valueProposition: z.string().optional(),
   }),
-  
+
   // Extraction metadata
   metadata: z.object({
     extractedAt: z.date(),
@@ -127,8 +143,8 @@ export const BusinessInfoSchema = z.object({
     confidence: z.number().min(0).max(1),
     completeness: z.number().min(0).max(1),
     needsReview: z.array(z.string()).default([]),
-    missingData: z.array(z.string()).default([])
-  })
+    missingData: z.array(z.string()).default([]),
+  }),
 });
 
 export type BusinessInfo = z.infer<typeof BusinessInfoSchema>;
@@ -151,10 +167,9 @@ export class BusinessExtractor {
     // Step 1: Crawl and analyze the website
     const crawlResult = await this.crawl4ai.scanWithFallback({
       url,
-      extractContent: true,
-      extractMetadata: true,
-      extractSchemas: true,
-      analysisDepth: 'comprehensive'
+      scan_type: 'full',
+      include_ai_analysis: true,
+      user_agent: 'XenlixAI-Bot/1.0 (+https://xenlix.ai/bot)',
     });
 
     // Step 2: Extract basic business data from crawl results
@@ -186,12 +201,12 @@ export class BusinessExtractor {
     // Extract business name from multiple sources
     let businessName = '';
     if (schemas.length > 0) {
-      const orgSchema = schemas.find((s: any) => 
-        s['@type'] === 'Organization' || s['@type'] === 'LocalBusiness'
+      const orgSchema = schemas.find(
+        (s: any) => s['@type'] === 'Organization' || s['@type'] === 'LocalBusiness'
       );
       businessName = orgSchema?.name || '';
     }
-    
+
     if (!businessName) {
       businessName = metadata.title || '';
       // Clean up common title patterns
@@ -209,7 +224,7 @@ export class BusinessExtractor {
       contact: {
         website: sourceUrl,
         phone: this.extractPhoneNumber(content.text || ''),
-        email: this.extractEmail(content.text || '')
+        email: this.extractEmail(content.text || ''),
       },
       services,
       metadata: {
@@ -219,17 +234,20 @@ export class BusinessExtractor {
         confidence: 0.6,
         completeness: 0.4,
         needsReview: [],
-        missingData: []
-      }
+        missingData: [],
+      },
     };
   }
 
   /**
    * Enhance business info using HuggingFace NLP models
    */
-  private async enhanceWithNLP(basicInfo: Partial<BusinessInfo>, crawlResult: any): Promise<Partial<BusinessInfo>> {
+  private async enhanceWithNLP(
+    basicInfo: Partial<BusinessInfo>,
+    crawlResult: any
+  ): Promise<Partial<BusinessInfo>> {
     const content = crawlResult.content?.text || '';
-    
+
     if (!content) {
       return basicInfo;
     }
@@ -239,7 +257,7 @@ export class BusinessExtractor {
       const [industry, entities, sentiment] = await Promise.all([
         this.classifyIndustry(content),
         this.extractEntities(content),
-        this.analyzeSentiment(content)
+        this.analyzeSentiment(content),
       ]);
 
       return {
@@ -251,8 +269,8 @@ export class BusinessExtractor {
           competitorKeywords: [], // Add missing required property
           targetAudience: this.inferTargetAudience(content, industry),
           uniqueSellingPoints: this.extractUSPs(content),
-          brandVoice: this.analyzeBrandVoice(content, sentiment)
-        }
+          brandVoice: this.analyzeBrandVoice(content, sentiment),
+        },
       };
     } catch (error) {
       console.warn('HuggingFace enhancement failed:', error);
@@ -267,19 +285,30 @@ export class BusinessExtractor {
     try {
       // Use real HuggingFace text classification with industry labels
       const industryLabels = [
-        'Healthcare', 'Legal Services', 'Real Estate', 'Automotive', 
-        'Restaurant', 'Retail', 'Technology', 'Construction', 
-        'Education', 'Finance', 'Manufacturing', 'Professional Services',
-        'Entertainment', 'Agriculture', 'Transportation'
+        'Healthcare',
+        'Legal Services',
+        'Real Estate',
+        'Automotive',
+        'Restaurant',
+        'Retail',
+        'Technology',
+        'Construction',
+        'Education',
+        'Finance',
+        'Manufacturing',
+        'Professional Services',
+        'Entertainment',
+        'Agriculture',
+        'Transportation',
       ];
 
       const results = await this.hf.classifyText(content.substring(0, 512), industryLabels);
-      
+
       // Return the highest scoring industry
       if (results.length > 0 && results[0].score > 0.3) {
         return results[0].label;
       }
-      
+
       return 'General Business';
     } catch (error) {
       console.warn('Industry classification failed:', error);
@@ -292,20 +321,14 @@ export class BusinessExtractor {
    */
   private async extractEntities(content: string): Promise<any[]> {
     try {
-      // Mock entity extraction - replace with actual implementation when HF methods are available
-      // return await this.hf.extractEntities(content.substring(0, 1024));
-      
-      // Simple regex-based entity extraction
-      const entities: Array<{type: string; value: string}> = [];
+      const ner = await this.hf.extractEntities(content.substring(0, 1024));
+      if (Array.isArray(ner) && ner.length > 0) return ner;
+      // Fallback to simple regex if NER returns nothing
+      const entities: Array<{ type: string; value: string }> = [];
       const phoneRegex = /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
       const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
-      
-      const phones = content.match(phoneRegex) || [];
-      const emails = content.match(emailRegex) || [];
-      
-      phones.forEach(phone => entities.push({ type: 'phone', value: phone }));
-      emails.forEach(email => entities.push({ type: 'email', value: email }));
-      
+      (content.match(phoneRegex) || []).forEach((p) => entities.push({ type: 'phone', value: p }));
+      (content.match(emailRegex) || []).forEach((e) => entities.push({ type: 'email', value: e }));
       return entities;
     } catch (error) {
       console.warn('Entity extraction failed:', error);
@@ -350,19 +373,24 @@ export class BusinessExtractor {
    */
   private extractServicesFromContent(content: string): string[] {
     const serviceKeywords = [
-      'services', 'solutions', 'offerings', 'specialties',
-      'expertise', 'capabilities', 'products'
+      'services',
+      'solutions',
+      'offerings',
+      'specialties',
+      'expertise',
+      'capabilities',
+      'products',
     ];
-    
+
     const services: string[] = [];
     const lines = content.split('\n');
-    
-    lines.forEach(line => {
-      serviceKeywords.forEach(keyword => {
+
+    lines.forEach((line) => {
+      serviceKeywords.forEach((keyword) => {
         if (line.toLowerCase().includes(keyword)) {
           // Extract potential service names from the line
-          const words = line.split(/[,\n\r\t]/).map(w => w.trim());
-          words.forEach(word => {
+          const words = line.split(/[,\n\r\t]/).map((w) => w.trim());
+          words.forEach((word) => {
             if (word.length > 3 && word.length < 50) {
               services.push(word);
             }
@@ -379,9 +407,9 @@ export class BusinessExtractor {
    */
   private extractServicesFromEntities(entities: any[]): string[] {
     return entities
-      .filter(entity => entity.entity_group === 'MISC' || entity.entity_group === 'ORG')
-      .map(entity => entity.word)
-      .filter(word => word.length > 3 && word.length < 30)
+      .filter((entity) => entity.entity_group === 'MISC' || entity.entity_group === 'ORG')
+      .map((entity) => entity.word)
+      .filter((word) => word.length > 3 && word.length < 30)
       .slice(0, 5);
   }
 
@@ -394,10 +422,10 @@ export class BusinessExtractor {
       .toLowerCase()
       .replace(/[^\w\s]/g, '')
       .split(/\s+/)
-      .filter(word => word.length > 4 && word.length < 20);
-    
+      .filter((word) => word.length > 4 && word.length < 20);
+
     const frequency: { [key: string]: number } = {};
-    words.forEach(word => {
+    words.forEach((word) => {
       frequency[word] = (frequency[word] || 0) + 1;
     });
 
@@ -412,7 +440,7 @@ export class BusinessExtractor {
    */
   private inferTargetAudience(content: string, industry: string): string[] {
     const audiences: string[] = [];
-    
+
     // Industry-based audiences
     switch (industry.toLowerCase()) {
       case 'healthcare':
@@ -436,17 +464,26 @@ export class BusinessExtractor {
    */
   private extractUSPs(content: string): string[] {
     const uspIndicators = [
-      'unique', 'exclusive', 'only', 'best', 'leading',
-      'premier', 'top', 'award-winning', 'certified',
-      'experienced', 'trusted', 'proven'
+      'unique',
+      'exclusive',
+      'only',
+      'best',
+      'leading',
+      'premier',
+      'top',
+      'award-winning',
+      'certified',
+      'experienced',
+      'trusted',
+      'proven',
     ];
 
     const sentences = content.split(/[.!?]+/);
     const usps: string[] = [];
 
-    sentences.forEach(sentence => {
+    sentences.forEach((sentence) => {
       const lowerSentence = sentence.toLowerCase();
-      if (uspIndicators.some(indicator => lowerSentence.includes(indicator))) {
+      if (uspIndicators.some((indicator) => lowerSentence.includes(indicator))) {
         if (sentence.trim().length > 10 && sentence.trim().length < 200) {
           usps.push(sentence.trim());
         }
@@ -462,12 +499,16 @@ export class BusinessExtractor {
   private analyzeBrandVoice(content: string, sentiment: string): string {
     const formalWords = ['professional', 'expertise', 'qualified', 'certified'];
     const casualWords = ['friendly', 'easy', 'simple', 'fun'];
-    
+
     const lowerContent = content.toLowerCase();
-    const formalCount = formalWords.reduce((count, word) => 
-      count + (lowerContent.split(word).length - 1), 0);
-    const casualCount = casualWords.reduce((count, word) => 
-      count + (lowerContent.split(word).length - 1), 0);
+    const formalCount = formalWords.reduce(
+      (count, word) => count + (lowerContent.split(word).length - 1),
+      0
+    );
+    const casualCount = casualWords.reduce(
+      (count, word) => count + (lowerContent.split(word).length - 1),
+      0
+    );
 
     if (formalCount > casualCount) {
       return 'Professional and Authoritative';
@@ -489,7 +530,10 @@ export class BusinessExtractor {
   /**
    * Extract location and geographical data
    */
-  private async extractLocationData(info: Partial<BusinessInfo>, crawlResult: any): Promise<Partial<BusinessInfo>> {
+  private async extractLocationData(
+    info: Partial<BusinessInfo>,
+    crawlResult: any
+  ): Promise<Partial<BusinessInfo>> {
     // Enhance location data extraction
     return info;
   }
@@ -497,7 +541,10 @@ export class BusinessExtractor {
   /**
    * Extract marketing insights and competitive data
    */
-  private async extractMarketingInsights(info: Partial<BusinessInfo>, crawlResult: any): Promise<Partial<BusinessInfo>> {
+  private async extractMarketingInsights(
+    info: Partial<BusinessInfo>,
+    crawlResult: any
+  ): Promise<Partial<BusinessInfo>> {
     // Add marketing analysis
     return info;
   }

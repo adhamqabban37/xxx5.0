@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  AlertTriangle, 
-  Send, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  Send,
   RefreshCw,
   ExternalLink,
   TrendingUp,
-  Activity
+  Activity,
 } from 'lucide-react';
 
 interface IndexNowStatus {
@@ -50,7 +50,9 @@ export default function IndexNowDashboard() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitUrl, setSubmitUrl] = useState('');
-  const [submitResult, setSubmitResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [submitResult, setSubmitResult] = useState<{ success: boolean; message: string } | null>(
+    null
+  );
   const [activeTab, setActiveTab] = useState('submit');
 
   // Load IndexNow status and logs
@@ -59,7 +61,7 @@ export default function IndexNowDashboard() {
       setLoading(true);
       const [statusRes, logsRes] = await Promise.all([
         fetch('/api/indexnow'),
-        fetch('/api/indexnow/logs')
+        fetch('/api/indexnow/logs'),
       ]);
 
       if (statusRes.ok) {
@@ -92,8 +94,8 @@ export default function IndexNowDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           urls: [submitUrl.trim()],
-          reason: 'manual'
-        })
+          reason: 'manual',
+        }),
       });
 
       const data = await response.json();
@@ -101,7 +103,7 @@ export default function IndexNowDashboard() {
       if (response.ok) {
         setSubmitResult({
           success: true,
-          message: `Successfully submitted ${data.urlCount} URL(s) to search engines`
+          message: `Successfully submitted ${data.urlCount} URL(s) to search engines`,
         });
         setSubmitUrl('');
         // Reload data to show new submission
@@ -109,13 +111,13 @@ export default function IndexNowDashboard() {
       } else {
         setSubmitResult({
           success: false,
-          message: data.error || 'Submission failed'
+          message: data.error || 'Submission failed',
         });
       }
     } catch (error) {
       setSubmitResult({
         success: false,
-        message: 'Network error occurred'
+        message: 'Network error occurred',
       });
     } finally {
       setSubmitting(false);
@@ -129,27 +131,27 @@ export default function IndexNowDashboard() {
       const response = await fetch('/api/indexnow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls, reason: 'manual' })
+        body: JSON.stringify({ urls, reason: 'manual' }),
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
         setSubmitResult({
           success: true,
-          message: `Successfully submitted ${data.urlCount} URL(s) to search engines`
+          message: `Successfully submitted ${data.urlCount} URL(s) to search engines`,
         });
         await loadData();
       } else {
         setSubmitResult({
           success: false,
-          message: data.error || 'Submission failed'
+          message: data.error || 'Submission failed',
         });
       }
     } catch (error) {
       setSubmitResult({
         success: false,
-        message: 'Network error occurred'
+        message: 'Network error occurred',
       });
     } finally {
       setSubmitting(false);
@@ -189,7 +191,7 @@ export default function IndexNowDashboard() {
     );
   }
 
-  const successRate = stats?.totalSubmissions 
+  const successRate = stats?.totalSubmissions
     ? Math.round((stats.successfulSubmissions / stats.totalSubmissions) * 100)
     : 0;
 
@@ -203,8 +205,8 @@ export default function IndexNowDashboard() {
             Instant search engine notifications for content changes
           </p>
         </div>
-        <button 
-          onClick={loadData} 
+        <button
+          onClick={loadData}
           disabled={loading}
           className="flex items-center px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-gray-300 rounded-lg transition-colors"
         >
@@ -222,9 +224,9 @@ export default function IndexNowDashboard() {
             <span className="text-sm text-white">Active</span>
           </div>
           {status.keyLocation && (
-            <a 
-              href={status.keyLocation} 
-              target="_blank" 
+            <a
+              href={status.keyLocation}
+              target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-cyan-400 hover:underline inline-flex items-center mt-1"
             >
@@ -258,10 +260,7 @@ export default function IndexNowDashboard() {
           <div className="flex items-center space-x-2">
             <Clock className="w-4 h-4 text-gray-500" />
             <span className="text-sm text-white">
-              {stats?.lastSubmission 
-                ? new Date(stats.lastSubmission).toLocaleString()
-                : 'Never'
-              }
+              {stats?.lastSubmission ? new Date(stats.lastSubmission).toLocaleString() : 'Never'}
             </span>
           </div>
         </div>
@@ -273,39 +272,53 @@ export default function IndexNowDashboard() {
         <div className="space-y-3">
           <div>
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-400">Per Minute ({status.rateLimits.minute.limit} max)</span>
-              <span className="text-white">{status.rateLimits.minute.used} / {status.rateLimits.minute.limit}</span>
+              <span className="text-gray-400">
+                Per Minute ({status.rateLimits.minute.limit} max)
+              </span>
+              <span className="text-white">
+                {status.rateLimits.minute.used} / {status.rateLimits.minute.limit}
+              </span>
             </div>
             <div className="w-full bg-slate-600 rounded-full h-2">
-              <div 
-                className="bg-cyan-500 h-2 rounded-full transition-all duration-300" 
-                style={{width: `${(status.rateLimits.minute.used / status.rateLimits.minute.limit) * 100}%`}}
+              <div
+                className="bg-cyan-500 h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${(status.rateLimits.minute.used / status.rateLimits.minute.limit) * 100}%`,
+                }}
               ></div>
             </div>
           </div>
-          
+
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span className="text-gray-400">Per Hour ({status.rateLimits.hour.limit} max)</span>
-              <span className="text-white">{status.rateLimits.hour.used} / {status.rateLimits.hour.limit}</span>
+              <span className="text-white">
+                {status.rateLimits.hour.used} / {status.rateLimits.hour.limit}
+              </span>
             </div>
             <div className="w-full bg-slate-600 rounded-full h-2">
-              <div 
-                className="bg-cyan-500 h-2 rounded-full transition-all duration-300" 
-                style={{width: `${(status.rateLimits.hour.used / status.rateLimits.hour.limit) * 100}%`}}
+              <div
+                className="bg-cyan-500 h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${(status.rateLimits.hour.used / status.rateLimits.hour.limit) * 100}%`,
+                }}
               ></div>
             </div>
           </div>
-          
+
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span className="text-gray-400">Per Day ({status.rateLimits.day.limit} max)</span>
-              <span className="text-white">{status.rateLimits.day.used} / {status.rateLimits.day.limit}</span>
+              <span className="text-white">
+                {status.rateLimits.day.used} / {status.rateLimits.day.limit}
+              </span>
             </div>
             <div className="w-full bg-slate-600 rounded-full h-2">
-              <div 
-                className="bg-cyan-500 h-2 rounded-full transition-all duration-300" 
-                style={{width: `${(status.rateLimits.day.used / status.rateLimits.day.limit) * 100}%`}}
+              <div
+                className="bg-cyan-500 h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${(status.rateLimits.day.used / status.rateLimits.day.limit) * 100}%`,
+                }}
               ></div>
             </div>
           </div>
@@ -348,7 +361,10 @@ export default function IndexNowDashboard() {
                 <div className="space-y-4">
                   <div className="flex space-x-2">
                     <div className="flex-1">
-                      <label htmlFor="submit-url" className="block text-sm font-medium text-gray-400 mb-1">
+                      <label
+                        htmlFor="submit-url"
+                        className="block text-sm font-medium text-gray-400 mb-1"
+                      >
                         URL to submit
                       </label>
                       <input
@@ -362,8 +378,8 @@ export default function IndexNowDashboard() {
                       />
                     </div>
                     <div className="flex items-end">
-                      <button 
-                        onClick={handleSubmit} 
+                      <button
+                        onClick={handleSubmit}
                         disabled={submitting || !submitUrl.trim()}
                         className="flex items-center px-4 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
                       >
@@ -378,11 +394,13 @@ export default function IndexNowDashboard() {
                   </div>
 
                   {submitResult && (
-                    <div className={`p-3 rounded-lg border ${
-                      submitResult.success 
-                        ? 'bg-green-900/20 border-green-500/30 text-green-200' 
-                        : 'bg-red-900/20 border-red-500/30 text-red-200'
-                    }`}>
+                    <div
+                      className={`p-3 rounded-lg border ${
+                        submitResult.success
+                          ? 'bg-green-900/20 border-green-500/30 text-green-200'
+                          : 'bg-red-900/20 border-red-500/30 text-red-200'
+                      }`}
+                    >
                       <div className="flex items-center">
                         {submitResult.success ? (
                           <CheckCircle className="h-4 w-4 mr-2" />
@@ -400,42 +418,42 @@ export default function IndexNowDashboard() {
               <div>
                 <h5 className="text-lg font-semibold text-white mb-4">Quick Submit</h5>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  <button 
+                  <button
                     onClick={() => handleQuickSubmit(['https://www.xenlixai.com/'])}
                     disabled={submitting}
                     className="px-3 py-2 text-sm bg-slate-600 hover:bg-slate-500 disabled:bg-slate-700 text-gray-300 rounded-lg transition-colors"
                   >
                     Homepage
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleQuickSubmit(['https://www.xenlixai.com/contact'])}
                     disabled={submitting}
                     className="px-3 py-2 text-sm bg-slate-600 hover:bg-slate-500 disabled:bg-slate-700 text-gray-300 rounded-lg transition-colors"
                   >
                     Contact
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleQuickSubmit(['https://www.xenlixai.com/plans'])}
                     disabled={submitting}
                     className="px-3 py-2 text-sm bg-slate-600 hover:bg-slate-500 disabled:bg-slate-700 text-gray-300 rounded-lg transition-colors"
                   >
                     Pricing
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleQuickSubmit(['https://www.xenlixai.com/case-studies'])}
                     disabled={submitting}
                     className="px-3 py-2 text-sm bg-slate-600 hover:bg-slate-500 disabled:bg-slate-700 text-gray-300 rounded-lg transition-colors"
                   >
                     Case Studies
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleQuickSubmit(['https://www.xenlixai.com/dallas'])}
                     disabled={submitting}
                     className="px-3 py-2 text-sm bg-slate-600 hover:bg-slate-500 disabled:bg-slate-700 text-gray-300 rounded-lg transition-colors"
                   >
                     Dallas Page
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleQuickSubmit(['https://www.xenlixai.com/sitemap.xml'])}
                     disabled={submitting}
                     className="px-3 py-2 text-sm bg-slate-600 hover:bg-slate-500 disabled:bg-slate-700 text-gray-300 rounded-lg transition-colors"
@@ -457,8 +475,8 @@ export default function IndexNowDashboard() {
               ) : (
                 <div className="space-y-3">
                   {logs.slice(0, 10).map((log) => (
-                    <div 
-                      key={log.id} 
+                    <div
+                      key={log.id}
                       className="flex items-center justify-between p-3 bg-slate-600/50 border border-slate-500/30 rounded-lg"
                     >
                       <div className="flex items-center space-x-3">
@@ -483,9 +501,7 @@ export default function IndexNowDashboard() {
                           </span>
                         )}
                         {log.duration && (
-                          <span className="text-xs text-gray-400">
-                            {log.duration}ms
-                          </span>
+                          <span className="text-xs text-gray-400">{log.duration}ms</span>
                         )}
                       </div>
                     </div>

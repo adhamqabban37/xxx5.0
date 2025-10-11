@@ -150,15 +150,15 @@ export function getFilteredLogs(filters: {
   let filtered = submissionLogs;
 
   if (filters.success !== undefined) {
-    filtered = filtered.filter(log => log.success === filters.success);
+    filtered = filtered.filter((log) => log.success === filters.success);
   }
 
   if (filters.reason) {
-    filtered = filtered.filter(log => log.reason === filters.reason);
+    filtered = filtered.filter((log) => log.reason === filters.reason);
   }
 
   if (filters.since) {
-    filtered = filtered.filter(log => log.timestamp > filters.since);
+    filtered = filtered.filter((log) => log.timestamp > filters.since!);
   }
 
   if (filters.limit) {
@@ -170,9 +170,7 @@ export function getFilteredLogs(filters: {
 
 // Get error logs for troubleshooting
 export function getErrorLogs(limit: number = 10): IndexNowLog[] {
-  return submissionLogs
-    .filter(log => !log.success)
-    .slice(0, limit);
+  return submissionLogs.filter((log) => !log.success).slice(0, limit);
 }
 
 // Check if rate limits are being approached
@@ -185,15 +183,21 @@ export function checkRateLimitWarnings(): {
 
   // Warn at 80% capacity
   if (rateLimitStatus.minute.used >= rateLimitStatus.minute.limit * 0.8) {
-    warnings.push(`Minute rate limit at ${Math.round((rateLimitStatus.minute.used / rateLimitStatus.minute.limit) * 100)}%`);
+    warnings.push(
+      `Minute rate limit at ${Math.round((rateLimitStatus.minute.used / rateLimitStatus.minute.limit) * 100)}%`
+    );
   }
 
   if (rateLimitStatus.hour.used >= rateLimitStatus.hour.limit * 0.8) {
-    warnings.push(`Hour rate limit at ${Math.round((rateLimitStatus.hour.used / rateLimitStatus.hour.limit) * 100)}%`);
+    warnings.push(
+      `Hour rate limit at ${Math.round((rateLimitStatus.hour.used / rateLimitStatus.hour.limit) * 100)}%`
+    );
   }
 
   if (rateLimitStatus.day.used >= rateLimitStatus.day.limit * 0.8) {
-    warnings.push(`Day rate limit at ${Math.round((rateLimitStatus.day.used / rateLimitStatus.day.limit) * 100)}%`);
+    warnings.push(
+      `Day rate limit at ${Math.round((rateLimitStatus.day.used / rateLimitStatus.day.limit) * 100)}%`
+    );
   }
 
   return {
@@ -208,33 +212,39 @@ export function formatLogForDisplay(log: IndexNowLog): string {
   const status = log.success ? '✅' : '❌';
   const reason = log.reason ? ` (${log.reason})` : '';
   const error = log.error ? ` - ${log.error}` : '';
-  
+
   return `${status} ${timestamp}: ${log.urlCount} URLs${reason}${error}`;
 }
 
 // Export logs as JSON for backup/analysis
 export function exportLogs(): string {
-  return JSON.stringify({
-    exportDate: new Date().toISOString(),
-    stats: currentStats,
-    logs: submissionLogs,
-  }, null, 2);
+  return JSON.stringify(
+    {
+      exportDate: new Date().toISOString(),
+      stats: currentStats,
+      logs: submissionLogs,
+    },
+    null,
+    2
+  );
 }
 
 // Clear old logs (keep last N days)
 export function clearOldLogs(daysToKeep: number = 7): number {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
-  
+
   const initialCount = submissionLogs.length;
-  submissionLogs = submissionLogs.filter(log => log.timestamp > cutoffDate);
-  
+  submissionLogs = submissionLogs.filter((log) => log.timestamp > cutoffDate);
+
   const removedCount = initialCount - submissionLogs.length;
-  
+
   if (removedCount > 0) {
-    console.info(`IndexNow: Cleared ${removedCount} old log entries (older than ${daysToKeep} days)`);
+    console.info(
+      `IndexNow: Cleared ${removedCount} old log entries (older than ${daysToKeep} days)`
+    );
   }
-  
+
   return removedCount;
 }
 

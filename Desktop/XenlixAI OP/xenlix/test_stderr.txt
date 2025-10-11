@@ -1,0 +1,218 @@
+ΓùÅ Validation Warning:
+
+  Unknown option "moduleNameMapping" with value {"^@/(.*)$": "<rootDir>/src/$1"} was found.
+  This is probably a typing mistake. Fixing it will remove this message.
+
+  Configuration Documentation:
+  https://jestjs.io/docs/configuration
+
+ΓùÅ Validation Warning:
+
+  Unknown option "moduleNameMapping" with value {"^@/(.*)$": "<rootDir>/src/$1"} was found.
+  This is probably a typing mistake. Fixing it will remove this message.
+
+  Configuration Documentation:
+  https://jestjs.io/docs/configuration
+
+FAIL tests/ai-visibility.spec.ts
+  ΓùÅ Test suite failed to run
+
+    Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+    If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+
+       6 |
+       7 | // Test setup file for Premium AEO Dashboard
+    >  8 | import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+         | ^
+       9 | import { cleanup } from '@testing-library/react'
+      10 | import { TextEncoder, TextDecoder } from 'util'
+      11 |
+
+      at Object.<anonymous> (node_modules/.pnpm/vitest@3.2.4_@types+node@20_9f774cff0e0a994d0872db2ac929dc8c/node_modules/vitest/index.cjs:1:7)
+      at Object.<anonymous> (tests/setup.ts:8:1)
+
+FAIL tests/pipeline-integration.spec.ts
+  ΓùÅ Test suite failed to run
+
+    Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+    If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+
+       6 |
+       7 | // Test setup file for Premium AEO Dashboard
+    >  8 | import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+         | ^
+       9 | import { cleanup } from '@testing-library/react'
+      10 | import { TextEncoder, TextDecoder } from 'util'
+      11 |
+
+      at Object.<anonymous> (node_modules/.pnpm/vitest@3.2.4_@types+node@20_9f774cff0e0a994d0872db2ac929dc8c/node_modules/vitest/index.cjs:1:7)
+      at Object.<anonymous> (tests/setup.ts:8:1)
+
+FAIL tests/premium-aeo-dashboard.test.ts
+  ΓùÅ Test suite failed to run
+
+    Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+    If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+
+       6 |
+       7 | // Test setup file for Premium AEO Dashboard
+    >  8 | import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+         | ^
+       9 | import { cleanup } from '@testing-library/react'
+      10 | import { TextEncoder, TextDecoder } from 'util'
+      11 |
+
+      at Object.<anonymous> (node_modules/.pnpm/vitest@3.2.4_@types+node@20_9f774cff0e0a994d0872db2ac929dc8c/node_modules/vitest/index.cjs:1:7)
+      at Object.<anonymous> (tests/setup.ts:8:1)
+
+FAIL tests/enhanced-brand-detection.test.ts
+  ΓùÅ Test suite failed to run
+
+    Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+    If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+
+       6 |
+       7 | // Test setup file for Premium AEO Dashboard
+    >  8 | import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+         | ^
+       9 | import { cleanup } from '@testing-library/react'
+      10 | import { TextEncoder, TextDecoder } from 'util'
+      11 |
+
+      at Object.<anonymous> (node_modules/.pnpm/vitest@3.2.4_@types+node@20_9f774cff0e0a994d0872db2ac929dc8c/node_modules/vitest/index.cjs:1:7)
+      at Object.<anonymous> (tests/setup.ts:8:1)
+
+FAIL tests/opr-api.test.ts
+  ΓùÅ Test suite failed to run
+
+    Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+    If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+
+       6 |
+       7 | // Test setup file for Premium AEO Dashboard
+    >  8 | import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+         | ^
+       9 | import { cleanup } from '@testing-library/react'
+      10 | import { TextEncoder, TextDecoder } from 'util'
+      11 |
+
+      at Object.<anonymous> (node_modules/.pnpm/vitest@3.2.4_@types+node@20_9f774cff0e0a994d0872db2ac929dc8c/node_modules/vitest/index.cjs:1:7)
+      at Object.<anonymous> (tests/setup.ts:8:1)
+
+FAIL tests/performance.spec.ts
+  ΓùÅ Test suite failed to run
+
+    Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+    If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+
+       6 |
+       7 | // Test setup file for Premium AEO Dashboard
+    >  8 | import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+         | ^
+       9 | import { cleanup } from '@testing-library/react'
+      10 | import { TextEncoder, TextDecoder } from 'util'
+      11 |
+
+      at Object.<anonymous> (node_modules/.pnpm/vitest@3.2.4_@types+node@20_9f774cff0e0a994d0872db2ac929dc8c/node_modules/vitest/index.cjs:1:7)
+      at Object.<anonymous> (tests/setup.ts:8:1)
+
+FAIL tests/seo-aeo.spec.ts
+  ΓùÅ Test suite failed to run
+
+    Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+    If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+
+       6 |
+       7 | // Test setup file for Premium AEO Dashboard
+    >  8 | import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+         | ^
+       9 | import { cleanup } from '@testing-library/react'
+      10 | import { TextEncoder, TextDecoder } from 'util'
+      11 |
+
+      at Object.<anonymous> (node_modules/.pnpm/vitest@3.2.4_@types+node@20_9f774cff0e0a994d0872db2ac929dc8c/node_modules/vitest/index.cjs:1:7)
+      at Object.<anonymous> (tests/setup.ts:8:1)
+
+FAIL tests/aeo-api.spec.ts
+  ΓùÅ Test suite failed to run
+
+    Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+    If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+
+       6 |
+       7 | // Test setup file for Premium AEO Dashboard
+    >  8 | import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+         | ^
+       9 | import { cleanup } from '@testing-library/react'
+      10 | import { TextEncoder, TextDecoder } from 'util'
+      11 |
+
+      at Object.<anonymous> (node_modules/.pnpm/vitest@3.2.4_@types+node@20_9f774cff0e0a994d0872db2ac929dc8c/node_modules/vitest/index.cjs:1:7)
+      at Object.<anonymous> (tests/setup.ts:8:1)
+
+FAIL tests/hf.test.ts
+  ΓùÅ Test suite failed to run
+
+    Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+    If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+
+       6 |
+       7 | // Test setup file for Premium AEO Dashboard
+    >  8 | import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+         | ^
+       9 | import { cleanup } from '@testing-library/react'
+      10 | import { TextEncoder, TextDecoder } from 'util'
+      11 |
+
+      at Object.<anonymous> (node_modules/.pnpm/vitest@3.2.4_@types+node@20_9f774cff0e0a994d0872db2ac929dc8c/node_modules/vitest/index.cjs:1:7)
+      at Object.<anonymous> (tests/setup.ts:8:1)
+
+FAIL tests/devops-verification.spec.ts
+  ΓùÅ Test suite failed to run
+
+    Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+    If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+
+       6 |
+       7 | // Test setup file for Premium AEO Dashboard
+    >  8 | import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+         | ^
+       9 | import { cleanup } from '@testing-library/react'
+      10 | import { TextEncoder, TextDecoder } from 'util'
+      11 |
+
+      at Object.<anonymous> (node_modules/.pnpm/vitest@3.2.4_@types+node@20_9f774cff0e0a994d0872db2ac929dc8c/node_modules/vitest/index.cjs:1:7)
+      at Object.<anonymous> (tests/setup.ts:8:1)
+
+FAIL tests/aeo-ui-fallback.spec.ts
+  ΓùÅ Test suite failed to run
+
+    Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+    If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+
+       6 |
+       7 | // Test setup file for Premium AEO Dashboard
+    >  8 | import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
+         | ^
+       9 | import { cleanup } from '@testing-library/react'
+      10 | import { TextEncoder, TextDecoder } from 'util'
+      11 |
+
+      at Object.<anonymous> (node_modules/.pnpm/vitest@3.2.4_@types+node@20_9f774cff0e0a994d0872db2ac929dc8c/node_modules/vitest/index.cjs:1:7)
+      at Object.<anonymous> (tests/setup.ts:8:1)
+
+Test Suites: 11 failed, 11 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        9.592 s

@@ -1,7 +1,25 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  # Redis Cache Service
+  crawl4ai:
+    build:
+      context: ./crawl4ai-service
+      dockerfile: Dockerfile
+    container_name: crawl4ai
+    ports:
+      - "8001:8001"
+    environment:
+      CRAWL4AI_HOST: 0.0.0.0
+      CRAWL4AI_PORT: 8001
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - xenlix-network
+
   redis:
     image: redis:7.2-alpine
     container_name: xenlix-redis
@@ -18,49 +36,8 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
-    environment:
-      - REDIS_REPLICATION_MODE=master
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
 
-  # Crawl4AI Service
-  crawl4ai:
-    image: unclecode/crawl4ai:latest
-    container_name: xenlix-crawl4ai
-    restart: unless-stopped
-    ports:
-      - "8001:8000"
-    volumes:
-      - ./crawl4ai-cache:/app/cache
-      - /dev/shm:/dev/shm  # Shared memory for browser
-    networks:
-      - xenlix-network
-    environment:
-      - PYTHONUNBUFFERED=1
-      - CRAWL4AI_CACHE_DIR=/app/cache
-      - CRAWL4AI_MAX_WORKERS=4
-      - CRAWL4AI_TIMEOUT=30
-      - CRAWL4AI_MEMORY_LIMIT=2g
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 15s
-      retries: 5
-      start_period: 60s
-    depends_on:
-      - redis
-    # Security and resource limits
-    security_opt:
-      - no-new-privileges:true
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-
-  # Next.js AEO Platform
   xenlix-app:
     build:
       context: .
@@ -73,57 +50,37 @@ services:
     networks:
       - xenlix-network
     environment:
-      # Core App Configuration
-      - NODE_ENV=production
-      - PORT=3000
-      - APP_ENV=production
-      - NEXT_TELEMETRY_DISABLED=1
-      
-      # Service URLs (Docker internal networking)
-      - REDIS_URL=redis://redis:6379
-      - CRAWL4AI_URL=http://crawl4ai:8000
-      
-      # External APIs (from .env file)
-      - HUGGINGFACE_API_TOKEN=${HUGGINGFACE_API_TOKEN}
-      - HUGGINGFACE_MODEL=${HUGGINGFACE_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
-      
-      # Firebase Configuration
-      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
-      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
-      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
-      - FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}
-      
-      # Google Services
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
-      
-      # Authentication & Security
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
-      
-      # Billing & Payments
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-      - BILLING_MODE=${BILLING_MODE:-subscription}
-      
-      # Email Services
-      - RESEND_API_KEY=${RESEND_API_KEY}
-      - SMTP_HOST=${SMTP_HOST}
-      - SMTP_PORT=${SMTP_PORT}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASS=${SMTP_PASS}
-      
-      # Analytics & Monitoring
-      - GOOGLE_ANALYTICS_ID=${GOOGLE_ANALYTICS_ID}
-      - SENTRY_DSN=${SENTRY_DSN}
-      
-      # Performance & Caching
-      - CACHE_TTL=${CACHE_TTL:-3600}
-      - MAX_REQUEST_SIZE=${MAX_REQUEST_SIZE:-10mb}
-      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX:-100}
-      
+      NODE_ENV: production
+      PORT: 3000
+      APP_ENV: production
+      NEXT_TELEMETRY_DISABLED: 1
+      REDIS_URL: redis://redis:6379
+      CRAWL4AI_URL: http://crawl4ai:8001
+      HUGGINGFACE_API_TOKEN: ${HUGGINGFACE_API_TOKEN}
+      HUGGINGFACE_MODEL: ${HUGGINGFACE_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      FIREBASE_CLIENT_EMAIL: ${FIREBASE_CLIENT_EMAIL}
+      FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY}
+      FIREBASE_DATABASE_URL: ${FIREBASE_DATABASE_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      BILLING_MODE: ${BILLING_MODE:-subscription}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      GOOGLE_ANALYTICS_ID: ${GOOGLE_ANALYTICS_ID}
+      SENTRY_DSN: ${SENTRY_DSN}
+      CACHE_TTL: ${CACHE_TTL:-3600}
+      MAX_REQUEST_SIZE: ${MAX_REQUEST_SIZE:-10mb}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
     volumes:
       - ./public:/app/public:ro
       - app_logs:/app/logs
@@ -138,19 +95,9 @@ services:
       timeout: 15s
       retries: 5
       start_period: 120s
-    # Security and resource limits
     security_opt:
       - no-new-privileges:true
-    deploy:
-      resources:
-        limits:
-          cpus: '4.0'
-          memory: 4G
-        reservations:
-          cpus: '1.0'
-          memory: 1G
 
-  # PostgreSQL Database (Alternative to Firebase)
   postgres:
     image: postgres:15-alpine
     container_name: xenlix-postgres
@@ -158,9 +105,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-xenlix}
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-xenlix}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -172,19 +119,13 @@ services:
       retries: 5
       start_period: 30s
     profiles:
-      - postgres  # Optional service, activate with --profile postgres
+      - postgres
 
 networks:
   xenlix-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
 
 volumes:
   redis_data:
-    driver: local
   postgres_data:
-    driver: local
   app_logs:
-    driver: local

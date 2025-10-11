@@ -10,8 +10,8 @@ test.describe('AEO Scan API', () => {
         websiteUrl: 'https://example.com',
         businessName: 'Example Co',
         businessDescription: 'We provide example services for testing.',
-        industry: 'Testing'
-      }
+        industry: 'Testing',
+      },
     });
     expect(res.ok()).toBeTruthy();
     const json = await res.json();

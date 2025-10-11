@@ -22,29 +22,42 @@ const DEFAULT_CONFIG: CanonicalConfig = {
   preserveParams: ['id', 'slug', 'category', 'type', 'template', 'page'],
   forceHttps: true,
   forceLowercase: true,
-  removeTrailingSlash: true
+  removeTrailingSlash: true,
 };
 
 // Tracking parameters to always strip from canonical URLs
 const TRACKING_PARAMETERS = [
-  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
-  'ref', 'source', 'campaign', 'gclid', 'fbclid', 'msclkid', 
-  'referrer', 'affiliate', 'partner', 'from', 'via'
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'ref',
+  'source',
+  'campaign',
+  'gclid',
+  'fbclid',
+  'msclkid',
+  'referrer',
+  'affiliate',
+  'partner',
+  'from',
+  'via',
 ];
 
 /**
  * Normalize a URL to create proper canonical URL (server-side)
  */
 export function normalizeCanonicalUrl(
-  pathname: string, 
-  searchParams: URLSearchParams | null, 
+  pathname: string,
+  searchParams: URLSearchParams | null,
   config: CanonicalConfig = DEFAULT_CONFIG
 ): string {
   const { baseUrl, preserveParams, forceHttps, forceLowercase, removeTrailingSlash } = config;
 
   // Start with base URL
   let canonicalUrl = baseUrl || 'https://xenlix.ai';
-  
+
   // Ensure HTTPS if configured
   if (forceHttps && canonicalUrl.startsWith('http://')) {
     canonicalUrl = canonicalUrl.replace('http://', 'https://');
@@ -52,12 +65,12 @@ export function normalizeCanonicalUrl(
 
   // Normalize pathname
   let normalizedPath = pathname;
-  
+
   // Force lowercase if configured
   if (forceLowercase) {
     normalizedPath = normalizedPath.toLowerCase();
   }
-  
+
   // Remove trailing slash if configured (except for root)
   if (removeTrailingSlash && normalizedPath !== '/' && normalizedPath.endsWith('/')) {
     normalizedPath = normalizedPath.slice(0, -1);
@@ -74,11 +87,11 @@ export function normalizeCanonicalUrl(
   // Handle query parameters
   if (searchParams && preserveParams && preserveParams.length > 0) {
     const preservedParams = new URLSearchParams();
-    
+
     // Only preserve specified parameters and exclude tracking parameters
     for (const [key, value] of searchParams.entries()) {
       if (
-        preserveParams.includes(key) && 
+        preserveParams.includes(key) &&
         !TRACKING_PARAMETERS.includes(key.toLowerCase()) &&
         value.trim() !== ''
       ) {
@@ -101,15 +114,17 @@ export function normalizeCanonicalUrl(
  */
 export async function generateCanonicalUrl(
   pathname: string,
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }> | { [key: string]: string | string[] | undefined },
+  searchParams?:
+    | Promise<{ [key: string]: string | string[] | undefined }>
+    | { [key: string]: string | string[] | undefined },
   config: CanonicalConfig = DEFAULT_CONFIG
 ): Promise<string> {
   // Await searchParams if it's a Promise (Next.js 15+)
   const resolvedSearchParams = searchParams instanceof Promise ? await searchParams : searchParams;
-  
+
   // Convert searchParams object to URLSearchParams
   const urlSearchParams = new URLSearchParams();
-  
+
   if (resolvedSearchParams) {
     for (const [key, value] of Object.entries(resolvedSearchParams)) {
       if (typeof value === 'string') {
@@ -128,13 +143,13 @@ export async function generateCanonicalUrl(
  */
 export function hasTrackingParameters(searchParams: URLSearchParams | null): boolean {
   if (!searchParams) return false;
-  
+
   for (const [key] of searchParams.entries()) {
     if (TRACKING_PARAMETERS.includes(key.toLowerCase())) {
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -145,14 +160,14 @@ export function getCleanUrl(url: string): string {
   try {
     const urlObj = new URL(url);
     const cleanParams = new URLSearchParams();
-    
+
     // Remove tracking parameters
     for (const [key, value] of urlObj.searchParams.entries()) {
       if (!TRACKING_PARAMETERS.includes(key.toLowerCase())) {
         cleanParams.set(key, value);
       }
     }
-    
+
     // Rebuild URL
     urlObj.search = cleanParams.toString();
     return urlObj.toString();
@@ -166,11 +181,13 @@ export function getCleanUrl(url: string): string {
  */
 export async function shouldNoindex(
   pathname: string,
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }> | { [key: string]: string | string[] | undefined }
+  searchParams?:
+    | Promise<{ [key: string]: string | string[] | undefined }>
+    | { [key: string]: string | string[] | undefined }
 ): Promise<boolean> {
   // Await searchParams if it's a Promise (Next.js 15+)
   const resolvedSearchParams = searchParams instanceof Promise ? await searchParams : searchParams;
-  
+
   // Convert searchParams to URLSearchParams for consistency
   const urlSearchParams = new URLSearchParams();
   if (resolvedSearchParams) {
@@ -193,22 +210,20 @@ export async function shouldNoindex(
     '/internal',
     '/test',
     '/dev',
-    '/staging'
+    '/staging',
   ];
 
   // Check if pathname matches any noindex pattern
-  const shouldNoindexPath = noindexPatterns.some(pattern => 
-    pathname.startsWith(pattern)
-  );
+  const shouldNoindexPath = noindexPatterns.some((pattern) => pathname.startsWith(pattern));
 
   // Check for problematic query parameters
-  const hasProblematicParams = urlSearchParams && (
-    hasTrackingParameters(urlSearchParams) ||
-    urlSearchParams.has('debug') ||
-    urlSearchParams.has('test') ||
-    urlSearchParams.has('preview') ||
-    urlSearchParams.has('draft')
-  );
+  const hasProblematicParams =
+    urlSearchParams &&
+    (hasTrackingParameters(urlSearchParams) ||
+      urlSearchParams.has('debug') ||
+      urlSearchParams.has('test') ||
+      urlSearchParams.has('preview') ||
+      urlSearchParams.has('draft'));
 
   return shouldNoindexPath || hasProblematicParams;
 }
@@ -218,5 +233,5 @@ export default {
   generateCanonicalUrl,
   hasTrackingParameters,
   getCleanUrl,
-  shouldNoindex
+  shouldNoindex,
 };

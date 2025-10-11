@@ -1,6 +1,6 @@
 /**
  * /api/schema/same-as - Social Profile Validation and sameAs Generation API
- * 
+ *
  * Validates social media profiles and generates sameAs URLs for Schema.org JSON-LD
  */
 
@@ -69,33 +69,42 @@ export async function POST(request: NextRequest): Promise<NextResponse<SameAsRes
 
   try {
     const body: SameAsRequest = await request.json();
-    
+
     // Validate required fields
     if (!body.handle) {
-      return NextResponse.json({
-        success: false,
-        error: 'Missing required field: handle',
-        duration: Date.now() - startTime,
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Missing required field: handle',
+          duration: Date.now() - startTime,
+        },
+        { status: 400 }
+      );
     }
 
     if (!body.canonical) {
-      return NextResponse.json({
-        success: false,
-        error: 'Missing required field: canonical',
-        duration: Date.now() - startTime,
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Missing required field: canonical',
+          duration: Date.now() - startTime,
+        },
+        { status: 400 }
+      );
     }
 
     // Validate canonical URL
     try {
       new URL(body.canonical);
     } catch {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid canonical URL format',
-        duration: Date.now() - startTime,
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid canonical URL format',
+          duration: Date.now() - startTime,
+        },
+        { status: 400 }
+      );
     }
 
     const merger = new JsonLdSchemaMerger();
@@ -118,14 +127,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<SameAsRes
       });
     } else {
       // Generate minimal schemas
-      result = await merger.enhancePhase2Schemas({
-        name: body.handle,
-        website: body.canonical,
-      }, {
-        handle: body.handle,
-        canonical: body.canonical,
-        extras: body.extras,
-      });
+      result = await merger.enhancePhase2Schemas(
+        {
+          name: body.handle,
+          website: body.canonical,
+        },
+        {
+          handle: body.handle,
+          canonical: body.canonical,
+          extras: body.extras,
+        }
+      );
     }
 
     // Check minimum requirement
@@ -157,15 +169,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<SameAsRes
     };
 
     return NextResponse.json(response);
-
   } catch (error) {
     console.error('SameAs API Error:', error);
-    
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Internal server error',
-      duration: Date.now() - startTime,
-    }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Internal server error',
+        duration: Date.now() - startTime,
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -175,10 +189,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const canonical = searchParams.get('canonical');
 
   if (!handle || !canonical) {
-    return NextResponse.json({
-      success: false,
-      error: 'Missing required parameters: handle and canonical',
-    }, { status: 400 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Missing required parameters: handle and canonical',
+      },
+      { status: 400 }
+    );
   }
 
   // Convert GET params to POST format
@@ -193,13 +210,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   };
 
   // Redirect to POST handler
-  return POST(new NextRequest(request.url, {
-    method: 'POST',
-    body: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }));
+  return POST(
+    new NextRequest(request.url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  );
 }
 
 // OPTIONS for CORS

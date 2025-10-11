@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/route';
 import puppeteer from 'puppeteer';
 
 export async function POST(request: NextRequest) {
@@ -13,24 +13,24 @@ export async function POST(request: NextRequest) {
 
     // Get audit data from request body
     const auditData = await request.json();
-    
+
     // Launch puppeteer browser
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
-    
+
     const page = await browser.newPage();
-    
+
     // Generate HTML content for the PDF
     const htmlContent = generateReportHTML(auditData, session.user.email);
-    
+
     // Set page content
-    await page.setContent(htmlContent, { 
+    await page.setContent(htmlContent, {
       waitUntil: 'networkidle0',
-      timeout: 30000 
+      timeout: 30000,
     });
-    
+
     // Generate PDF with custom styling
     const pdfBuffer = await page.pdf({
       format: 'A4',
@@ -39,33 +39,32 @@ export async function POST(request: NextRequest) {
         top: '20mm',
         right: '15mm',
         bottom: '20mm',
-        left: '15mm'
-      }
+        left: '15mm',
+      },
     });
-    
+
     // Close browser
     await browser.close();
-    
+
     // Return PDF as response (use standard Response to satisfy BodyInit types)
-  // Ensure we pass a proper ArrayBuffer to Blob
-  const arrayBuffer = pdfBuffer.buffer.slice(pdfBuffer.byteOffset, pdfBuffer.byteOffset + pdfBuffer.byteLength);
-  const pdfBlob = new Blob([arrayBuffer as ArrayBuffer], { type: 'application/pdf' });
+    // Ensure we pass a proper ArrayBuffer to Blob
+    const arrayBuffer = pdfBuffer.buffer.slice(
+      pdfBuffer.byteOffset,
+      pdfBuffer.byteOffset + pdfBuffer.byteLength
+    );
+    const pdfBlob = new Blob([arrayBuffer as ArrayBuffer], { type: 'application/pdf' });
     return new Response(pdfBlob, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="Xenlix_AEO_Report.pdf"',
         'Content-Length': pdfBuffer.length.toString(),
-        'Cache-Control': 'no-store'
-      }
+        'Cache-Control': 'no-store',
+      },
     });
-    
   } catch (error) {
     console.error('PDF generation error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate PDF report' }, 
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to generate PDF report' }, { status: 500 });
   }
 }
 
@@ -73,7 +72,7 @@ function generateReportHTML(auditData: any, userEmail: string): string {
   const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   });
 
   return `
@@ -302,7 +301,9 @@ function generateReportHTML(auditData: any, userEmail: string): string {
           <h2 class="section-title">🚨 Priority Quick Fixes</h2>
           <p>Implement these fixes immediately for maximum impact on your search visibility:</p>
           
-          ${auditData.priorityFixes.map((fix: any, index: number) => `
+          ${auditData.priorityFixes
+            .map(
+              (fix: any, index: number) => `
             <div class="priority-fix">
               <div style="display: flex; align-items: flex-start; margin-bottom: 10px;">
                 <span class="priority-number">${index + 1}</span>
@@ -315,13 +316,17 @@ function generateReportHTML(auditData: any, userEmail: string): string {
               <div class="fix-description">${fix.description}</div>
               <div class="code-block">${fix.code}</div>
             </div>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
         
         <!-- Category Breakdown -->
         <div class="section">
           <h2 class="section-title">Performance Breakdown</h2>
-          ${auditData.categoryBreakdown.map((category: any) => `
+          ${auditData.categoryBreakdown
+            .map(
+              (category: any) => `
             <div style="margin-bottom: 15px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <span style="font-weight: bold;">${category.category}</span>
@@ -333,22 +338,30 @@ function generateReportHTML(auditData: any, userEmail: string): string {
                 <div style="
                   width: ${category.score}%; 
                   height: 100%; 
-                  background: ${category.score >= 70 ? 'linear-gradient(135deg, #10b981, #059669)' : 
-                              category.score >= 50 ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 
-                              'linear-gradient(135deg, #ef4444, #dc2626)'};
+                  background: ${
+                    category.score >= 70
+                      ? 'linear-gradient(135deg, #10b981, #059669)'
+                      : category.score >= 50
+                        ? 'linear-gradient(135deg, #f59e0b, #d97706)'
+                        : 'linear-gradient(135deg, #ef4444, #dc2626)'
+                  };
                 "></div>
               </div>
               <div style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">
                 ${category.issues} issues found
               </div>
             </div>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
         
         <!-- Competitor Analysis -->
         <div class="section">
           <h2 class="section-title">Competitive Position</h2>
-          ${auditData.competitorAnalysis.map((competitor: any) => `
+          ${auditData.competitorAnalysis
+            .map(
+              (competitor: any) => `
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
               <div>
                 <div style="font-weight: bold;">${competitor.competitor}</div>
@@ -359,7 +372,9 @@ function generateReportHTML(auditData: any, userEmail: string): string {
                 <div style="font-size: 0.85rem; color: #64748b;">behind you</div>
               </div>
             </div>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
         
         <!-- Footer -->

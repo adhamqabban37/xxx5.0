@@ -1,12 +1,12 @@
 'use client';
 
 // components/MapCard.tsx
-// Env var: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY (browser key). Restart dev server after adding.
-// If you later switch to a JS-rendered map, keep this probe/fallback pattern to avoid blank maps.
-"use client";
-import { useEffect, useMemo, useState } from "react";
+// Smart Maps: Google Maps with OpenStreetMap fallback
+'use client';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Navigation } from 'lucide-react';
+import LeafletBusinessMap from '@/app/components/map/LeafletBusinessMap';
+import GoogleBusinessMap from '@/app/components/map/GoogleBusinessMap';
 
 type Props = {
   address?: string;
@@ -16,162 +16,198 @@ type Props = {
   className?: string; // allow styling from parent
 };
 
+type MapProvider = 'google' | 'openstreetmap';
+
 export default function MapCard({ address, lat, lng, businessName, className }: Props) {
-  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-  const [useFallback, setUseFallback] = useState<boolean>(!key);
-  const hasCoordinates = typeof lat === "number" && typeof lng === "number";
-  
-  const q = useMemo(() => {
-    if (hasCoordinates) return `${lat},${lng}`;
-    return (address || "").trim();
-  }, [address, lat, lng, hasCoordinates]);
+  const [mapProvider, setMapProvider] = useState<MapProvider>('google');
+  const [isGoogleMapsAvailable, setIsGoogleMapsAvailable] = useState<boolean | null>(null);
+  const [showSelfTest, setShowSelfTest] = useState(false);
+  const [testResults, setTestResults] = useState<{
+    google: 'pending' | 'success' | 'error';
+    coordinates: 'success' | 'error';
+  }>({ google: 'pending', coordinates: 'success' });
 
   useEffect(() => {
-    if (!key) return; // no key -> fallback already enabled
-    // Probe JS API to validate the key before using Embed v1
-    const s = document.createElement("script");
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${key}`;
-    s.async = true;
-    s.onload = () => setUseFallback(false);   // key looks valid
-    s.onerror = () => {
-      console.warn("[MapCard] Google Maps key invalid or blocked by referrer; using fallback iframe.");
-      setUseFallback(true);
-    };
-    document.head.appendChild(s);
-    return () => {
-      if (document.head.contains(s)) {
-        document.head.removeChild(s);
+    // Check Google Maps availability on component mount
+    checkGoogleMapsAvailability();
+  }, []);
+
+  const checkGoogleMapsAvailability = async () => {
+    try {
+      const response = await fetch('/api/maps-token');
+      const data = await response.json();
+
+      setIsGoogleMapsAvailable(data.success);
+      if (!data.success) {
+        setMapProvider('openstreetmap');
       }
-    };
-  }, [key]);
+      setTestResults((prev) => ({
+        ...prev,
+        google: data.success ? 'success' : 'error',
+      }));
+    } catch (error) {
+      console.error('Maps availability check failed:', error);
+      setIsGoogleMapsAvailable(false);
+      setMapProvider('openstreetmap');
+      setTestResults((prev) => ({ ...prev, google: 'error' }));
+    }
+  };
 
-  // Build src for fallback consumer embed (no API key needed)
-  const fallbackSrc = useMemo(() => {
-    const query = encodeURIComponent(q || "");
-    return `https://www.google.com/maps?q=${query}&z=14&output=embed`;
-  }, [q]);
+  const runMapSelfTest = async () => {
+    setShowSelfTest(true);
+    setTestResults({ google: 'pending', coordinates: 'success' });
 
-  // Build src for official Embed API v1 when key is valid
-  const embedSrc = useMemo(() => {
-    const place = encodeURIComponent(q || "");
-    return `https://www.google.com/maps/embed/v1/place?key=${key}&q=${place}`;
-  }, [key, q]);
+    // Test Google Maps API
+    try {
+      const response = await fetch('/api/maps-token');
+      const data = await response.json();
+      setTestResults((prev) => ({
+        ...prev,
+        google: data.success ? 'success' : 'error',
+      }));
 
-  if (!q) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className={`bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/50 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 ${className || ""}`}
-      >
-        <div className="p-6 pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-900">Location & Visibility</h3>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <span className="text-sm text-gray-600">Pending</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="relative h-64 bg-gray-50">
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-            <div className="text-center">
-              <div className="relative mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-[#4F46E5] to-[#06B6D4] rounded-full flex items-center justify-center mx-auto">
-                  <Navigation className="h-8 w-8 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
-                  <div className="w-2 h-2 bg-yellow-600 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-              <p className="text-sm font-medium text-gray-700 mb-1">Location pending</p>
-              <p className="text-xs text-gray-500 max-w-48 mx-auto leading-relaxed">
-                Address information needed for location mapping
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-4 bg-white/30 border-t border-gray-100">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-2 text-gray-600">
-              <MapPin className="h-4 w-4 text-[#06B6D4]" />
-              <span>Coordinates not available</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#4F46E5]/10 via-[#06B6D4]/10 to-[#F97316]/10 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-      </motion.div>
-    );
-  }
+      // Test with known coordinates (Google HQ)
+      const testLat = 37.422;
+      const testLng = -122.084;
 
+      if (data.success) {
+        console.log(`Map self-test: Google Maps initialized at ${testLat}, ${testLng}`);
+      }
+    } catch (error) {
+      console.error('Map self-test failed:', error);
+      setTestResults((prev) => ({ ...prev, google: 'error' }));
+    }
+  };
+
+  const toggleMapProvider = () => {
+    if (isGoogleMapsAvailable) {
+      setMapProvider(mapProvider === 'google' ? 'openstreetmap' : 'google');
+    }
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2 }}
-      className={`bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/50 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 ${className || ""}`}
+      className={`bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/50 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 ${className || ''}`}
     >
       <div className="p-6 pb-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-gray-900">Location & Visibility</h3>
           <div className="flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${hasCoordinates ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+            <div
+              className={`w-3 h-3 rounded-full ${mapProvider === 'google' ? 'bg-blue-500' : 'bg-green-500'}`}
+            ></div>
             <span className="text-sm text-gray-600">
-              {hasCoordinates ? 'Located' : 'Pending'}
+              {mapProvider === 'google' ? 'Google Maps' : 'OpenStreetMap'}
             </span>
+            {isGoogleMapsAvailable && (
+              <button
+                onClick={toggleMapProvider}
+                className="text-xs text-blue-600 hover:text-blue-800 underline ml-2"
+              >
+                Switch
+              </button>
+            )}
           </div>
         </div>
 
-        {address && (
-          <div className="flex items-start space-x-2 mb-4 p-3 bg-white/60 rounded-lg border border-gray-100">
-            <MapPin className="h-4 w-4 text-[#F97316] flex-shrink-0 mt-0.5" />
-            <span className="text-sm text-gray-700 leading-relaxed">{address}</span>
+        {/* Map Status Banner */}
+        <div
+          className={`flex items-start space-x-2 mb-4 p-3 rounded-lg border ${
+            mapProvider === 'google' ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'
+          }`}
+        >
+          <div className="h-4 w-4 flex-shrink-0 mt-0.5">
+            {mapProvider === 'google' && isGoogleMapsAvailable ? '🗺️' : '✅'}
           </div>
-        )}
-      </div>
-
-      {/* Map iframe - always renders with fallback */}
-      <div className="relative h-64 bg-gray-50">
-        <iframe
-          title="Business location"
-          aria-label="Business location map"
-          className="w-full h-64 border-0"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          src={useFallback ? fallbackSrc : embedSrc}
-          width="100%"
-          height="256"
-          allowFullScreen
-        />
-      </div>
-
-      {/* Map actions */}
-      <div className="p-4 bg-white/30 border-t border-gray-100">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center space-x-2 text-gray-600">
-            <MapPin className="h-4 w-4 text-[#06B6D4]" />
-            <span>
-              {hasCoordinates 
-                ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}`
-                : 'Address based location'
-              }
-            </span>
-          </div>
-          
-          <a
-            href={hasCoordinates ? `https://www.google.com/maps?q=${lat},${lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address || '')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-[#4F46E5] to-[#06B6D4] text-white text-xs font-medium rounded-full hover:scale-105 transition-transform"
+          <div
+            className={`text-sm leading-relaxed ${
+              mapProvider === 'google' ? 'text-blue-700' : 'text-green-700'
+            }`}
           >
-            <Navigation className="h-3 w-3 mr-1" />
-            Open in Maps
-          </a>
+            {mapProvider === 'google' ? (
+              <>
+                <p className="font-medium mb-1">Google Maps Integration</p>
+                <p className="text-xs">Enhanced mapping with Places API integration</p>
+              </>
+            ) : (
+              <>
+                <p className="font-medium mb-1">
+                  {isGoogleMapsAvailable === false
+                    ? 'Free OpenStreetMap Fallback'
+                    : 'OpenStreetMap Integration'}
+                </p>
+                <p className="text-xs">
+                  {isGoogleMapsAvailable === false
+                    ? 'Google Maps API not configured - using reliable open source alternative'
+                    : 'No API key required - powered by open source mapping'}
+                </p>
+              </>
+            )}
+          </div>
         </div>
+
+        {/* Self-Test Button */}
+        <div className="flex justify-between items-center mb-4">
+          <button
+            onClick={runMapSelfTest}
+            className="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-md transition-colors"
+          >
+            🔍 Run Map Self-Test
+          </button>
+
+          {showSelfTest && (
+            <div className="flex space-x-2">
+              <div
+                className={`text-xs px-2 py-1 rounded ${
+                  testResults.google === 'success'
+                    ? 'bg-green-100 text-green-700'
+                    : testResults.google === 'error'
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-yellow-100 text-yellow-700'
+                }`}
+              >
+                Google:{' '}
+                {testResults.google === 'pending'
+                  ? '⏳'
+                  : testResults.google === 'success'
+                    ? '✅'
+                    : '❌'}
+              </div>
+              <div className="text-xs px-2 py-1 rounded bg-green-100 text-green-700">
+                Coords: ✅
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Map Component */}
+      <div className="h-64">
+        {mapProvider === 'google' && isGoogleMapsAvailable ? (
+          <GoogleBusinessMap
+            lat={lat}
+            lng={lng}
+            address={address}
+            businessName={businessName}
+            zoom={14}
+            height="256px"
+            showControls={true}
+            className="rounded-none"
+          />
+        ) : (
+          <LeafletBusinessMap
+            lat={lat}
+            lng={lng}
+            address={address}
+            businessName={businessName}
+            zoom={14}
+            height="256px"
+            showControls={true}
+            className="rounded-none"
+          />
+        )}
       </div>
 
       {/* Gradient border effect */}

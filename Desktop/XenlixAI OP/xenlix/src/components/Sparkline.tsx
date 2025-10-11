@@ -30,7 +30,7 @@ export default function Sparkline({
     if (!svgRef.current || data.length === 0) return;
 
     const svg = svgRef.current;
-    
+
     // Clear previous content
     svg.innerHTML = '';
 
@@ -76,22 +76,21 @@ export default function Sparkline({
         circle.setAttribute('cy', point.y.toString());
         circle.setAttribute('r', '1.5');
         circle.setAttribute('fill', color);
-        
+
         // Add hover effect for last point
         if (index === points.length - 1) {
           circle.setAttribute('r', '2');
           circle.setAttribute('fill', getTrendColor(trend));
         }
-        
+
         svg.appendChild(circle);
       });
     }
-
   }, [data, width, height, color, strokeWidth, showDots, trend]);
 
   if (data.length === 0) {
     return (
-      <div 
+      <div
         className={`flex items-center justify-center text-gray-400 text-xs ${className}`}
         style={{ width, height }}
       >
@@ -136,23 +135,15 @@ export function TrendSparkline({
   return (
     <div className="flex items-center justify-between">
       <div className="flex-1">
-        {label && (
-          <div className="text-xs text-gray-500 mb-1">{label}</div>
-        )}
+        {label && <div className="text-xs text-gray-500 mb-1">{label}</div>}
         <div className="flex items-center space-x-2">
-          <Sparkline
-            data={data}
-            color={trendColor}
-            trend={trend}
-            {...sparklineProps}
-          />
+          <Sparkline data={data} color={trendColor} trend={trend} {...sparklineProps} />
           <div className="flex items-center space-x-1">
-            <span className={`text-xs ${trendColor}`}>
-              {trendIcon}
-            </span>
+            <span className={`text-xs ${trendColor}`}>{trendIcon}</span>
             {changePercent !== undefined && (
               <span className={`text-xs font-medium ${getChangeColor(changePercent)}`}>
-                {changePercent > 0 ? '+' : ''}{changePercent.toFixed(1)}%
+                {changePercent > 0 ? '+' : ''}
+                {changePercent.toFixed(1)}%
               </span>
             )}
           </div>
@@ -192,9 +183,7 @@ export function MiniSparkline({ data, trend, size = 'sm' }: MiniSparklineProps) 
         color={getTrendColor(trend)}
         strokeWidth={1}
       />
-      <span className={`text-xs ${getTrendColor(trend)}`}>
-        {getTrendIcon(trend)}
-      </span>
+      <span className={`text-xs ${getTrendColor(trend)}`}>{getTrendIcon(trend)}</span>
     </div>
   );
 }
@@ -227,13 +216,10 @@ export function DashboardCardWithSparkline({
   subtitleClass = '',
   children,
 }: DashboardCardWithSparklineProps) {
-  const change = previousValue !== undefined 
-    ? (typeof value === 'number' ? value - previousValue : 0)
-    : 0;
-  
-  const changePercent = previousValue && previousValue !== 0 
-    ? (change / previousValue) * 100 
-    : 0;
+  const change =
+    previousValue !== undefined ? (typeof value === 'number' ? value - previousValue : 0) : 0;
+
+  const changePercent = previousValue && previousValue !== 0 ? (change / previousValue) * 100 : 0;
 
   return (
     <div className={`bg-white p-6 rounded-lg border border-gray-200 ${className}`}>
@@ -244,25 +230,23 @@ export function DashboardCardWithSparkline({
         </div>
         <MiniSparkline data={sparklineData} trend={trend} size="md" />
       </div>
-      
+
       <div className="flex items-end justify-between">
         <div>
           <div className="text-2xl font-bold text-gray-900">
-            {value}{unit}
+            {value}
+            {unit}
           </div>
           {previousValue !== undefined && (
             <div className="flex items-center space-x-1 mt-1">
               <span className={`text-xs font-medium ${getChangeColor(changePercent)}`}>
-                {changePercent > 0 ? '+' : ''}{changePercent.toFixed(1)}%
+                {changePercent > 0 ? '+' : ''}
+                {changePercent.toFixed(1)}%
               </span>
               <span className="text-xs text-gray-500">vs last period</span>
             </div>
           )}
-          {subtitle && (
-            <div className={`text-sm mt-1 ${subtitleClass}`}>
-              {subtitle}
-            </div>
-          )}
+          {subtitle && <div className={`text-sm mt-1 ${subtitleClass}`}>{subtitle}</div>}
         </div>
       </div>
       {children}
@@ -288,16 +272,14 @@ export function PerformanceCard({ title, metrics, className = '' }: PerformanceC
   return (
     <div className={`bg-white p-6 rounded-lg border border-gray-200 ${className}`}>
       <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
-      
+
       <div className="space-y-4">
         {metrics.map((metric, index) => (
           <div key={index} className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">{metric.name}</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {metric.value}
-                </span>
+                <span className="text-sm font-semibold text-gray-900">{metric.value}</span>
               </div>
               <div className="mt-1 flex items-center justify-between">
                 <Sparkline
@@ -312,11 +294,17 @@ export function PerformanceCard({ title, metrics, className = '' }: PerformanceC
                     {getTrendIcon(metric.trend)}
                   </span>
                   {metric.previousValue !== undefined && (
-                    <span className={`text-xs font-medium ${getChangeColor(
-                      ((metric.value - metric.previousValue) / metric.previousValue) * 100
-                    )}`}>
+                    <span
+                      className={`text-xs font-medium ${getChangeColor(
+                        ((metric.value - metric.previousValue) / metric.previousValue) * 100
+                      )}`}
+                    >
                       {metric.value > metric.previousValue ? '+' : ''}
-                      {(((metric.value - metric.previousValue) / metric.previousValue) * 100).toFixed(1)}%
+                      {(
+                        ((metric.value - metric.previousValue) / metric.previousValue) *
+                        100
+                      ).toFixed(1)}
+                      %
                     </span>
                   )}
                 </div>
@@ -332,21 +320,31 @@ export function PerformanceCard({ title, metrics, className = '' }: PerformanceC
 // Helper functions
 function getTrendColor(trend: Trend): string {
   switch (trend) {
-    case 'up': return 'text-green-500';
-    case 'down': return 'text-red-500';
-    case 'stable': return 'text-blue-500';
-    case 'no-data': return 'text-gray-400';
-    default: return 'text-gray-400';
+    case 'up':
+      return 'text-green-500';
+    case 'down':
+      return 'text-red-500';
+    case 'stable':
+      return 'text-blue-500';
+    case 'no-data':
+      return 'text-gray-400';
+    default:
+      return 'text-gray-400';
   }
 }
 
 function getTrendIcon(trend: Trend): string {
   switch (trend) {
-    case 'up': return '↗';
-    case 'down': return '↘';
-    case 'stable': return '→';
-    case 'no-data': return '?';
-    default: return '?';
+    case 'up':
+      return '↗';
+    case 'down':
+      return '↘';
+    case 'stable':
+      return '→';
+    case 'no-data':
+      return '?';
+    default:
+      return '?';
   }
 }
 

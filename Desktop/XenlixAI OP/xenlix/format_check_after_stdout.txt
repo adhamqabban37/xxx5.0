@@ -1,0 +1,6 @@
+
+> xenlix@0.1.0 format:check C:\Users\Tyson\Desktop\xxx\chat-bot-\Desktop\XenlixAI OP\xenlix
+> prettier --check .
+
+Checking formatting...
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 1.

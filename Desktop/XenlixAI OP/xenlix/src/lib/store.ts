@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface Profile {
   businessName?: string;
@@ -23,19 +23,19 @@ interface AppState {
 
 export const useAppStore = create<AppState>((set) => ({
   profile: {
-    businessName: "XenlixAI Solutions",
-    industry: "AI Marketing",
-    targetAudience: "Small to medium businesses",
-    currentWebsite: "https://xenlixai.com",
-    services: ["AI Marketing Automation", "Website Optimization", "SEO Services"],
-    city: "Dallas",
+    businessName: 'XenlixAI Solutions',
+    industry: 'AI Marketing',
+    targetAudience: 'Small to medium businesses',
+    currentWebsite: 'https://xenlixai.com',
+    services: ['AI Marketing Automation', 'Website Optimization', 'SEO Services'],
+    city: 'Dallas',
     reviews: {
       rating: 4.8,
       count: 127,
     },
     urls: {
-      website: "https://xenlixai.com",
+      website: 'https://xenlixai.com',
     },
   },
-  setProfile: (data: Profile) => set({ profile: data })
+  setProfile: (data: Profile) => set({ profile: data }),
 }));

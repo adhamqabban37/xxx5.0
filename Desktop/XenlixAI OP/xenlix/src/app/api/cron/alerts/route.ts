@@ -9,9 +9,17 @@ import { z } from 'zod';
 const createThresholdSchema = z.object({
   url: z.string().url(),
   metricType: z.enum([
-    'psi_performance', 'psi_accessibility', 'psi_seo', 'psi_lcp', 'psi_cls',
-    'opr_clicks', 'opr_impressions', 'opr_ctr', 'opr_position',
-    'schema_errors', 'schema_total'
+    'psi_performance',
+    'psi_accessibility',
+    'psi_seo',
+    'psi_lcp',
+    'psi_cls',
+    'opr_clicks',
+    'opr_impressions',
+    'opr_ctr',
+    'opr_position',
+    'schema_errors',
+    'schema_total',
   ]),
   operator: z.enum(['lt', 'gt', 'eq', 'lte', 'gte']),
   threshold: z.number(),
@@ -33,7 +41,7 @@ const cronAlertSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Check if this is a cron request
     if (body.secret) {
       return await handleCronRequest(body);
@@ -42,10 +50,7 @@ export async function POST(request: NextRequest) {
     // Regular authenticated request
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const { action, ...data } = body;
@@ -55,29 +60,22 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'create_threshold':
         return await handleCreateThreshold(data, alertManager);
-      
+
       case 'update_threshold':
         return await handleUpdateThreshold(data, alertManager);
-      
+
       case 'delete_threshold':
         return await handleDeleteThreshold(data, alertManager);
-      
+
       case 'test_alert':
         return await handleTestAlert(data, alertManager);
-      
-      default:
-        return NextResponse.json(
-          { error: 'Invalid action' },
-          { status: 400 }
-        );
-    }
 
+      default:
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    }
   } catch (error) {
     console.error('Alerts endpoint error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -86,24 +84,21 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const secret = searchParams.get('secret');
-    
+
     // Check if this is a cron status request
     if (secret) {
       const cronSecret = process.env.CRON_SECRET;
       if (!cronSecret || secret !== cronSecret) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
 
       const alertManager = new AlertManager();
       const pendingAlerts = await alertManager.getAlertHistory(undefined, 1);
-      
+
       return NextResponse.json({
         success: true,
         timestamp: new Date().toISOString(),
-        pendingAlerts: pendingAlerts.filter(alert => !alert.sent).length,
+        pendingAlerts: pendingAlerts.filter((alert) => !alert.sent).length,
         recentAlerts: pendingAlerts.length,
       });
     }
@@ -111,10 +106,7 @@ export async function GET(request: NextRequest) {
     // Regular authenticated request
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const url = searchParams.get('url');
@@ -145,13 +137,9 @@ export async function GET(request: NextRequest) {
         },
       });
     }
-
   } catch (error) {
     console.error('Alerts GET endpoint error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -170,10 +158,7 @@ async function handleCronRequest(body: any) {
   // Authenticate with CRON_SECRET
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret || secret !== cronSecret) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const alertManager = new AlertManager();
@@ -209,15 +194,12 @@ async function handleCronRequest(body: any) {
         });
 
       default:
-        return NextResponse.json(
-          { error: 'Invalid action' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error) {
     console.error(`Cron alert action ${action} failed:`, error);
     return NextResponse.json(
-      { 
+      {
         error: 'Cron action failed',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
@@ -237,7 +219,7 @@ async function handleCreateThreshold(data: any, alertManager: AlertManager) {
   }
 
   const threshold = await alertManager.createThreshold(validation.data);
-  
+
   return NextResponse.json({
     success: true,
     data: threshold,
@@ -248,12 +230,9 @@ async function handleCreateThreshold(data: any, alertManager: AlertManager) {
 // Handle threshold update
 async function handleUpdateThreshold(data: any, alertManager: AlertManager) {
   const { id, ...updateData } = data;
-  
+
   if (!id) {
-    return NextResponse.json(
-      { error: 'Threshold ID is required' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Threshold ID is required' }, { status: 400 });
   }
 
   const validation = updateThresholdSchema.safeParse(updateData);
@@ -266,50 +245,41 @@ async function handleUpdateThreshold(data: any, alertManager: AlertManager) {
 
   try {
     const threshold = await alertManager.updateThreshold(id, validation.data);
-    
+
     return NextResponse.json({
       success: true,
       data: threshold,
       message: 'Threshold updated successfully',
     });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Threshold not found or update failed' },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: 'Threshold not found or update failed' }, { status: 404 });
   }
 }
 
 // Handle threshold deletion
 async function handleDeleteThreshold(data: any, alertManager: AlertManager) {
   const { id } = data;
-  
+
   if (!id) {
-    return NextResponse.json(
-      { error: 'Threshold ID is required' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Threshold ID is required' }, { status: 400 });
   }
 
   try {
     await alertManager.deleteThreshold(id);
-    
+
     return NextResponse.json({
       success: true,
       message: 'Threshold deleted successfully',
     });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Threshold not found or deletion failed' },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: 'Threshold not found or deletion failed' }, { status: 404 });
   }
 }
 
 // Handle test alert
 async function handleTestAlert(data: any, alertManager: AlertManager) {
   const { url, metricType } = data;
-  
+
   if (!url || !metricType) {
     return NextResponse.json(
       { error: 'URL and metricType are required for test alerts' },
@@ -328,7 +298,7 @@ async function handleTestAlert(data: any, alertManager: AlertManager) {
 
     // Check the threshold immediately
     const checkResults = await alertManager.checkAllThresholds();
-    
+
     // Clean up the test threshold
     await alertManager.deleteThreshold(testThreshold.id);
 
@@ -339,7 +309,10 @@ async function handleTestAlert(data: any, alertManager: AlertManager) {
     });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Test alert failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: 'Test alert failed',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }
@@ -348,7 +321,7 @@ async function handleTestAlert(data: any, alertManager: AlertManager) {
 // Create test alert for system verification
 async function createTestAlert(alertManager: AlertManager): Promise<any> {
   const testUrl = process.env.ALERT_TEST_URL || 'https://example.com';
-  
+
   try {
     // Create a test threshold
     const testThreshold = await alertManager.createThreshold({
@@ -360,10 +333,10 @@ async function createTestAlert(alertManager: AlertManager): Promise<any> {
 
     // Check thresholds to potentially trigger the test alert
     const checkResults = await alertManager.checkAllThresholds();
-    
+
     // Send any pending alerts
     const sendResults = await alertManager.sendPendingAlerts();
-    
+
     // Clean up test threshold
     await alertManager.deleteThreshold(testThreshold.id);
 
@@ -374,6 +347,8 @@ async function createTestAlert(alertManager: AlertManager): Promise<any> {
       message: 'Test alert system verification completed',
     };
   } catch (error) {
-    throw new Error(`Test alert failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Test alert failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }

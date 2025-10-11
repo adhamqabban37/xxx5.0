@@ -42,11 +42,7 @@ export async function POST(req: NextRequest) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      webhookSecret
-    );
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err);
     return createErrorResponse('Invalid signature', 400);
@@ -56,12 +52,12 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        
+
         console.log('Checkout session completed:', {
           sessionId: session.id,
           customerId: session.customer,
           subscriptionId: session.subscription,
-          mode: session.mode
+          mode: session.mode,
         });
 
         // In a real implementation, this would update user subscription status
@@ -72,44 +68,44 @@ export async function POST(req: NextRequest) {
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
-        
+
         console.log('Subscription event:', {
           type: event.type,
           subscriptionId: subscription.id,
           customerId: subscription.customer,
-          status: subscription.status
+          status: subscription.status,
         });
         break;
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
-        
+
         console.log('Subscription deleted:', {
           subscriptionId: subscription.id,
-          customerId: subscription.customer
+          customerId: subscription.customer,
         });
         break;
       }
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
-        
+
         console.log('Payment succeeded:', {
           invoiceId: invoice.id,
           customerId: invoice.customer,
-          amount: invoice.amount_paid
+          amount: invoice.amount_paid,
         });
         break;
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
-        
+
         console.log('Payment failed:', {
           invoiceId: invoice.id,
           customerId: invoice.customer,
-          amount: invoice.amount_due
+          amount: invoice.amount_due,
         });
         break;
       }

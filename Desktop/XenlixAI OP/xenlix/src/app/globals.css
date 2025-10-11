@@ -1,9 +1,9 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  
+
   /* Brand colors derived from logo: Blue to Purple gradient (#3b82f6 to #8b5cf6 to #1e40af) */
   --brand-50: #eff6ff;
   --brand-100: #dbeafe;
@@ -15,7 +15,7 @@
   --brand-700: #1d4ed8;
   --brand-800: #1e40af;
   --brand-900: #1e3a8a;
-  
+
   /* Secondary brand colors (Purple accent from logo) */
   --brand-purple-50: #faf5ff;
   --brand-purple-100: #f3e8ff;
@@ -35,16 +35,21 @@
 }
 
 .bg-xenlix-cyan {
-  background: linear-gradient(135deg, #00D4FF 0%, #0EA5E9 100%);
+  background: linear-gradient(135deg, #00d4ff 0%, #0ea5e9 100%);
 }
 
 .bg-xenlix-pink {
-  background: linear-gradient(135deg, #FF6B9D 0%, #EC4899 100%);
+  background: linear-gradient(135deg, #ff6b9d 0%, #ec4899 100%);
 }
 
 /* Brand gradient utilities */
 .bg-brand-gradient {
-  background: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-purple-500) 50%, var(--brand-800) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--brand-500) 0%,
+    var(--brand-purple-500) 50%,
+    var(--brand-800) 100%
+  );
 }
 
 .text-brand-gradient {
@@ -74,4 +79,18 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Google Maps loading animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite ease-in-out;
 }

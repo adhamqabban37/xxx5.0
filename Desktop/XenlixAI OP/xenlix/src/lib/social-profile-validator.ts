@@ -114,7 +114,7 @@ export class SocialProfileValidator {
             try {
               const text = await response.text();
               hasReciprocity = text.toLowerCase().includes(canonicalDomain.toLowerCase());
-              
+
               if (!hasReciprocity) {
                 warning = `Profile validated but doesn't mention ${canonicalDomain}`;
               }
@@ -140,7 +140,7 @@ export class SocialProfileValidator {
         }
       } catch (error) {
         clearTimeout(timeoutId);
-        
+
         if (error instanceof Error && error.name === 'AbortError') {
           return {
             url,
@@ -148,7 +148,7 @@ export class SocialProfileValidator {
             warning: `Request timeout after ${this.timeout}ms`,
           };
         }
-        
+
         throw error;
       }
     } catch (error) {
@@ -166,7 +166,7 @@ export class SocialProfileValidator {
   private generatePlatformUrl(platform: PlatformConfig, handle: string): string {
     // Clean handle - remove @ if present and platform doesn't require it
     let cleanHandle = handle.startsWith('@') ? handle.slice(1) : handle;
-    
+
     // Add @ back if platform requires it
     if (platform.requiresAt && !cleanHandle.startsWith('@')) {
       cleanHandle = '@' + cleanHandle;
@@ -207,7 +207,7 @@ export class SocialProfileValidator {
     for (let i = 0; i < allUrls.length; i += batchSize) {
       const batch = allUrls.slice(i, i + batchSize);
       const batchResults = await Promise.all(
-        batch.map(url => this.validateUrl(url, canonicalDomain))
+        batch.map((url) => this.validateUrl(url, canonicalDomain))
       );
 
       allResults.push(...batchResults);
@@ -215,11 +215,11 @@ export class SocialProfileValidator {
 
     // Process results
     const seenDomains = new Set<string>();
-    
+
     for (const result of allResults) {
       if (result.status === 'valid') {
         const domain = new URL(result.url).hostname;
-        
+
         // Dedupe by hostname
         if (!seenDomains.has(domain)) {
           seenDomains.add(domain);
@@ -233,13 +233,13 @@ export class SocialProfileValidator {
     }
 
     // Handle LinkedIn fallback
-    const linkedinResult = allResults.find(r => r.url.includes('linkedin.com/company/'));
+    const linkedinResult = allResults.find((r) => r.url.includes('linkedin.com/company/'));
     if (linkedinResult && linkedinResult.status !== 'valid') {
       const linkedinConfig = this.platforms.linkedin;
       if (linkedinConfig.alternativeTemplate) {
         const fallbackUrl = linkedinConfig.alternativeTemplate.replace('{handle}', handle);
         const fallbackResult = await this.validateUrl(fallbackUrl, canonicalDomain);
-        
+
         if (fallbackResult.status === 'valid') {
           const domain = new URL(fallbackResult.url).hostname;
           if (!seenDomains.has(domain)) {
@@ -247,7 +247,7 @@ export class SocialProfileValidator {
             warnings.push(`LinkedIn: Using personal profile instead of company page`);
           }
         }
-        
+
         allResults.push(fallbackResult);
       }
     }
@@ -272,11 +272,11 @@ export class SocialProfileValidator {
   } {
     return {
       total: results.length,
-      valid: results.filter(r => r.status === 'valid').length,
-      invalid: results.filter(r => r.status === 'invalid').length,
-      timeout: results.filter(r => r.status === 'timeout').length,
-      error: results.filter(r => r.status === 'error').length,
-      withReciprocity: results.filter(r => r.hasReciprocity === true).length,
+      valid: results.filter((r) => r.status === 'valid').length,
+      invalid: results.filter((r) => r.status === 'invalid').length,
+      timeout: results.filter((r) => r.status === 'timeout').length,
+      error: results.filter((r) => r.status === 'error').length,
+      withReciprocity: results.filter((r) => r.hasReciprocity === true).length,
     };
   }
 }

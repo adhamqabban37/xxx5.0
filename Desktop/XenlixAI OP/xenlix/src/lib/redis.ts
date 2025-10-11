@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import Queue from 'bull';
+import { Queue } from 'bullmq';
 import { getEnvironmentConfig } from './env-config';
 
 // Get Redis configuration from environment
@@ -17,9 +17,9 @@ const redisConfig = {
 export const redis = new Redis(redisConfig);
 export const redisSubscriber = new Redis(redisConfig);
 
-// Job Queues
+// Job Queues (using BullMQ)
 export const crawlQueue = new Queue('crawl jobs', {
-  redis: redisConfig,
+  connection: redisConfig,
   defaultJobOptions: {
     removeOnComplete: 100,
     removeOnFail: 50,
@@ -32,7 +32,7 @@ export const crawlQueue = new Queue('crawl jobs', {
 });
 
 export const auditQueue = new Queue('audit jobs', {
-  redis: redisConfig,
+  connection: redisConfig,
   defaultJobOptions: {
     removeOnComplete: 100,
     removeOnFail: 50,
@@ -45,7 +45,7 @@ export const auditQueue = new Queue('audit jobs', {
 });
 
 export const embeddingQueue = new Queue('embedding jobs', {
-  redis: redisConfig,
+  connection: redisConfig,
   defaultJobOptions: {
     removeOnComplete: 50,
     removeOnFail: 25,
@@ -60,7 +60,7 @@ export const embeddingQueue = new Queue('embedding jobs', {
 // Cache utilities
 export class CacheService {
   private static instance: CacheService;
-  
+
   static getInstance(): CacheService {
     if (!CacheService.instance) {
       CacheService.instance = new CacheService();
@@ -96,7 +96,7 @@ export class CacheService {
 
   async exists(key: string): Promise<boolean> {
     try {
-      return await redis.exists(key) === 1;
+      return (await redis.exists(key)) === 1;
     } catch (error) {
       console.error('Redis cache exists error:', error);
       return false;

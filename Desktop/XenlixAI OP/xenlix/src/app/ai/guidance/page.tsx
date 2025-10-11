@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 interface GuidanceResponse {
   guidance: {
@@ -36,29 +36,29 @@ export default function AiGuidancePage() {
   const [loading, setLoading] = useState(false);
   const [guidance, setGuidance] = useState<GuidanceResponse | null>(null);
   const [formData, setFormData] = useState({
-    businessName: "",
-    businessType: "",
-    targetAudience: "",
+    businessName: '',
+    businessType: '',
+    targetAudience: '',
     goals: [] as string[],
     monthlyBudget: 1000,
-    currentChallenges: "",
+    currentChallenges: '',
   });
 
-  if (status === "loading") {
+  if (status === 'loading') {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   if (!session) {
-    router.push("/signin");
+    router.push('/signin');
     return null;
   }
 
   const handleGoalToggle = (goal: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       goals: prev.goals.includes(goal)
-        ? prev.goals.filter(g => g !== goal)
-        : [...prev.goals, goal]
+        ? prev.goals.filter((g) => g !== goal)
+        : [...prev.goals, goal],
     }));
   };
 
@@ -67,9 +67,9 @@ export default function AiGuidancePage() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/ai/guidance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/ai/guidance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ profile: formData }),
       });
 
@@ -77,20 +77,20 @@ export default function AiGuidancePage() {
         const result = await response.json();
         setGuidance(result);
       } else {
-        alert("Failed to generate guidance. Please try again.");
+        alert('Failed to generate guidance. Please try again.');
       }
     } catch (error) {
-      alert("An error occurred. Please try again.");
+      alert('An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const goalOptions = [
-    { id: "increase_sales", label: "Increase Sales" },
-    { id: "brand_awareness", label: "Brand Awareness" },
-    { id: "lead_generation", label: "Lead Generation" },
-    { id: "website_traffic", label: "Website Traffic" },
+    { id: 'increase_sales', label: 'Increase Sales' },
+    { id: 'brand_awareness', label: 'Brand Awareness' },
+    { id: 'lead_generation', label: 'Lead Generation' },
+    { id: 'website_traffic', label: 'Website Traffic' },
   ];
 
   return (
@@ -98,7 +98,7 @@ export default function AiGuidancePage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push('/dashboard')}
             className="text-blue-600 hover:text-blue-700 mb-4 flex items-center gap-2"
           >
             ← Back to Dashboard
@@ -119,7 +119,9 @@ export default function AiGuidancePage() {
                 <input
                   type="text"
                   value={formData.businessName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, businessName: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, businessName: e.target.value }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   required
                 />
@@ -132,7 +134,9 @@ export default function AiGuidancePage() {
                 <input
                   type="text"
                   value={formData.businessType}
-                  onChange={(e) => setFormData(prev => ({ ...prev, businessType: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, businessType: e.target.value }))
+                  }
                   placeholder="e.g., E-commerce, SaaS, Local Service"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   required
@@ -145,7 +149,9 @@ export default function AiGuidancePage() {
                 </label>
                 <textarea
                   value={formData.targetAudience}
-                  onChange={(e) => setFormData(prev => ({ ...prev, targetAudience: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, targetAudience: e.target.value }))
+                  }
                   placeholder="Describe your ideal customers..."
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -158,7 +164,7 @@ export default function AiGuidancePage() {
                   Marketing Goals (select all that apply)
                 </label>
                 <div className="grid grid-cols-2 gap-3">
-                  {goalOptions.map(goal => (
+                  {goalOptions.map((goal) => (
                     <label key={goal.id} className="flex items-center space-x-3">
                       <input
                         type="checkbox"
@@ -179,7 +185,9 @@ export default function AiGuidancePage() {
                 <input
                   type="number"
                   value={formData.monthlyBudget}
-                  onChange={(e) => setFormData(prev => ({ ...prev, monthlyBudget: parseInt(e.target.value) }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, monthlyBudget: parseInt(e.target.value) }))
+                  }
                   min="100"
                   max="100000"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -193,7 +201,9 @@ export default function AiGuidancePage() {
                 </label>
                 <textarea
                   value={formData.currentChallenges}
-                  onChange={(e) => setFormData(prev => ({ ...prev, currentChallenges: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, currentChallenges: e.target.value }))
+                  }
                   placeholder="What advertising challenges are you facing?"
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -206,7 +216,7 @@ export default function AiGuidancePage() {
                 disabled={loading || formData.goals.length === 0}
                 className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 px-4 rounded-lg font-medium transition-colors"
               >
-                {loading ? "Generating Guidance..." : "Get AI Guidance"}
+                {loading ? 'Generating Guidance...' : 'Get AI Guidance'}
               </button>
             </form>
           </div>
@@ -226,39 +236,57 @@ export default function AiGuidancePage() {
 
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Budget Analysis</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+                  Budget Analysis
+                </h3>
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    Daily Budget: <span className="font-medium">${guidance.guidance.budgetAnalysis.daily}</span>
+                    Daily Budget:{' '}
+                    <span className="font-medium">${guidance.guidance.budgetAnalysis.daily}</span>
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
                       <span className="text-gray-600 dark:text-gray-400">Search:</span>
-                      <span className="font-medium ml-1">${guidance.guidance.budgetAnalysis.recommended.search}</span>
+                      <span className="font-medium ml-1">
+                        ${guidance.guidance.budgetAnalysis.recommended.search}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-600 dark:text-gray-400">Shopping:</span>
-                      <span className="font-medium ml-1">${guidance.guidance.budgetAnalysis.recommended.shopping}</span>
+                      <span className="font-medium ml-1">
+                        ${guidance.guidance.budgetAnalysis.recommended.shopping}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-600 dark:text-gray-400">Display:</span>
-                      <span className="font-medium ml-1">${guidance.guidance.budgetAnalysis.recommended.display}</span>
+                      <span className="font-medium ml-1">
+                        ${guidance.guidance.budgetAnalysis.recommended.display}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-600 dark:text-gray-400">Video:</span>
-                      <span className="font-medium ml-1">${guidance.guidance.budgetAnalysis.recommended.video}</span>
+                      <span className="font-medium ml-1">
+                        ${guidance.guidance.budgetAnalysis.recommended.video}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Key Recommendations</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+                  Key Recommendations
+                </h3>
                 <div className="space-y-2">
                   {guidance.guidance.keyRecommendations.map((rec, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg"
+                    >
                       <div className="w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-green-600 dark:text-green-400 text-sm font-medium">{index + 1}</span>
+                        <span className="text-green-600 dark:text-green-400 text-sm font-medium">
+                          {index + 1}
+                        </span>
                       </div>
                       <p className="text-sm text-gray-700 dark:text-gray-300">{rec}</p>
                     </div>
@@ -267,10 +295,15 @@ export default function AiGuidancePage() {
               </div>
 
               <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Optimization Tips</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+                  Optimization Tips
+                </h3>
                 <div className="space-y-2">
                   {guidance.guidance.optimizationTips.map((tip, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg"
+                    >
                       <div className="w-2 h-2 bg-purple-400 rounded-full flex-shrink-0 mt-2"></div>
                       <p className="text-sm text-gray-700 dark:text-gray-300">{tip}</p>
                     </div>
@@ -280,13 +313,13 @@ export default function AiGuidancePage() {
 
               <div className="flex gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
-                  onClick={() => router.push("/ads")}
+                  onClick={() => router.push('/ads')}
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors"
                 >
                   Create Ad Campaigns
                 </button>
                 <button
-                  onClick={() => router.push("/dashboard")}
+                  onClick={() => router.push('/dashboard')}
                   className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition-colors"
                 >
                   Back to Dashboard
