@@ -72,8 +72,13 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
       });
 
       if (!crawlResponse.ok) {
-        const errorData = await crawlResponse.json();
-        throw new Error(errorData.message || 'Failed to crawl website');
+        let errorMessage = 'Failed to crawl website';
+        const contentType = crawlResponse.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await crawlResponse.json();
+          errorMessage = errorData.message || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const crawlData = await crawlResponse.json();
@@ -92,8 +97,13 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
       });
 
       if (!aeoResponse.ok) {
-        const errorData = await aeoResponse.json();
-        throw new Error(errorData.message || 'Failed to analyze AEO score');
+        let errorMessage = 'Failed to analyze AEO score';
+        const contentType = aeoResponse.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await aeoResponse.json();
+          errorMessage = errorData.message || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const aeoScore = await aeoResponse.json();
@@ -111,8 +121,13 @@ const UnifiedAEOAnalysis: React.FC<UnifiedAEOAnalysisProps> = ({ initialUrl = ''
       });
 
       if (!lighthouseResponse.ok) {
-        const errorData = await lighthouseResponse.json();
-        throw new Error(errorData.message || 'Failed to run Lighthouse audit');
+        let errorMessage = 'Failed to run Lighthouse audit';
+        const contentType = lighthouseResponse.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await lighthouseResponse.json();
+          errorMessage = errorData.message || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const lighthouseAudit = await lighthouseResponse.json();

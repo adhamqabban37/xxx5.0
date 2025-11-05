@@ -1,0 +1,218 @@
+rule_set:
+  name: 'Performance Validation Rules'
+  version: '1.0.0'
+  description: 'Web performance validation rules based on Core Web Vitals and best practices'
+  industry: 'general'
+  author: 'XenlixAI'
+  created_at: '2025-11-05T00:00:00Z'
+  tags:
+    - 'performance'
+    - 'core-web-vitals'
+    - 'optimization'
+
+categories:
+  lighthouse_scores:
+    name: 'Lighthouse Performance Scores'
+    description: 'Lighthouse performance score validation'
+    enabled: true
+    rules:
+      - id: 'performance_score'
+        name: 'Performance Score Threshold'
+        description: 'Lighthouse performance score must be at least 75'
+        severity: 'error'
+        priority: 10
+        condition:
+          type: 'numeric_range'
+          target: 'technical.lighthouse_scores.performance'
+          min: 75
+        message: 'Performance score must be at least 75 (current: {value})'
+        enabled: true
+
+      - id: 'accessibility_score'
+        name: 'Accessibility Score Threshold'
+        description: 'Lighthouse accessibility score should be at least 90'
+        severity: 'warning'
+        priority: 8
+        condition:
+          type: 'numeric_range'
+          target: 'technical.lighthouse_scores.accessibility'
+          min: 90
+        message: 'Accessibility score should be at least 90 (current: {value})'
+        enabled: true
+
+      - id: 'seo_score'
+        name: 'SEO Score Threshold'
+        description: 'Lighthouse SEO score should be at least 90'
+        severity: 'warning'
+        priority: 8
+        condition:
+          type: 'numeric_range'
+          target: 'technical.lighthouse_scores.seo'
+          min: 90
+        message: 'SEO score should be at least 90 (current: {value})'
+        enabled: true
+
+      - id: 'best_practices_score'
+        name: 'Best Practices Score'
+        description: 'Lighthouse best practices score should be at least 85'
+        severity: 'warning'
+        priority: 7
+        condition:
+          type: 'numeric_range'
+          target: 'technical.lighthouse_scores.best_practices'
+          min: 85
+        message: 'Best practices score should be at least 85 (current: {value})'
+        enabled: true
+
+  core_web_vitals:
+    name: 'Core Web Vitals'
+    description: 'Google Core Web Vitals performance metrics'
+    enabled: true
+    rules:
+      - id: 'lcp_threshold'
+        name: 'Largest Contentful Paint (LCP)'
+        description: 'LCP should be under 2.5 seconds for good user experience'
+        severity: 'error'
+        priority: 10
+        condition:
+          type: 'numeric_range'
+          target: 'technical.lighthouse_scores.lcp'
+          max: 2.5
+        message: 'Largest Contentful Paint should be under 2.5s (current: {value}s)'
+        enabled: true
+
+      - id: 'fid_threshold'
+        name: 'First Input Delay (FID)'
+        description: 'FID should be under 100ms for good interactivity'
+        severity: 'error'
+        priority: 10
+        condition:
+          type: 'numeric_range'
+          target: 'technical.lighthouse_scores.fid'
+          max: 100
+        message: 'First Input Delay should be under 100ms (current: {value}ms)'
+        enabled: true
+
+      - id: 'cls_threshold'
+        name: 'Cumulative Layout Shift (CLS)'
+        description: 'CLS should be under 0.1 for visual stability'
+        severity: 'error'
+        priority: 10
+        condition:
+          type: 'numeric_range'
+          target: 'technical.lighthouse_scores.cls'
+          max: 0.1
+        message: 'Cumulative Layout Shift should be under 0.1 (current: {value})'
+        enabled: true
+
+  response_metrics:
+    name: 'Response Metrics'
+    description: 'Server response and loading performance'
+    enabled: true
+    rules:
+      - id: 'response_time'
+        name: 'Response Time'
+        description: 'Server response time should be under 200ms'
+        severity: 'warning'
+        priority: 7
+        condition:
+          type: 'numeric_range'
+          target: 'technical.response_time'
+          max: 200
+        message: 'Server response time should be under 200ms (current: {value}ms)'
+        enabled: true
+
+      - id: 'status_code'
+        name: 'HTTP Status Code'
+        description: 'Page should return successful HTTP status code'
+        severity: 'error'
+        priority: 10
+        condition:
+          type: 'numeric_range'
+          target: 'technical.status_code'
+          min: 200
+          max: 299
+        message: 'Page should return successful HTTP status code (current: {value})'
+        enabled: true
+
+      - id: 'page_size'
+        name: 'Page Size Optimization'
+        description: 'Page size should be reasonable for fast loading'
+        severity: 'info'
+        priority: 5
+        condition:
+          type: 'numeric_range'
+          target: 'technical.page_size'
+          max: 2000000
+        message: 'Consider optimizing page size for faster loading (current: {value} bytes)'
+        enabled: true
+
+  mobile_optimization:
+    name: 'Mobile Optimization'
+    description: 'Mobile performance and usability rules'
+    enabled: true
+    rules:
+      - id: 'mobile_performance'
+        name: 'Mobile Performance Score'
+        description: 'Mobile performance should meet standards'
+        severity: 'warning'
+        priority: 8
+        condition:
+          type: 'numeric_range'
+          target: 'technical.lighthouse_scores.performance'
+          min: 70
+        message: 'Mobile performance score should be at least 70 for good mobile experience'
+        enabled: true
+
+      - id: 'viewport_meta'
+        name: 'Viewport Meta Tag'
+        description: 'Page should have proper viewport meta tag for mobile'
+        severity: 'error'
+        priority: 9
+        condition:
+          type: 'contains'
+          target: 'page.content'
+          value: 'viewport'
+        message: 'Page must have viewport meta tag for mobile responsiveness'
+        enabled: true
+
+  resource_optimization:
+    name: 'Resource Optimization'
+    description: 'Resource loading and optimization rules'
+    enabled: true
+    rules:
+      - id: 'image_optimization'
+        name: 'Image Format Optimization'
+        description: 'Images should use modern formats for better performance'
+        severity: 'info'
+        priority: 4
+        condition:
+          type: 'not_contains'
+          target: 'page.content'
+          value: '.bmp'
+        message: 'Consider using modern image formats (WebP, AVIF) for better performance'
+        enabled: true
+
+      - id: 'css_minification'
+        name: 'CSS Optimization'
+        description: 'CSS should be minified and optimized'
+        severity: 'info'
+        priority: 3
+        condition:
+          type: 'not_contains'
+          target: 'page.content'
+          value: '/* '
+        message: 'Consider minifying CSS for better performance'
+        enabled: true
+
+      - id: 'js_minification'
+        name: 'JavaScript Optimization'
+        description: 'JavaScript should be minified and optimized'
+        severity: 'info'
+        priority: 3
+        condition:
+          type: 'not_contains'
+          target: 'page.content'
+          value: 'console.log'
+        message: 'Remove console.log statements and minify JavaScript for production'
+        enabled: true

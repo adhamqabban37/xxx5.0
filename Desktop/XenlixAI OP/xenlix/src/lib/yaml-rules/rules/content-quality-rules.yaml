@@ -1,0 +1,101 @@
+rule_set:
+  name: 'Content Quality Rules'
+  version: '1.0.0'
+  description: 'Advanced content quality and readability validation rules'
+  industry: 'general'
+  author: 'XenlixAI Custom'
+  created_at: '2025-11-05T00:00:00Z'
+  tags:
+    - 'content'
+    - 'quality'
+    - 'readability'
+
+categories:
+  readability:
+    name: 'Content Readability'
+    description: 'Rules for content readability and user experience'
+    enabled: true
+    rules:
+      - id: 'paragraph_length'
+        name: 'Paragraph Length Check'
+        description: 'Paragraphs should not be too long for readability'
+        severity: 'warning'
+        priority: 6
+        condition:
+          type: 'max_count'
+          target: 'page.content'
+          count: 150
+        message: 'Keep paragraphs under 150 words for better readability'
+        enabled: true
+
+      - id: 'sentence_length'
+        name: 'Average Sentence Length'
+        description: 'Sentences should be reasonably short'
+        severity: 'info'
+        priority: 4
+        condition:
+          type: 'regex_match'
+          target: 'page.content'
+          pattern: "\\. [A-Z]"
+          flags: 'g'
+        message: 'Consider shorter sentences for better readability'
+        enabled: true
+
+  brand_compliance:
+    name: 'Brand Guidelines'
+    description: 'Brand consistency and compliance rules'
+    enabled: true
+    rules:
+      - id: 'brand_name_usage'
+        name: 'Brand Name Consistency'
+        description: 'Brand name should be used consistently'
+        severity: 'warning'
+        priority: 8
+        condition:
+          type: 'contains'
+          target: 'page.content'
+          value: 'XenlixAI'
+        message: "Ensure brand name 'XenlixAI' is mentioned in content"
+        enabled: true
+
+      - id: 'copyright_notice'
+        name: 'Copyright Notice'
+        description: 'Copyright notice should be present'
+        severity: 'info'
+        priority: 3
+        condition:
+          type: 'contains'
+          target: 'page.content'
+          value: '©'
+        message: 'Consider adding copyright notice to footer'
+        enabled: true
+
+  user_experience:
+    name: 'User Experience'
+    description: 'Rules for better user experience'
+    enabled: true
+    rules:
+      - id: 'call_to_action'
+        name: 'Call to Action Present'
+        description: 'Page should have clear call-to-action'
+        severity: 'warning'
+        priority: 7
+        condition:
+          type: 'regex_match'
+          target: 'page.content'
+          pattern: '(contact|buy|purchase|learn more|get started|sign up)'
+          flags: 'i'
+        message: 'Include clear call-to-action buttons or text'
+        enabled: true
+
+      - id: 'external_links'
+        name: 'External Link Validation'
+        description: 'External links should open in new tabs'
+        severity: 'info'
+        priority: 4
+        condition:
+          type: 'contains'
+          target: 'page.content'
+          value: 'target="_blank"'
+        message: 'External links should open in new tabs for better UX'
+        enabled: true

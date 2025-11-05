@@ -1,0 +1,327 @@
+name: 'AEO Standards'
+description: 'Answer Engine Optimization validation rules with 4 core categories'
+version: '1.0.0'
+created_at: '2025-11-05T00:00:00Z'
+author: 'XenlixAI'
+
+# Category weights (must sum to 1.0)
+weights:
+  technical: 0.30 # Core infrastructure requirements
+  content: 0.25 # Content quality and structure
+  authority: 0.25 # E-E-A-T and trustworthiness
+  user_intent: 0.20 # Question answering and relevance
+
+categories:
+  technical:
+    name: 'Technical Foundation'
+    description: 'Core technical requirements for AI engines to crawl and understand your website'
+    rules:
+      # Performance & Speed
+      - id: 'lcp_performance'
+        name: 'Largest Contentful Paint'
+        priority: 'critical'
+        condition:
+          type: 'performance_metric'
+          target: 'core_web_vitals.lcp'
+          operator: 'lte'
+          value: 2.5
+        message: 'Page loads too slowly (LCP: {value}s). AI engines prioritize fast-loading content.'
+        recommendation: 'Optimize images, reduce server response time, use CDN'
+        score_impact: -25
+
+      - id: 'fid_responsiveness'
+        name: 'First Input Delay'
+        priority: 'high'
+        condition:
+          type: 'performance_metric'
+          target: 'core_web_vitals.fid'
+          operator: 'lte'
+          value: 100
+        message: 'Page responds too slowly to interactions (FID: {value}ms)'
+        recommendation: 'Reduce JavaScript execution time, optimize third-party scripts'
+        score_impact: -15
+
+      - id: 'cls_stability'
+        name: 'Cumulative Layout Shift'
+        priority: 'high'
+        condition:
+          type: 'performance_metric'
+          target: 'core_web_vitals.cls'
+          operator: 'lte'
+          value: 0.1
+        message: 'Page elements shift during loading (CLS: {value})'
+        recommendation: 'Set image dimensions, avoid content insertion above fold'
+        score_impact: -15
+
+      # Mobile & Security
+      - id: 'mobile_friendly'
+        name: 'Mobile Optimization'
+        priority: 'critical'
+        condition:
+          type: 'mobile_test'
+          target: 'mobile.friendly'
+          operator: 'eq'
+          value: true
+        message: 'Website not mobile-friendly. Most AI searches happen on mobile.'
+        recommendation: 'Use responsive design, ensure readable text and tappable buttons'
+        score_impact: -30
+
+      - id: 'https_security'
+        name: 'HTTPS Security'
+        priority: 'critical'
+        condition:
+          type: 'security_check'
+          target: 'security.https'
+          operator: 'eq'
+          value: true
+        message: "Website doesn't use HTTPS. Required for AI engine trust."
+        recommendation: 'Install SSL certificate, redirect HTTP to HTTPS'
+        score_impact: -35
+
+      # Structured Data
+      - id: 'basic_schema'
+        name: 'Basic Schema Markup'
+        priority: 'high'
+        condition:
+          type: 'schema_check'
+          target: 'structured_data.types'
+          operator: 'includes'
+          value: ['Organization', 'WebSite']
+        message: 'Missing basic structured data for AI understanding'
+        recommendation: 'Add Organization and WebSite schema markup'
+        score_impact: -20
+
+  content:
+    name: 'Content Quality'
+    description: 'Content structure, readability, and optimization for AI understanding'
+    rules:
+      # Content Structure
+      - id: 'h1_present'
+        name: 'Main Heading (H1)'
+        priority: 'high'
+        condition:
+          type: 'element_count'
+          target: 'headings.h1'
+          operator: 'eq'
+          value: 1
+        message: 'Missing or multiple H1 tags. AI needs clear content hierarchy.'
+        recommendation: 'Use exactly one H1 tag that summarizes page content'
+        score_impact: -15
+
+      - id: 'heading_hierarchy'
+        name: 'Logical Heading Structure'
+        priority: 'medium'
+        condition:
+          type: 'structure_check'
+          target: 'headings.hierarchy'
+          operator: 'eq'
+          value: 'logical'
+        message: 'Heading structure not logical (H1→H2→H3 order)'
+        recommendation: 'Use headings in proper order: H1 for title, H2 for sections'
+        score_impact: -10
+
+      - id: 'meta_description'
+        name: 'Meta Description'
+        priority: 'medium'
+        condition:
+          type: 'text_length'
+          target: 'meta.description'
+          operator: 'between'
+          min: 120
+          max: 160
+        message: 'Meta description missing or wrong length'
+        recommendation: 'Add 120-160 character meta description summarizing page content'
+        score_impact: -8
+
+      - id: 'content_length'
+        name: 'Content Depth'
+        priority: 'medium'
+        condition:
+          type: 'word_count'
+          target: 'content.word_count'
+          operator: 'gte'
+          value: 300
+        message: 'Content too brief for comprehensive AI understanding'
+        recommendation: 'Expand content to at least 300 words with detailed information'
+        score_impact: -12
+
+      # Readability
+      - id: 'readability_score'
+        name: 'Content Readability'
+        priority: 'medium'
+        condition:
+          type: 'readability_metric'
+          target: 'content.readability_score'
+          operator: 'gte'
+          value: 60
+        message: 'Content difficult to read (Readability: {value})'
+        recommendation: 'Use shorter sentences, simpler words, bullet points'
+        score_impact: -8
+
+  authority:
+    name: 'Authority & Trust'
+    description: 'E-E-A-T signals that establish expertise and trustworthiness'
+    rules:
+      # Experience & Expertise
+      - id: 'author_info'
+        name: 'Author Information'
+        priority: 'high'
+        condition:
+          type: 'element_presence'
+          target: 'author.info'
+          operator: 'eq'
+          value: true
+        message: 'Author information missing. AI values content from identified experts.'
+        recommendation: 'Add author bio with credentials and expertise'
+        score_impact: -20
+
+      - id: 'publication_date'
+        name: 'Content Freshness'
+        priority: 'medium'
+        condition:
+          type: 'date_check'
+          target: 'content.published_date'
+          operator: 'gte'
+          value: '12_months_ago'
+        message: 'Content outdated or missing publication date'
+        recommendation: 'Add publication/update dates, refresh old content'
+        score_impact: -10
+
+      - id: 'external_citations'
+        name: 'Source Citations'
+        priority: 'medium'
+        condition:
+          type: 'link_count'
+          target: 'links.external_citations'
+          operator: 'gte'
+          value: 2
+        message: 'Few or no citations to authoritative sources'
+        recommendation: 'Link to credible sources, studies, and expert content'
+        score_impact: -12
+
+      - id: 'contact_info'
+        name: 'Contact Information'
+        priority: 'medium'
+        condition:
+          type: 'page_presence'
+          target: 'site.contact_page'
+          operator: 'eq'
+          value: true
+        message: 'Missing clear contact information affects trustworthiness'
+        recommendation: 'Add contact page with phone, email, address'
+        score_impact: -8
+
+      # Trust Signals
+      - id: 'privacy_policy'
+        name: 'Privacy Policy'
+        priority: 'low'
+        condition:
+          type: 'page_presence'
+          target: 'site.privacy_policy'
+          operator: 'eq'
+          value: true
+        message: 'Privacy policy missing - reduces trust signals'
+        recommendation: 'Add comprehensive privacy policy page'
+        score_impact: -5
+
+  user_intent:
+    name: 'User Intent Alignment'
+    description: 'How well content answers user questions and search intent'
+    rules:
+      # Question Answering
+      - id: 'question_format'
+        name: 'Direct Question Answering'
+        priority: 'high'
+        condition:
+          type: 'content_analysis'
+          target: 'content.question_answers'
+          operator: 'gte'
+          value: 3
+        message: "Content doesn't directly answer common user questions"
+        recommendation: 'Structure content to answer specific questions users ask'
+        score_impact: -18
+
+      - id: 'faq_schema'
+        name: 'FAQ Schema Markup'
+        priority: 'medium'
+        condition:
+          type: 'schema_check'
+          target: 'structured_data.types'
+          operator: 'includes'
+          value: ['FAQPage']
+        message: 'Missing FAQ schema for question-answer content'
+        recommendation: 'Add FAQ schema markup for Q&A sections'
+        score_impact: -10
+
+      - id: 'conversational_tone'
+        name: 'Conversational Language'
+        priority: 'medium'
+        condition:
+          type: 'tone_analysis'
+          target: 'content.conversational_score'
+          operator: 'gte'
+          value: 70
+        message: 'Content tone not conversational enough for AI engines'
+        recommendation: 'Use natural language, pronouns, and conversational phrases'
+        score_impact: -8
+
+      - id: 'long_tail_keywords'
+        name: 'Long-tail Keyword Coverage'
+        priority: 'medium'
+        condition:
+          type: 'keyword_analysis'
+          target: 'content.long_tail_coverage'
+          operator: 'gte'
+          value: 60
+        message: 'Limited long-tail keyword coverage'
+        recommendation: 'Target specific, conversational search phrases'
+        score_impact: -10
+
+      - id: 'search_intent_match'
+        name: 'Search Intent Alignment'
+        priority: 'high'
+        condition:
+          type: 'intent_analysis'
+          target: 'content.intent_match_score'
+          operator: 'gte'
+          value: 75
+        message: "Content doesn't fully match user search intent"
+        recommendation: 'Analyze user intent and align content structure accordingly'
+        score_impact: -15
+
+# Scoring configuration
+scoring:
+  total_possible: 100
+  passing_scores:
+    free_tier: 60
+    premium_tier: 75
+    excellent: 90
+
+  grade_mapping:
+    90-100: 'Excellent'
+    80-89: 'Good'
+    70-79: 'Fair'
+    60-69: 'Needs Improvement'
+    0-59: 'Critical Issues'
+
+# API Response configuration
+api_responses:
+  free:
+    include_keys: ['overall_score', 'category_scores', 'critical_issues', 'grade']
+    max_rules_shown: 4
+    include_evidence: false
+    include_recommendations: false
+
+  premium:
+    include_keys:
+      [
+        'overall_score',
+        'category_scores',
+        'all_rules',
+        'evidence',
+        'recommendations',
+        'crewai_insights',
+      ]
+    max_rules_shown: -1 # All rules
+    include_evidence: true
+    include_recommendations: true

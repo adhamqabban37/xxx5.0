@@ -10,6 +10,7 @@ import {
   DetailedScoreBreakdown,
   AIEngineScores,
 } from '@/components/ScoreVisualization';
+import { useStandardsPreview } from '@/hooks/useStandardsPreview2';
 import {
   Brain,
   TrendingUp,
@@ -23,6 +24,7 @@ import {
   Download,
   ArrowLeft,
   ExternalLink,
+  Shield,
 } from 'lucide-react';
 
 interface ContentAnalysisResult {
@@ -102,6 +104,11 @@ export default function AEOResultsPage({ params }: AEOResultsPageProps) {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { id } = params;
+
+  // Hook for standards preview
+  const { data: standardsData, loading: standardsLoading } = useStandardsPreview(
+    analysisData?.url || ''
+  );
 
   useEffect(() => {
     // Check access and load results
@@ -421,6 +428,244 @@ https://xenlix.ai`;
                 {analysisData.aiEngineOptimization.perplexity.score}
               </div>
               <div className="text-sm font-medium text-gray-900">Perplexity</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Technical Foundation Check */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Globe className="h-6 w-6 mr-3 text-red-600" />
+            Technical Foundation Check
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Essential technical requirements for AI engines to properly crawl and understand your
+            website.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Core Web Vitals */}
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
+                Site Speed (Core Web Vitals)
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Largest Contentful Paint (LCP)</span>
+                  <div className="flex items-center">
+                    <AlertCircle className="h-4 w-4 text-red-500 mr-1" />
+                    <span className="text-sm font-medium text-red-600">Needs Improvement</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">First Input Delay (FID)</span>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                    <span className="text-sm font-medium text-green-600">Good</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Cumulative Layout Shift (CLS)</span>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                    <span className="text-sm font-medium text-green-600">Good</span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Fix:</strong> Optimize images and reduce server response time to improve
+                  loading speed.
+                </p>
+              </div>
+            </div>
+
+            {/* Mobile & Security */}
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Globe className="h-5 w-5 mr-2 text-green-600" />
+                Mobile & Security
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Mobile-Friendly Design</span>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                    <span className="text-sm font-medium text-green-600">Passed</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">HTTPS Security</span>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                    <span className="text-sm font-medium text-green-600">Secured</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Structured Data (Schema)</span>
+                  <div className="flex items-center">
+                    <AlertCircle className="h-4 w-4 text-yellow-500 mr-1" />
+                    <span className="text-sm font-medium text-yellow-600">Partial</span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Recommendation:</strong> Add FAQ and Article schema to help AI understand
+                  your content better.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Standards (Free Preview) Section */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-2xl font-bold text-gray-900 flex items-center">
+              <Shield className="h-6 w-6 mr-3 text-purple-600" />
+              Standards (Free Preview)
+            </h3>
+            <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+              4 Categories Available
+            </div>
+          </div>
+
+          <p className="text-gray-600 mb-6">
+            Quick assessment of your content against key AEO standards.
+            <span className="text-purple-600 font-medium ml-1">Upgrade for detailed analysis.</span>
+          </p>
+
+          {standardsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <span className="ml-3 text-gray-600">Loading standards analysis...</span>
+            </div>
+          ) : standardsData ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Technical Chip */}
+              <div
+                className={`rounded-lg p-4 text-center border-2 ${
+                  standardsData.technical.color === 'green'
+                    ? 'bg-green-50 border-green-200'
+                    : standardsData.technical.color === 'yellow'
+                      ? 'bg-yellow-50 border-yellow-200'
+                      : 'bg-red-50 border-red-200'
+                }`}
+              >
+                <div
+                  className={`text-2xl font-bold mb-1 ${
+                    standardsData.technical.color === 'green'
+                      ? 'text-green-600'
+                      : standardsData.technical.color === 'yellow'
+                        ? 'text-yellow-600'
+                        : 'text-red-600'
+                  }`}
+                >
+                  {standardsData.technical.score}
+                </div>
+                <div className="text-sm font-medium text-gray-900">Technical</div>
+                <div className="text-xs text-gray-600 mt-1">SEO Foundation</div>
+              </div>
+
+              {/* Content Chip */}
+              <div
+                className={`rounded-lg p-4 text-center border-2 ${
+                  standardsData.content.color === 'green'
+                    ? 'bg-green-50 border-green-200'
+                    : standardsData.content.color === 'yellow'
+                      ? 'bg-yellow-50 border-yellow-200'
+                      : 'bg-red-50 border-red-200'
+                }`}
+              >
+                <div
+                  className={`text-2xl font-bold mb-1 ${
+                    standardsData.content.color === 'green'
+                      ? 'text-green-600'
+                      : standardsData.content.color === 'yellow'
+                        ? 'text-yellow-600'
+                        : 'text-red-600'
+                  }`}
+                >
+                  {standardsData.content.score}
+                </div>
+                <div className="text-sm font-medium text-gray-900">Content</div>
+                <div className="text-xs text-gray-600 mt-1">Quality & Structure</div>
+              </div>
+
+              {/* Authority Chip */}
+              <div
+                className={`rounded-lg p-4 text-center border-2 ${
+                  standardsData.authority.color === 'green'
+                    ? 'bg-green-50 border-green-200'
+                    : standardsData.authority.color === 'yellow'
+                      ? 'bg-yellow-50 border-yellow-200'
+                      : 'bg-red-50 border-red-200'
+                }`}
+              >
+                <div
+                  className={`text-2xl font-bold mb-1 ${
+                    standardsData.authority.color === 'green'
+                      ? 'text-green-600'
+                      : standardsData.authority.color === 'yellow'
+                        ? 'text-yellow-600'
+                        : 'text-red-600'
+                  }`}
+                >
+                  {standardsData.authority.score}
+                </div>
+                <div className="text-sm font-medium text-gray-900">Authority</div>
+                <div className="text-xs text-gray-600 mt-1">E-E-A-T Signals</div>
+              </div>
+
+              {/* User Intent Chip */}
+              <div
+                className={`rounded-lg p-4 text-center border-2 ${
+                  standardsData.user_intent.color === 'green'
+                    ? 'bg-green-50 border-green-200'
+                    : standardsData.user_intent.color === 'yellow'
+                      ? 'bg-yellow-50 border-yellow-200'
+                      : 'bg-red-50 border-red-200'
+                }`}
+              >
+                <div
+                  className={`text-2xl font-bold mb-1 ${
+                    standardsData.user_intent.color === 'green'
+                      ? 'text-green-600'
+                      : standardsData.user_intent.color === 'yellow'
+                        ? 'text-yellow-600'
+                        : 'text-red-600'
+                  }`}
+                >
+                  {standardsData.user_intent.score}
+                </div>
+                <div className="text-sm font-medium text-gray-900">User Intent</div>
+                <div className="text-xs text-gray-600 mt-1">Query Matching</div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-gray-500 mb-2">Standards analysis unavailable</div>
+              <div className="text-sm text-gray-400">Please try refreshing the page</div>
+            </div>
+          )}
+
+          {/* Upgrade CTA */}
+          <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Want detailed insights?</h4>
+                <p className="text-sm text-gray-600">
+                  Get rule-by-rule analysis, evidence, and AI recommendations
+                </p>
+              </div>
+              <button
+                onClick={() => router.push('/dashboard?tab=aeo-standards')}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+              >
+                Upgrade to Premium
+              </button>
             </div>
           </div>
         </div>

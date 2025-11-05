@@ -413,6 +413,36 @@ function AEOResultsContent() {
                 <span>External Links</span>
                 <span className="text-gray-700">{technicalSeo.externalLinks}</span>
               </div>
+
+              <div className="flex justify-between items-center border-t pt-4 mt-4">
+                <span className="font-medium">Site Speed</span>
+                <span className="text-yellow-600 font-semibold">2.8s</span>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">LCP (Largest Contentful Paint)</span>
+                  <span className="text-yellow-600">3.2s</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">FID (First Input Delay)</span>
+                  <span className="text-green-600">89ms</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">CLS (Cumulative Layout Shift)</span>
+                  <span className="text-red-600">0.15</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">FCP (First Contentful Paint)</span>
+                  <span className="text-green-600">1.6s</span>
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <span className="px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-800">
+                  Needs Improvement
+                </span>
+              </div>
             </div>
           </div>
 

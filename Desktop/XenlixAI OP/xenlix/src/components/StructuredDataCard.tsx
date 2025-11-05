@@ -64,6 +64,11 @@ export default function StructuredDataCard({ url, className = '' }: StructuredDa
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Invalid response format');
+      }
+
       const result = await response.json();
       setData(result);
     } catch (err) {

@@ -1,0 +1,126 @@
+rule_set:
+  name: 'E-commerce SEO Rules'
+  version: '1.0.0'
+  description: 'SEO validation rules specifically for e-commerce websites'
+  industry: 'e-commerce'
+  author: 'XenlixAI'
+  created_at: '2025-11-05T00:00:00Z'
+  tags:
+    - 'e-commerce'
+    - 'product-pages'
+    - 'conversion'
+
+categories:
+  product_optimization:
+    name: 'Product Page Optimization'
+    description: 'Rules specific to product pages'
+    enabled: true
+    rules:
+      - id: 'product_title_format'
+        name: 'Product Title Format'
+        description: 'Product titles should include brand, product name, and key features'
+        severity: 'warning'
+        priority: 8
+        condition:
+          type: 'regex_match'
+          target: 'page.title'
+          pattern: ".+\\s-\\s.+\\s\\|\\s.+"
+          flags: 'i'
+        message: "Product title should follow format: 'Product Name - Brand | Key Feature'"
+        enabled: true
+
+      - id: 'price_in_title'
+        name: 'Price Information'
+        description: 'Consider including price range in title for high-value items'
+        severity: 'info'
+        priority: 5
+        condition:
+          type: 'regex_match'
+          target: 'page.title'
+          pattern: "\\$[0-9,]+"
+        message: 'Consider including price in title for expensive products'
+        enabled: false
+
+      - id: 'product_reviews'
+        name: 'Customer Reviews Present'
+        description: 'Product pages should have customer reviews'
+        severity: 'warning'
+        priority: 7
+        condition:
+          type: 'contains'
+          target: 'page.content'
+          value: 'review'
+        message: 'Include customer reviews to build trust and improve SEO'
+        enabled: true
+
+  conversion_optimization:
+    name: 'Conversion Optimization'
+    description: 'Rules to improve conversion rates'
+    enabled: true
+    rules:
+      - id: 'add_to_cart_button'
+        name: 'Add to Cart Button'
+        description: 'Product pages must have clear add-to-cart functionality'
+        severity: 'error'
+        priority: 10
+        condition:
+          type: 'regex_match'
+          target: 'page.content'
+          pattern: '(add to cart|buy now|purchase)'
+          flags: 'i'
+        message: "Product page must have clear 'Add to Cart' or 'Buy Now' button"
+        enabled: true
+
+      - id: 'product_images'
+        name: 'Product Images Required'
+        description: 'Product pages must have high-quality images'
+        severity: 'error'
+        priority: 9
+        condition:
+          type: 'min_count'
+          target: 'page.images'
+          count: 3
+        message: 'Product pages should have at least 3 high-quality images'
+        enabled: true
+
+      - id: 'shipping_info'
+        name: 'Shipping Information'
+        description: 'Clear shipping information builds trust'
+        severity: 'warning'
+        priority: 6
+        condition:
+          type: 'regex_match'
+          target: 'page.content'
+          pattern: '(free shipping|shipping|delivery)'
+          flags: 'i'
+        message: 'Include clear shipping information to reduce cart abandonment'
+        enabled: true
+
+  structured_data:
+    name: 'E-commerce Structured Data'
+    description: 'Schema markup for e-commerce'
+    enabled: true
+    rules:
+      - id: 'product_schema'
+        name: 'Product Schema Markup'
+        description: 'Product pages should have Product schema'
+        severity: 'warning'
+        priority: 8
+        condition:
+          type: 'contains'
+          target: 'page.content'
+          value: '"@type": "Product"'
+        message: 'Add Product schema markup for rich snippets in search results'
+        enabled: true
+
+      - id: 'review_schema'
+        name: 'Review Schema Markup'
+        description: 'Include review schema for star ratings in search'
+        severity: 'info'
+        priority: 6
+        condition:
+          type: 'contains'
+          target: 'page.content'
+          value: '"@type": "Review"'
+        message: 'Add Review schema markup to show star ratings in search results'
+        enabled: true

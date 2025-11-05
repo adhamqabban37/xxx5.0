@@ -1,0 +1,167 @@
+name: 'Basic AEO Scan Rules'
+description: 'Essential technical and basic content rules for free AEO audit'
+version: '1.0.0'
+priority: 'high'
+
+rules:
+  # Technical SEO - Core Web Vitals
+  - id: 'core-web-vitals-lcp'
+    name: 'Largest Contentful Paint'
+    category: 'technical'
+    priority: 'critical'
+    description: 'Page loads fast enough for good user experience'
+    condition:
+      type: 'performance_metric'
+      metric: 'lcp'
+      operator: 'less_than'
+      value: 2.5
+    message: 'Page loads too slowly (LCP > 2.5s). This hurts both user experience and AI crawling.'
+    recommendation: 'Optimize images, reduce server response time, and minimize render-blocking resources.'
+    score_impact: -20
+
+  - id: 'core-web-vitals-fid'
+    name: 'First Input Delay'
+    category: 'technical'
+    priority: 'critical'
+    description: 'Page responds quickly to user interactions'
+    condition:
+      type: 'performance_metric'
+      metric: 'fid'
+      operator: 'less_than'
+      value: 100
+    message: 'Page responds too slowly to clicks/taps (FID > 100ms).'
+    recommendation: 'Reduce JavaScript execution time and optimize third-party scripts.'
+    score_impact: -15
+
+  - id: 'core-web-vitals-cls'
+    name: 'Cumulative Layout Shift'
+    category: 'technical'
+    priority: 'critical'
+    description: "Page elements don't shift unexpectedly during loading"
+    condition:
+      type: 'performance_metric'
+      metric: 'cls'
+      operator: 'less_than'
+      value: 0.1
+    message: 'Page elements shift during loading (CLS > 0.1), creating poor user experience.'
+    recommendation: 'Set dimensions for images and ads, avoid inserting content above existing content.'
+    score_impact: -15
+
+  # Mobile Optimization
+  - id: 'mobile-friendly'
+    name: 'Mobile-Friendly Design'
+    category: 'technical'
+    priority: 'critical'
+    description: 'Website works perfectly on mobile devices'
+    condition:
+      type: 'mobile_test'
+      operator: 'equals'
+      value: true
+    message: 'Website is not mobile-friendly. Most AI searches happen on mobile devices.'
+    recommendation: 'Use responsive design, ensure text is readable, and buttons are easily tappable.'
+    score_impact: -25
+
+  # HTTPS Security
+  - id: 'https-security'
+    name: 'HTTPS Security'
+    category: 'technical'
+    priority: 'critical'
+    description: 'Website uses secure HTTPS connection'
+    condition:
+      type: 'security_check'
+      check: 'https'
+      operator: 'equals'
+      value: true
+    message: "Website doesn't use HTTPS. This is required for trustworthiness and AI crawling."
+    recommendation: 'Install SSL certificate and redirect all HTTP traffic to HTTPS.'
+    score_impact: -30
+
+  # Basic Structured Data
+  - id: 'basic-schema-markup'
+    name: 'Basic Schema Markup'
+    category: 'structured_data'
+    priority: 'high'
+    description: 'Has basic structured data to help AI understand content'
+    condition:
+      type: 'schema_presence'
+      schema_types: ['Organization', 'WebSite', 'WebPage']
+      operator: 'has_any'
+    message: 'Missing basic structured data. AI needs this to understand your content.'
+    recommendation: 'Add Organization, WebSite, and WebPage schema markup.'
+    score_impact: -15
+
+  # Content Structure - Basic
+  - id: 'has-h1-tag'
+    name: 'Main Heading Present'
+    category: 'content'
+    priority: 'high'
+    description: 'Page has a clear main heading (H1)'
+    condition:
+      type: 'heading_check'
+      tag: 'h1'
+      operator: 'greater_than'
+      value: 0
+    message: 'Page missing main heading (H1). AI needs clear content structure.'
+    recommendation: 'Add a clear, descriptive H1 tag that summarizes your page content.'
+    score_impact: -10
+
+  - id: 'proper-heading-structure'
+    name: 'Clear Heading Structure'
+    category: 'content'
+    priority: 'medium'
+    description: 'Content uses logical heading hierarchy (H1 > H2 > H3)'
+    condition:
+      type: 'heading_hierarchy'
+      operator: 'is_logical'
+    message: 'Heading structure is not logical. This confuses AI when parsing content.'
+    recommendation: 'Use headings in order: H1 for main title, H2 for sections, H3 for subsections.'
+    score_impact: -8
+
+  # Meta Information
+  - id: 'meta-description-present'
+    name: 'Meta Description'
+    category: 'content'
+    priority: 'medium'
+    description: 'Page has descriptive meta description'
+    condition:
+      type: 'meta_check'
+      tag: 'description'
+      operator: 'exists'
+    message: 'Missing meta description. This helps AI understand page content.'
+    recommendation: 'Add a 150-160 character meta description that summarizes your page.'
+    score_impact: -5
+
+  - id: 'title-tag-optimized'
+    name: 'Optimized Title Tag'
+    category: 'content'
+    priority: 'medium'
+    description: 'Page title is descriptive and proper length'
+    condition:
+      type: 'title_check'
+      min_length: 30
+      max_length: 60
+      operator: 'within_range'
+    message: 'Page title is too short, too long, or not descriptive enough.'
+    recommendation: 'Create a 30-60 character title that clearly describes your page content.'
+    score_impact: -8
+
+scoring:
+  total_possible: 100
+  passing_score: 70
+  grade_thresholds:
+    excellent: 90
+    good: 80
+    fair: 70
+    poor: 60
+    critical: 0
+
+categories:
+  technical:
+    weight: 0.4
+    description: 'Core technical requirements for AI crawling'
+  content:
+    weight: 0.3
+    description: 'Basic content structure and organization'
+  structured_data:
+    weight: 0.3
+    description: 'Structured data for AI understanding'

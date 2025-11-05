@@ -56,18 +56,24 @@ export default function JsonLdGenerator({ userEmail }: JsonLdGeneratorProps) {
         body: JSON.stringify(body),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        if (response.status === 502 && data.error === 'FETCH_OR_PARSE_FAILED') {
-          setError(
-            `Unable to fetch or parse the webpage. Please check if the URL is accessible and try again.`
-          );
-        } else {
-          setError(data.error || 'Failed to generate JSON-LD');
+        let errorMessage = 'Failed to generate JSON-LD';
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          if (response.status === 502 && data.error === 'FETCH_OR_PARSE_FAILED') {
+            setError(
+              `Unable to fetch or parse the webpage. Please check if the URL is accessible and try again.`
+            );
+            return;
+          }
+          errorMessage = data.error || errorMessage;
         }
+        setError(errorMessage);
         return;
       }
+
+      const data = await response.json();
 
       setResult(data);
     } catch (err) {

@@ -15,7 +15,8 @@ const limiter = rateLimit({
 const scanRequestSchema = z.object({
   url: z.string().url('Please provide a valid URL'),
   priority: z.enum(['high', 'normal', 'low']).default('normal'),
-  scanType: z.enum(['full', 'quick']).default('full'),
+  scanType: z.enum(['full', 'quick', 'premium']).default('full'),
+  features: z.array(z.string()).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -46,13 +47,16 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json();
-    const { url, priority, scanType } = scanRequestSchema.parse(body);
+    const { url, priority, scanType, features } = scanRequestSchema.parse(body);
 
     console.log(`Starting ${scanType} AEO scan for ${url} by user ${session.user.email}`);
+    if (features) {
+      console.log(`Premium features requested: ${features.join(', ')}`);
+    }
 
-    // Add scan to queue for async processing (use Crawl4AI by default)
-    const useCrawl4AI = scanType === 'full'; // Use Crawl4AI for full scans
-    const scanId = await scanQueue.addScan(url, session.user.id!, priority, useCrawl4AI);
+    // Add scan to queue for async processing (use Crawl4AI for full and premium scans)
+    const useCrawl4AI = scanType === 'full' || scanType === 'premium';
+    const scanId = await scanQueue.addScan(url, session.user.id!, priority, useCrawl4AI, features);
 
     // Return the scan job ID for tracking
     return NextResponse.json({

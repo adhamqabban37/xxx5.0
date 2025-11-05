@@ -32,6 +32,18 @@ export default function ValidateSnippet({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetUrl, snippet, strategy, threshold }),
       });
+
+      if (!res.ok) {
+        setStatus('Error');
+        return;
+      }
+
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        setStatus('Error');
+        return;
+      }
+
       const data = await res.json();
       setStatus(data.status === 'pass' ? 'Pass' : 'Fail');
       if (typeof data.score === 'number') setScore(data.score);

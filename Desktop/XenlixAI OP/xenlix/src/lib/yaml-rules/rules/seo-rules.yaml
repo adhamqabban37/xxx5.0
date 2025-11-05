@@ -1,0 +1,296 @@
+rule_set:
+  name: 'SEO Validation Rules'
+  version: '1.0.0'
+  description: 'Comprehensive SEO validation rules for web pages'
+  industry: 'general'
+  author: 'XenlixAI'
+  created_at: '2025-11-05T00:00:00Z'
+  tags:
+    - 'seo'
+    - 'optimization'
+    - 'validation'
+
+categories:
+  title_optimization:
+    name: 'Title Optimization'
+    description: 'Page title validation and optimization rules'
+    enabled: true
+    rules:
+      - id: 'title_exists'
+        name: 'Title Tag Required'
+        description: 'Every page must have a title tag'
+        severity: 'error'
+        priority: 10
+        condition:
+          type: 'required'
+          target: 'page.title'
+        message: 'Page title is required for proper SEO'
+        enabled: true
+
+      - id: 'title_length'
+        name: 'Title Length Optimization'
+        description: 'Title should be between 30-60 characters for optimal SEO'
+        severity: 'error'
+        priority: 9
+        condition:
+          type: 'length_range'
+          target: 'page.title'
+          min: 30
+          max: 60
+        message: 'Page title should be between 30-60 characters (current: {length})'
+        enabled: true
+
+      - id: 'title_uniqueness'
+        name: 'Title Uniqueness Check'
+        description: 'Title should not be generic or duplicate'
+        severity: 'warning'
+        priority: 7
+        condition:
+          type: 'not_contains'
+          target: 'page.title'
+          value: 'Home'
+        message: 'Avoid generic titles like 'Home' or 'Welcome''
+        enabled: true
+
+      - id: 'title_keyword_placement'
+        name: 'Primary Keyword in Title'
+        description: 'Title should contain primary keyword near the beginning'
+        severity: 'info'
+        priority: 6
+        condition:
+          type: 'regex_match'
+          target: 'page.title'
+          pattern: '^.{0,20}(keyword|primary|target)'
+          flags: 'i'
+        message: 'Consider placing primary keyword within first 20 characters of title'
+        enabled: true
+
+  meta_description:
+    name: 'Meta Description Optimization'
+    description: 'Meta description validation rules'
+    enabled: true
+    rules:
+      - id: 'meta_description_exists'
+        name: 'Meta Description Required'
+        description: 'Every page should have a meta description'
+        severity: 'warning'
+        priority: 8
+        condition:
+          type: 'required'
+          target: 'page.meta_description'
+        message: 'Meta description is strongly recommended for SEO'
+        enabled: true
+
+      - id: 'meta_description_length'
+        name: 'Meta Description Length'
+        description: 'Meta description should be under 160 characters'
+        severity: 'warning'
+        priority: 8
+        condition:
+          type: 'length_range'
+          target: 'page.meta_description'
+          max: 160
+        message: 'Meta description should be under 160 characters (current: {length})'
+        enabled: true
+
+      - id: 'meta_description_content'
+        name: 'Meta Description Content Quality'
+        description: 'Meta description should be descriptive and unique'
+        severity: 'info'
+        priority: 5
+        condition:
+          type: 'min_count'
+          target: 'page.meta_description'
+          count: 50
+        message: 'Meta description should be descriptive (at least 50 characters)'
+        enabled: true
+
+  heading_structure:
+    name: 'Heading Structure'
+    description: 'HTML heading hierarchy validation'
+    enabled: true
+    rules:
+      - id: 'h1_exists'
+        name: 'H1 Tag Required'
+        description: 'Every page must have exactly one H1 tag'
+        severity: 'error'
+        priority: 9
+        condition:
+          type: 'min_count'
+          target: 'page.h1'
+          count: 1
+        message: 'Page must have at least one H1 heading'
+        enabled: true
+
+      - id: 'h1_single'
+        name: 'Single H1 Rule'
+        description: 'Page should have only one H1 tag'
+        severity: 'warning'
+        priority: 8
+        condition:
+          type: 'max_count'
+          target: 'page.h1'
+          count: 1
+        message: 'Page should have only one H1 heading'
+        enabled: true
+
+      - id: 'h2_structure'
+        name: 'H2 Structure'
+        description: 'Page should have H2 tags for content organization'
+        severity: 'info'
+        priority: 6
+        condition:
+          type: 'min_count'
+          target: 'page.h2'
+          count: 1
+        message: 'Consider using H2 tags to structure content'
+        enabled: true
+
+  content_quality:
+    name: 'Content Quality'
+    description: 'Content quality and length validation'
+    enabled: true
+    rules:
+      - id: 'content_length'
+        name: 'Minimum Content Length'
+        description: 'Page should have sufficient content'
+        severity: 'warning'
+        priority: 7
+        condition:
+          type: 'min_count'
+          target: 'page.word_count'
+          count: 300
+        message: 'Page should have at least 300 words of content'
+        enabled: true
+
+      - id: 'content_exists'
+        name: 'Content Required'
+        description: 'Page must have readable content'
+        severity: 'error'
+        priority: 10
+        condition:
+          type: 'required'
+          target: 'page.content'
+        message: 'Page must have readable content'
+        enabled: true
+
+  image_optimization:
+    name: 'Image Optimization'
+    description: 'Image SEO validation rules'
+    enabled: true
+    rules:
+      - id: 'images_alt_text'
+        name: 'Image Alt Text'
+        description: 'Images should have descriptive alt text'
+        severity: 'warning'
+        priority: 6
+        condition:
+          type: 'exists'
+          target: 'page.images[0].alt'
+        message: 'Images should have descriptive alt text for accessibility and SEO'
+        enabled: true
+
+  technical_seo:
+    name: 'Technical SEO'
+    description: 'Technical SEO validation rules including Core Web Vitals'
+    enabled: true
+    rules:
+      - id: 'core_web_vitals_lcp'
+        name: 'Largest Contentful Paint (LCP)'
+        description: 'Page must load main content within 2.5 seconds'
+        severity: 'error'
+        priority: 10
+        condition:
+          type: 'performance_metric'
+          target: 'core_web_vitals.lcp'
+          operator: 'less_than'
+          value: 2.5
+        message: 'LCP is {value}s (should be < 2.5s). Optimize images and server response time.'
+        enabled: true
+
+      - id: 'core_web_vitals_fid'
+        name: 'First Input Delay (FID)'
+        description: 'Page must respond to user input within 100ms'
+        severity: 'error'
+        priority: 9
+        condition:
+          type: 'performance_metric'
+          target: 'core_web_vitals.fid'
+          operator: 'less_than'
+          value: 100
+        message: 'FID is {value}ms (should be < 100ms). Reduce JavaScript execution time.'
+        enabled: true
+
+      - id: 'core_web_vitals_cls'
+        name: 'Cumulative Layout Shift (CLS)'
+        description: 'Page elements should not shift unexpectedly during loading'
+        severity: 'error'
+        priority: 9
+        condition:
+          type: 'performance_metric'
+          target: 'core_web_vitals.cls'
+          operator: 'less_than'
+          value: 0.1
+        message: 'CLS is {value} (should be < 0.1). Set image dimensions and avoid content insertion.'
+        enabled: true
+
+      - id: 'mobile_friendly_test'
+        name: 'Mobile-Friendly Design'
+        description: 'Website must work perfectly on mobile devices'
+        severity: 'error'
+        priority: 10
+        condition:
+          type: 'mobile_test'
+          target: 'page.mobile_friendly'
+          operator: 'equals'
+          value: true
+        message: 'Website is not mobile-friendly. Use responsive design and ensure readability.'
+        enabled: true
+
+      - id: 'https_security_check'
+        name: 'HTTPS Security'
+        description: 'Website must use secure HTTPS connection'
+        severity: 'error'
+        priority: 10
+        condition:
+          type: 'security_check'
+          target: 'page.protocol'
+          operator: 'equals'
+          value: 'https'
+        message: 'Website must use HTTPS for security and trustworthiness.'
+        enabled: true
+
+      - id: 'canonical_url'
+        name: 'Canonical URL'
+        description: 'Page should have a canonical URL specified'
+        severity: 'info'
+        priority: 5
+        condition:
+          type: 'exists'
+          target: 'schema.canonical_url'
+        message: 'Consider adding a canonical URL to prevent duplicate content issues'
+        enabled: true
+
+      - id: 'og_title'
+        name: 'Open Graph Title'
+        description: 'Page should have Open Graph title for social sharing'
+        severity: 'info'
+        priority: 4
+        condition:
+          type: 'exists'
+          target: 'schema.og_tags.title'
+        message: 'Add Open Graph title for better social media sharing'
+        enabled: true
+
+      - id: 'structured_data'
+        name: 'Structured Data'
+        description: 'Page should include structured data markup'
+        severity: 'warning'
+        priority: 8
+        condition:
+          type: 'schema_presence'
+          target: 'page.structured_data'
+          schema_types: ['Organization', 'WebSite', 'Article', 'FAQ', 'LocalBusiness']
+          operator: 'has_any'
+        message: 'Add structured data (Schema.org) to help AI understand your content.'
+        enabled: true

@@ -7,9 +7,17 @@ import { logger } from '../../../lib/logger';
 import { z } from 'zod';
 import { validateRequest, createErrorResponse, createSuccessResponse } from '@/lib/validation';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+// Initialize Stripe only if properly configured
+let stripe: Stripe | null = null;
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+const isDevelopment = process.env.NODE_ENV === 'development';
+const enableSandbox = process.env.ENABLE_SANDBOX_CHECKOUT === 'true';
+
+if (stripeKey && stripeKey !== 'sk_test_development_dummy_key_for_testing') {
+  stripe = new Stripe(stripeKey, {
+    apiVersion: '2025-08-27.basil',
+  });
+}
 
 const prisma = new PrismaClient();
 

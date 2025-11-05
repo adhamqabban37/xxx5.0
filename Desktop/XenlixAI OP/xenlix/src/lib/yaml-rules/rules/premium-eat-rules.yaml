@@ -1,0 +1,271 @@
+name: 'Advanced E-E-A-T Rules'
+description: 'Premium Experience, Expertise, Authoritativeness, and Trustworthiness rules for comprehensive AEO analysis'
+version: '1.0.0'
+priority: 'premium'
+
+rules:
+  # Experience - Does the author have hands-on experience?
+  - id: 'author-experience-indicators'
+    name: 'Author Experience Signals'
+    category: 'experience'
+    priority: 'critical'
+    description: 'Content shows clear signs of first-hand experience'
+    condition:
+      type: 'content_analysis'
+      indicators:
+        [
+          'personal experience',
+          'case study',
+          'real example',
+          'I tested',
+          'in my experience',
+          'we found',
+          'our results',
+        ]
+      operator: 'contains_any'
+      minimum_count: 2
+    message: 'Content lacks first-hand experience indicators. AI prioritizes content from experienced authors.'
+    recommendation: 'Add personal experiences, case studies, or real examples from your work.'
+    score_impact: -15
+
+  - id: 'detailed-process-description'
+    name: 'Detailed Process Explanations'
+    category: 'experience'
+    priority: 'high'
+    description: 'Content includes step-by-step processes showing expertise'
+    condition:
+      type: 'content_structure'
+      elements: ['numbered_lists', 'step_by_step', 'process_indicators']
+      operator: 'has_detailed_processes'
+    message: 'Content lacks detailed processes. Experienced authors provide specific, actionable steps.'
+    recommendation: "Include detailed step-by-step instructions or methodologies you've used."
+    score_impact: -10
+
+  - id: 'real-world-examples'
+    name: 'Real-World Examples'
+    category: 'experience'
+    priority: 'high'
+    description: 'Content includes specific, real examples rather than generic advice'
+    condition:
+      type: 'content_analysis'
+      pattern: 'specific_examples'
+      operator: 'has_concrete_examples'
+      minimum: 3
+    message: 'Content lacks specific, real-world examples. Generic advice is less valuable to AI.'
+    recommendation: 'Replace generic advice with specific examples from your actual experience.'
+    score_impact: -12
+
+  # Expertise - Does the author have necessary knowledge?
+  - id: 'author-credentials'
+    name: 'Author Credentials Display'
+    category: 'expertise'
+    priority: 'critical'
+    description: 'Author credentials and qualifications are clearly displayed'
+    condition:
+      type: 'author_info'
+      elements: ['credentials', 'certifications', 'education', 'experience_years']
+      operator: 'has_professional_info'
+    message: 'Author credentials not displayed. AI looks for expertise signals.'
+    recommendation: 'Add author bio with relevant credentials, certifications, and years of experience.'
+    score_impact: -20
+
+  - id: 'technical-accuracy'
+    name: 'Technical Accuracy Indicators'
+    category: 'expertise'
+    priority: 'high'
+    description: 'Content demonstrates deep technical knowledge'
+    condition:
+      type: 'content_analysis'
+      indicators: ['technical_terms', 'industry_jargon', 'precise_terminology', 'data_citations']
+      operator: 'shows_expertise'
+      threshold: 0.7
+    message: 'Content lacks technical depth. Expert content uses precise terminology and concepts.'
+    recommendation: 'Include more specific technical details and industry-standard terminology.'
+    score_impact: -15
+
+  - id: 'comprehensive-coverage'
+    name: 'Comprehensive Topic Coverage'
+    category: 'expertise'
+    priority: 'high'
+    description: 'Content covers topic comprehensively, showing subject mastery'
+    condition:
+      type: 'content_depth'
+      metrics: ['word_count', 'subtopic_coverage', 'related_concepts']
+      operator: 'is_comprehensive'
+      minimum_depth_score: 0.8
+    message: 'Content coverage is superficial. Expert content explores topics in-depth.'
+    recommendation: 'Expand content to cover related subtopics and provide more comprehensive information.'
+    score_impact: -12
+
+  # Authoritativeness - Is the site/author recognized authority?
+  - id: 'domain-authority-signals'
+    name: 'Domain Authority Signals'
+    category: 'authoritativeness'
+    priority: 'critical'
+    description: 'Website shows strong authority signals'
+    condition:
+      type: 'authority_check'
+      signals: ['domain_age', 'backlink_quality', 'citation_frequency', 'brand_mentions']
+      operator: 'has_authority_signals'
+      minimum_score: 0.6
+    message: 'Website lacks strong authority signals. AI favors authoritative sources.'
+    recommendation: 'Build quality backlinks, get cited by other experts, and establish brand presence.'
+    score_impact: -18
+
+  - id: 'expert-citations'
+    name: 'Citations from Other Experts'
+    category: 'authoritativeness'
+    priority: 'high'
+    description: 'Content is cited or referenced by other authoritative sources'
+    condition:
+      type: 'citation_analysis'
+      sources: ['academic', 'industry_publications', 'expert_blogs', 'news_media']
+      operator: 'has_external_citations'
+      minimum: 2
+    message: 'Content not cited by other experts. Authoritative content gets referenced.'
+    recommendation: 'Create shareable, cite-worthy content and engage with industry experts.'
+    score_impact: -15
+
+  - id: 'industry-recognition'
+    name: 'Industry Recognition'
+    category: 'authoritativeness'
+    priority: 'high'
+    description: 'Author/organization has industry recognition or awards'
+    condition:
+      type: 'recognition_check'
+      indicators: ['awards', 'speaking_engagements', 'published_works', 'media_mentions']
+      operator: 'has_recognition'
+    message: 'Limited industry recognition. Authoritative sources have public recognition.'
+    recommendation: 'Seek speaking opportunities, industry awards, or media coverage.'
+    score_impact: -10
+
+  # Trustworthiness - Is the information accurate and site secure?
+  - id: 'fact-checking-citations'
+    name: 'Fact-Checking and Citations'
+    category: 'trustworthiness'
+    priority: 'critical'
+    description: 'Claims are backed by credible sources and citations'
+    condition:
+      type: 'citation_quality'
+      sources: ['peer_reviewed', 'government', 'established_organizations', 'primary_sources']
+      operator: 'has_credible_sources'
+      minimum_quality_score: 0.8
+    message: 'Claims lack credible citations. Trustworthy content backs statements with sources.'
+    recommendation: 'Add citations to peer-reviewed studies, government data, and established sources.'
+    score_impact: -20
+
+  - id: 'content-freshness'
+    name: 'Content Freshness and Updates'
+    category: 'trustworthiness'
+    priority: 'high'
+    description: 'Content is regularly updated and shows publication/update dates'
+    condition:
+      type: 'freshness_check'
+      elements: ['publish_date', 'update_date', 'content_age']
+      operator: 'is_current'
+      maximum_age_months: 12
+    message: 'Content is outdated or lacks publication dates. Fresh content is more trustworthy.'
+    recommendation: 'Add publication dates and regularly update content with new information.'
+    score_impact: -12
+
+  - id: 'transparent-contact-info'
+    name: 'Transparent Contact Information'
+    category: 'trustworthiness'
+    priority: 'high'
+    description: 'Clear contact information and privacy policy available'
+    condition:
+      type: 'transparency_check'
+      elements: ['contact_page', 'about_page', 'privacy_policy', 'terms_of_service']
+      operator: 'has_transparency_pages'
+      minimum: 3
+    message: 'Limited contact/transparency information. Trustworthy sites are transparent.'
+    recommendation: 'Add comprehensive contact, about, privacy policy, and terms pages.'
+    score_impact: -15
+
+  # User Intent and Topic Authority
+  - id: 'question-answer-format'
+    name: 'Direct Question Answering'
+    category: 'user_intent'
+    priority: 'critical'
+    description: 'Content directly answers common user questions'
+    condition:
+      type: 'content_structure'
+      format: 'question_answer'
+      operator: 'has_qa_format'
+      minimum_qa_pairs: 5
+    message: "Content doesn't directly answer user questions. AI prefers Q&A formatted content."
+    recommendation: 'Structure content to directly answer common questions in your field.'
+    score_impact: -18
+
+  - id: 'long-tail-keyword-targeting'
+    name: 'Long-Tail Keyword Strategy'
+    category: 'user_intent'
+    priority: 'high'
+    description: 'Content targets specific, conversational search phrases'
+    condition:
+      type: 'keyword_analysis'
+      keyword_types: ['long_tail', 'conversational', 'question_based']
+      operator: 'targets_long_tail'
+      percentage: 0.6
+    message: 'Content focuses on broad keywords. Long-tail phrases better match user intent.'
+    recommendation: 'Target specific, conversational phrases that users actually search for.'
+    score_impact: -12
+
+  - id: 'topical-authority-cluster'
+    name: 'Topical Authority Cluster'
+    category: 'topic_authority'
+    priority: 'high'
+    description: 'Content is part of comprehensive topic cluster with internal linking'
+    condition:
+      type: 'content_cluster'
+      elements: ['related_articles', 'internal_links', 'topic_coverage']
+      operator: 'has_topic_cluster'
+      minimum_cluster_size: 8
+    message: 'Content exists in isolation. Topic clusters build stronger authority.'
+    recommendation: 'Create comprehensive content clusters with internal linking between related topics.'
+    score_impact: -15
+
+  - id: 'semantic-keyword-coverage'
+    name: 'Semantic Keyword Coverage'
+    category: 'topic_authority'
+    priority: 'medium'
+    description: 'Content covers semantically related terms and concepts'
+    condition:
+      type: 'semantic_analysis'
+      coverage: 'related_terms'
+      operator: 'has_semantic_coverage'
+      threshold: 0.7
+    message: 'Content lacks semantic keyword coverage. Comprehensive content covers related concepts.'
+    recommendation: 'Include related terms, synonyms, and concepts that support your main topic.'
+    score_impact: -10
+
+scoring:
+  total_possible: 100
+  passing_score: 75
+  grade_thresholds:
+    exceptional: 95
+    excellent: 85
+    good: 75
+    fair: 65
+    needs_improvement: 50
+    critical: 0
+
+categories:
+  experience:
+    weight: 0.25
+    description: 'First-hand experience and practical knowledge'
+  expertise:
+    weight: 0.25
+    description: 'Technical knowledge and qualifications'
+  authoritativeness:
+    weight: 0.25
+    description: 'Recognition and industry standing'
+  trustworthiness:
+    weight: 0.15
+    description: 'Accuracy, transparency, and credibility'
+  user_intent:
+    weight: 0.05
+    description: 'Alignment with user search intent'
+  topic_authority:
+    weight: 0.05
+    description: 'Comprehensive topic coverage and internal linking'

@@ -14,13 +14,34 @@ export const runtime = 'nodejs';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const bypassAuth = process.env.BYPASS_AUTH_FOR_TESTING === 'true';
+
+    // In testing mode, create a mock user if no session
+    let userId = session?.user?.id;
+    if (bypassAuth && !userId) {
+      // Create or get a test user
+      let testUser = await prisma.user.findUnique({
+        where: { email: 'test@example.com' },
+      });
+
+      if (!testUser) {
+        testUser = await prisma.user.create({
+          data: {
+            email: 'test@example.com',
+            name: 'Test User',
+          },
+        });
+      }
+      userId = testUser.id;
+    }
+
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check if user has premium subscription
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       include: {
         subscription: true,
         companies: {
@@ -45,8 +66,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check premium status
-    const isPremium = user.subscription?.status === 'active';
+    // Check premium status (with development override)
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const enableTestingMode = process.env.ENABLE_TESTING_PREMIUM === 'true';
+    const isPremium = user.subscription?.status === 'active' || isDevelopment || enableTestingMode;
+
     if (!isPremium) {
       return NextResponse.json(
         {
@@ -88,17 +112,42 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const bypassAuth = process.env.BYPASS_AUTH_FOR_TESTING === 'true';
+
+    // In testing mode, create a mock user if no session
+    let userId = session?.user?.id;
+    if (bypassAuth && !userId) {
+      // Create or get a test user
+      let testUser = await prisma.user.findUnique({
+        where: { email: 'test@example.com' },
+      });
+
+      if (!testUser) {
+        testUser = await prisma.user.create({
+          data: {
+            email: 'test@example.com',
+            name: 'Test User',
+          },
+        });
+      }
+      userId = testUser.id;
+    }
+
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check premium status
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       include: { subscription: true },
     });
 
-    const isPremium = user?.subscription?.status === 'active';
+    // Check premium status (with development override)
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const enableTestingMode = process.env.ENABLE_TESTING_PREMIUM === 'true';
+    const isPremium = user?.subscription?.status === 'active' || isDevelopment || enableTestingMode;
+
     if (!isPremium) {
       return NextResponse.json(
         {

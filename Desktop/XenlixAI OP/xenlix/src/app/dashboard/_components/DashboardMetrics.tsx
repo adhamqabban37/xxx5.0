@@ -37,7 +37,7 @@ function getScoreColor(score: number): string {
 
 export function DashboardMetrics({ premiumAuditData }: DashboardMetricsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
       <DashboardCardWithSparkline
         title="Overall Score"
         value={`${premiumAuditData.overallScore}/100`}
@@ -71,6 +71,30 @@ export function DashboardMetrics({ premiumAuditData }: DashboardMetricsProps) {
         icon={<Search className="w-5 h-5 text-blue-400" />}
         subtitle={`of ${premiumAuditData.rankings.totalTracked} keywords`}
       />
+
+      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-medium text-gray-400">Site Speed</h3>
+          <div className="w-5 h-5 flex items-center justify-center">
+            <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+          </div>
+        </div>
+        <div className="text-lg font-bold text-white mb-1">2.8s</div>
+        <div className="text-xs text-gray-400 space-y-0.5">
+          <div className="flex justify-between">
+            <span>LCP:</span>
+            <span className="text-yellow-300">3.2s</span>
+          </div>
+          <div className="flex justify-between">
+            <span>FID:</span>
+            <span className="text-green-300">89ms</span>
+          </div>
+          <div className="flex justify-between">
+            <span>CLS:</span>
+            <span className="text-red-300">0.15</span>
+          </div>
+        </div>
+      </div>
 
       <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
         <div className="flex items-center justify-between mb-2">

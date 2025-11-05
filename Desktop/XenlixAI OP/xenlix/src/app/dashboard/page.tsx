@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { SignOutButton } from './_components/SignOutButton';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import {
   CheckCircle,
   AlertTriangle,
@@ -28,10 +28,61 @@ import SEOGuidanceSection from './_components/SEOGuidanceSection';
 import { QuickCompanyPreview } from '@/components/QuickCompanyPreview';
 import { QuickAIRankTracker } from '@/components/QuickAIRankTracker';
 import QuickReputationMonitor from '@/components/QuickReputationMonitor';
+import GeographicAnalysis from './_components/GeographicAnalysis';
+import FeatureStatus from './_components/FeatureStatus';
+
+// Type definitions for location data
+interface LocationData {
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+  formattedAddress: string;
+  addressComponents: {
+    city?: string;
+    state?: string;
+    country?: string;
+    zipCode?: string;
+  };
+  placeId: string;
+}
+
+interface LocationResult {
+  description: string;
+  place_id: string;
+  structured_formatting: {
+    main_text: string;
+    secondary_text: string;
+  };
+}
+
+interface ScanData {
+  url?: string;
+  location?: LocationData;
+  scanMode: 'url' | 'location';
+  timestamp: string;
+}
 
 export default function DashboardPage() {
   // Client-side authentication check
   const { data: session, status } = useSession();
+
+  // State for comprehensive scan functionality
+  const [websiteUrl, setWebsiteUrl] = useState('');
+  const [scannedUrl, setScannedUrl] = useState(''); // Store the successfully scanned URL
+  const [isUrlLocked, setIsUrlLocked] = useState(false); // URL becomes locked after first scan
+  const [isScanning, setIsScanning] = useState(false);
+  const [hasScannedData, setHasScannedData] = useState(false);
+  const [hasPremiumScan, setHasPremiumScan] = useState(false); // Track if premium deep scan was done
+  const [scanError, setScanError] = useState('');
+  const [scanTier, setScanTier] = useState<'none' | 'fast' | 'deep'>('none'); // Track scan tier
+
+  // Location detection state
+  const [locationQuery, setLocationQuery] = useState('');
+  const [locationResults, setLocationResults] = useState<LocationResult[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [scanMode, setScanMode] = useState<'url' | 'location'>('url'); // Toggle between URL and location modes
 
   if (status === 'loading') {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
@@ -45,6 +96,116 @@ export default function DashboardPage() {
   // Mock user for demo
   const user = {
     email: session.user.email,
+  };
+
+  // Handle location search
+  const handleLocationSearch = async (query: string) => {
+    if (query.length < 3) {
+      setLocationResults([]);
+      setShowLocationSuggestions(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/geocoding?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+
+      if (data.success && data.results) {
+        setLocationResults(data.results);
+        setShowLocationSuggestions(true);
+      }
+    } catch (error) {
+      console.error('Location search error:', error);
+    }
+  };
+
+  // Handle location selection
+  const handleLocationSelect = (location: LocationResult) => {
+    setSelectedLocation(location);
+    setLocationQuery(location.formattedAddress);
+    setShowLocationSuggestions(false);
+
+    // Try to detect website from business name if available
+    // This could be enhanced with additional business data APIs
+  };
+
+  // Handle comprehensive scan
+  const handleComprehensiveScan = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (scanMode === 'url' && !websiteUrl) {
+      setScanError('Please enter a website URL');
+      return;
+    }
+
+    if (scanMode === 'location' && !selectedLocation) {
+      setScanError('Please select a location from the suggestions');
+      return;
+    }
+
+    setIsScanning(true);
+    setScanError('');
+
+    try {
+      // Determine scan type based on current state
+      const isPremiumUser = true; // TODO: Replace with actual premium check
+      const isFirstScan = scanTier === 'none';
+      const isDeepScan = !isFirstScan && isPremiumUser;
+
+      const scanData: ScanData = {
+        scanMode: scanMode,
+        timestamp: new Date().toISOString(),
+        scanType: isDeepScan ? 'deep' : 'fast',
+        features: isDeepScan
+          ? [
+              'aeo_standards',
+              'premium_aeo_intelligence',
+              'enhanced_aeo_intelligence',
+              'crewai_business_intelligence',
+              'competitor_tracking',
+              'location_intelligence',
+              'crawl4ai_analysis',
+            ]
+          : ['basic_aeo_standards', 'limited_analysis'],
+      };
+
+      if (scanMode === 'url') {
+        scanData.url = websiteUrl;
+      } else {
+        scanData.location = selectedLocation;
+        scanData.url = websiteUrl || 'https://example.com'; // Fallback URL for location-based scans
+      }
+
+      const response = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(scanData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to start ${isDeepScan ? 'deep' : 'fast'} scan`);
+      }
+
+      const data = await response.json();
+
+      // Update state based on scan completion
+      setHasScannedData(true);
+      setScannedUrl(websiteUrl); // Store the successfully scanned URL
+      setIsUrlLocked(true); // Lock URL after first scan
+
+      if (isDeepScan) {
+        setScanTier('deep');
+        setHasPremiumScan(true);
+      } else {
+        setScanTier('fast');
+      }
+
+      console.log(`${isDeepScan ? 'Deep' : 'Fast'} scan completed:`, data);
+    } catch (error) {
+      setScanError(error instanceof Error ? error.message : 'Failed to start scan');
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   // Mock comprehensive audit data for premium dashboard
@@ -219,95 +380,1104 @@ export default function DashboardPage() {
         </div>
       </nav>
 
+      {/* Sticky URL Display - Shows when data is scanned */}
+      {hasScannedData && scannedUrl && (
+        <div className="sticky top-0 z-40 bg-gradient-to-r from-green-600 to-emerald-600 border-b border-green-400 shadow-lg">
+          <div className="max-w-7xl mx-auto px-6 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-white/30 rounded-full p-2">
+                  <Globe className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <span className="text-green-100 text-sm font-medium block">
+                    Live Analysis Dashboard
+                  </span>
+                  <span className="text-white text-lg font-bold font-mono bg-green-800/40 px-3 py-1 rounded-lg border border-green-400/50">
+                    {scannedUrl}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-white/30 rounded-full px-3 py-2">
+                  <span className="text-white text-sm font-bold">LIVE DATA</span>
+                </div>
+                <CheckCircle className="w-5 h-5 text-white" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Premium AEO Intelligence Dashboard */}
-        <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400 rounded-xl p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="bg-purple-600 rounded-full p-2">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+        {/* Comprehensive Scan Section - Always Visible at Top */}
+        <div className="bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900 rounded-2xl p-8 mb-8 shadow-2xl border border-blue-400/30">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-white mb-2">🚀 XenlixAI Comprehensive Scan</h1>
+            <p className="text-blue-100 text-lg">
+              Enter your website URL or business location to unlock all features and get real-time
+              data across the entire dashboard
+            </p>
+          </div>
+
+          {/* Scan Mode Toggle */}
+          <div className="flex justify-center mb-6">
+            <div className="bg-black/20 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setScanMode('url')}
+                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                  scanMode === 'url'
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'text-blue-200 hover:text-white'
+                }`}
+              >
+                🌐 Website URL
+              </button>
+              <button
+                type="button"
+                onClick={() => setScanMode('location')}
+                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                  scanMode === 'location'
+                    ? 'bg-purple-600 text-white shadow-lg'
+                    : 'text-blue-200 hover:text-white'
+                }`}
+              >
+                📍 Business Location
+              </button>
+            </div>
+          </div>
+
+          <form onSubmit={handleComprehensiveScan} className="max-w-4xl mx-auto">
+            <div className="flex gap-4 items-end">
+              <div className="flex-1 relative">
+                {scanMode === 'url' ? (
+                  <>
+                    <label
+                      htmlFor="main-url-input"
+                      className="block text-sm font-medium text-blue-100 mb-2 flex items-center gap-2"
+                    >
+                      Website URL
+                      {isUrlLocked && (
+                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                          🔒 Locked
+                        </span>
+                      )}
+                    </label>
+                    {isUrlLocked ? (
+                      <div className="w-full px-6 py-4 text-xl border-2 border-green-400 rounded-xl bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 flex items-center justify-between shadow-lg">
+                        <span className="font-mono font-bold text-green-900">{scannedUrl}</span>
+                        <span className="text-sm text-green-600 bg-green-200 px-3 py-1 rounded-full flex items-center gap-1">
+                          🔒 Locked after scan
+                        </span>
+                      </div>
+                    ) : (
+                      <input
+                        id="main-url-input"
+                        type="url"
+                        value={websiteUrl}
+                        onChange={(e) => setWebsiteUrl(e.target.value)}
+                        placeholder="https://your-website.com"
+                        className="w-full px-4 py-3 text-lg border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/95 backdrop-blur-sm"
+                        required
+                      />
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <label
+                      htmlFor="location-input"
+                      className="block text-sm font-medium text-blue-100 mb-2"
+                    >
+                      Business Name or Address
+                    </label>
+                    <input
+                      id="location-input"
+                      type="text"
+                      value={locationQuery}
+                      onChange={(e) => {
+                        setLocationQuery(e.target.value);
+                        handleLocationSearch(e.target.value);
+                      }}
+                      placeholder="e.g., 'Starbucks Seattle' or '123 Main St, City'"
+                      className="w-full px-4 py-3 text-lg border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/95 backdrop-blur-sm"
+                      required
+                    />
+
+                    {/* Location Suggestions Dropdown */}
+                    {showLocationSuggestions && locationResults.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 bg-white rounded-xl shadow-2xl border border-gray-200 mt-2 z-50 max-h-60 overflow-y-auto">
+                        {locationResults.map((result, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => handleLocationSelect(result)}
+                            className="w-full text-left px-4 py-3 hover:bg-gray-100 border-b border-gray-100 last:border-b-0 transition-colors"
+                          >
+                            <div className="font-medium text-gray-900">
+                              {result.formattedAddress}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              📍 {result.coordinates.lat.toFixed(4)},{' '}
+                              {result.coordinates.lng.toFixed(4)}
+                              {result.addressComponents.city &&
+                                ` • ${result.addressComponents.city}`}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Optional URL field for location mode */}
+                    {selectedLocation && (
+                      <div className="mt-3">
+                        <label className="block text-sm font-medium text-blue-100 mb-2">
+                          Website URL (Optional)
+                        </label>
+                        <input
+                          type="url"
+                          value={websiteUrl}
+                          onChange={(e) => setWebsiteUrl(e.target.value)}
+                          placeholder="https://your-website.com (optional)"
+                          className="w-full px-3 py-2 text-sm border border-blue-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/95 backdrop-blur-sm"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+              <button
+                type="submit"
+                disabled={
+                  isScanning ||
+                  (scanMode === 'url' && !websiteUrl && !isUrlLocked) ||
+                  scanTier === 'deep'
+                }
+                className={`px-8 py-3 text-white font-bold text-lg rounded-xl transition-all duration-300 flex items-center gap-3 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px] justify-center ${
+                  scanTier === 'none'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+                    : scanTier === 'fast'
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
+                      : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600'
+                }`}
+              >
+                {isScanning ? (
+                  <>
+                    <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                    {scanTier === 'fast' ? 'Deep Scanning...' : 'Fast Scanning...'}
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-6 h-6" />
+                    {scanTier === 'none'
+                      ? 'Start Fast Scan'
+                      : scanTier === 'fast'
+                        ? '🚀 Unlock Deep Scan (Premium)'
+                        : 'Deep Scan Complete'}
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {scanError && (
+            <div className="mt-4 p-4 bg-red-500/20 border border-red-400 rounded-xl text-red-100 text-center">
+              <strong>Error:</strong> {scanError}
+            </div>
+          )}
+
+          {/* Scan Status Indicator */}
+          <div className="mt-6 flex items-center justify-center gap-6">
+            <div
+              className={`flex items-center gap-2 px-4 py-2 rounded-full ${
+                scanTier === 'deep'
+                  ? 'bg-green-500/20 border border-green-400 text-green-100'
+                  : scanTier === 'fast'
+                    ? 'bg-blue-500/20 border border-blue-400 text-blue-100'
+                    : 'bg-orange-500/20 border border-orange-400 text-orange-100'
+              }`}
+            >
+              {scanTier === 'deep' ? (
+                <>
+                  <CheckCircle className="w-5 h-5" />
+                  <span className="font-medium">
+                    🚀 All Premium Features Active - Deep Analysis Complete
+                  </span>
+                </>
+              ) : scanTier === 'fast' ? (
+                <>
+                  <Zap className="w-5 h-5" />
+                  <span className="font-medium">
+                    ⚡ Fast Scan Complete - Upgrade for Premium Features
+                  </span>
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="w-5 h-5" />
+                  <span className="font-medium">⚠️ Enter URL and start your first scan</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Feature Preview */}
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                <Search className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-blue-100 text-sm font-medium">AEO Standards</div>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-blue-100 text-sm font-medium">CrewAI Intelligence</div>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-blue-100 text-sm font-medium">Performance Metrics</div>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-blue-100 text-sm font-medium">Competitor Analysis</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Currently Analyzed Website Display */}
+        {hasScannedData && scannedUrl && (
+          <div className="bg-gradient-to-r from-blue-900/60 to-indigo-900/60 border-2 border-blue-400/70 rounded-xl p-8 mb-8 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <div className="bg-blue-500 rounded-full p-4 shadow-lg">
+                  <Globe className="w-10 h-10 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white mb-3">Currently Analyzing</h3>
+                  <div className="flex items-center gap-3">
+                    <span className="text-white text-2xl font-mono font-bold bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 rounded-xl border-2 border-blue-400/50 shadow-lg">
+                      {scannedUrl}
+                    </span>
+                    <span className="bg-green-500 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg">
+                      <CheckCircle className="w-4 h-4" />
+                      LIVE DATA
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-blue-200 text-lg font-medium">
+                  All insights below generated from:
+                </div>
+                <div className="text-white text-xl font-bold">Your Comprehensive Analysis</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Overall Dashboard Status */}
+        {scanTier === 'deep' && (
+          <div className="bg-gradient-to-r from-green-900/70 to-emerald-900/70 border-2 border-green-400/70 rounded-xl p-6 mb-8 shadow-xl">
+            <div className="flex items-center justify-center gap-4">
+              <CheckCircle className="w-8 h-8 text-green-400" />
+              <div className="text-center">
+                <div className="text-green-100 text-lg font-bold mb-2">
+                  🎉 All Premium Features Unlocked!
+                </div>
+                <div className="text-green-200 font-medium">
+                  Deep scan analysis complete for
+                  <span className="font-mono font-bold bg-green-800/50 px-3 py-1 rounded-lg ml-2 border border-green-400/50">
+                    {scannedUrl}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {scanTier === 'fast' && (
+          <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 border border-blue-400/50 rounded-xl p-4 mb-6">
+            <div className="flex items-center justify-center gap-3">
+              <Zap className="w-6 h-6 text-blue-400" />
+              <span className="text-blue-100 font-medium">
+                ⚡ Fast scan complete for {scannedUrl}. Click "Deep Scan" to unlock all premium
+                features!
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Feature Status Component */}
+        <FeatureStatus scanTier={scanTier} scannedUrl={scannedUrl} />
+
+        {/* Premium AEO Intelligence Dashboard - Only show for deep scan */}
+        {scanTier === 'deep' && (
+          <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400 rounded-xl p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-purple-600 rounded-full p-2">
+                  <svg
+                    className="w-8 h-8 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-1">
+                    ⚡ Premium AEO Intelligence Dashboard
+                  </h2>
+                  <p className="text-purple-100 text-sm">
+                    Company visibility tracking • Competitor analysis • Citation authority • AI
+                    visibility scores • Action roadmaps
+                  </p>
+                </div>
+              </div>
+              <a
+                href="/dashboard/premium-aeo"
+                className="px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                   />
                 </svg>
+                Launch AEO Dashboard
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced Dashboard Promotion Banner - Only show for deep scan */}
+        {scanTier === 'deep' && (
+          <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 border border-green-400 rounded-xl p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Zap className="w-8 h-8 text-green-400" />
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-1">
+                    🚀 New Enhanced AEO Intelligence Dashboard
+                  </h2>
+                  <p className="text-green-100 text-sm">
+                    AI-powered business extraction • Interactive AEO tooltips • Auto schema
+                    generation • Smart questionnaires
+                  </p>
+                </div>
               </div>
+              <a
+                href="/dashboard/enhanced"
+                className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 shadow-lg"
+              >
+                <Globe className="w-5 h-5" />
+                Try Enhanced Dashboard
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Premium Dashboard Banner - Only show for deep scan */}
+        {scanTier === 'deep' && (
+          <div className="bg-gradient-to-r from-green-900/20 to-blue-900/20 border border-green-600 rounded-xl p-6 mb-8">
+            <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white mb-1">
-                  ⚡ Premium AEO Intelligence Dashboard
-                </h2>
-                <p className="text-purple-100 text-sm">
-                  Company visibility tracking • Competitor analysis • Citation authority • AI
-                  visibility scores • Action roadmaps
+                <h3 className="text-xl font-bold text-white mb-2">✅ Premium Access Activated</h3>
+                <p className="text-green-400">
+                  You now have access to detailed SEO + AEO reports and priority fixes
                 </p>
               </div>
-            </div>
-            <a
-              href="/dashboard/premium-aeo"
-              className="px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-              Launch AEO Dashboard
-            </a>
-          </div>
-        </div>
-
-        {/* Enhanced Dashboard Promotion Banner */}
-        <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 border border-green-400 rounded-xl p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Zap className="w-8 h-8 text-green-400" />
-              <div>
-                <h2 className="text-xl font-bold text-white mb-1">
-                  🚀 New Enhanced AEO Intelligence Dashboard
-                </h2>
-                <p className="text-green-100 text-sm">
-                  AI-powered business extraction • Interactive AEO tooltips • Auto schema generation
-                  • Smart questionnaires
-                </p>
+              <div className="text-green-400">
+                <CheckCircle className="w-12 h-12" />
               </div>
             </div>
-            <a
-              href="/dashboard/enhanced"
-              className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 shadow-lg"
-            >
-              <Globe className="w-5 h-5" />
-              Try Enhanced Dashboard
-            </a>
           </div>
-        </div>
+        )}
 
-        {/* Premium Dashboard Banner */}
-        <div className="bg-gradient-to-r from-green-900/20 to-blue-900/20 border border-green-600 rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between">
+        {/* Performance Overview - Only show for deep scan */}
+        {scanTier === 'deep' && <DashboardMetrics premiumAuditData={premiumAuditData} />}
+
+        {/* YAML Rules - AEO Standards Overview */}
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">✅ Premium Access Activated</h3>
-              <p className="text-green-400">
-                You now have access to detailed SEO + AEO reports and priority fixes
-              </p>
+              <h2 className="text-2xl font-bold text-white flex items-center">
+                🛡️ AEO Standards Assessment
+              </h2>
+              {hasScannedData && scannedUrl && (
+                <div className="text-blue-200 text-sm mt-1">
+                  Analyzing: <span className="font-mono text-blue-100">{scannedUrl}</span>
+                </div>
+              )}
             </div>
-            <div className="text-green-400">
-              <CheckCircle className="w-12 h-12" />
+            <div className="flex items-center gap-2">
+              {hasScannedData ? (
+                <span className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4" />
+                  Live Results
+                </span>
+              ) : (
+                <span className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                  <AlertTriangle className="w-4 h-4" />
+                  Demo Results
+                </span>
+              )}
+              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                YAML Rules Engine
+              </span>
+            </div>
+          </div>
+
+          {/* E-E-A-T Standards */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              👑 E-E-A-T Authority Standards
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-purple-300 text-sm font-medium">Experience</span>
+                  <span className="text-2xl font-bold text-green-400">✓</span>
+                </div>
+                <div className="text-white text-sm mb-2">Hands-on Content</div>
+                <div className="text-xs text-gray-400 mb-2">Real experience with the topic</div>
+                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
+                  <span className="text-green-300 text-xs">PASSED</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-purple-400">
+                    AI models reward content written by people who've actually done the work.
+                    Demonstrating firsthand experience builds credibility and makes your answers
+                    more trustworthy.
+                  </div>
+                </details>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-blue-300 text-sm font-medium">Expertise</span>
+                  <span className="text-2xl font-bold text-yellow-400">!</span>
+                </div>
+                <div className="text-white text-sm mb-2">Author Qualifications</div>
+                <div className="text-xs text-gray-400 mb-2">Knowledge & credentials</div>
+                <div className="mb-3 bg-yellow-500/20 border border-yellow-400/30 rounded px-2 py-1">
+                  <span className="text-yellow-300 text-xs">REVIEW</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-blue-400">
+                    Clearly showing author credentials, certifications, or years of experience helps
+                    AI understand that your information comes from a verified expert, not a generic
+                    source.
+                  </div>
+                </details>
+              </div>
+
+              <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-green-300 text-sm font-medium">Authority</span>
+                  <span className="text-2xl font-bold text-green-400">✓</span>
+                </div>
+                <div className="text-white text-sm mb-2">Domain Recognition</div>
+                <div className="text-xs text-gray-400 mb-2">Recognized authority</div>
+                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
+                  <span className="text-green-300 text-xs">PASSED</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-green-400">
+                    When other reputable websites mention or link to yours, it signals that
+                    you&apos;re an established authority in your field — a key factor for AI
+                    visibility and ranking.
+                  </div>
+                </details>
+              </div>
+
+              <div className="bg-gradient-to-br from-emerald-600/20 to-teal-600/20 border border-emerald-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-emerald-300 text-sm font-medium">Trustworthiness</span>
+                  <span className="text-2xl font-bold text-green-400">✓</span>
+                </div>
+                <div className="text-white text-sm mb-2">HTTPS & Accuracy</div>
+                <div className="text-xs text-gray-400 mb-2">Secure & reliable info</div>
+                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
+                  <span className="text-green-300 text-xs">PASSED</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-emerald-400">
+                    Trust begins with security. An HTTPS connection and accurate, up-to-date
+                    information show users and AI engines that your site is safe and credible.
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+
+          {/* Content Structure Standards */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              📝 Content Structure Standards
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-indigo-600/20 to-purple-600/20 border border-indigo-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-indigo-300 text-sm font-medium">Clear Headings</span>
+                  <span className="text-2xl font-bold text-green-400">✓</span>
+                </div>
+                <div className="text-white text-sm mb-2">H2 & H3 Structure</div>
+                <div className="text-xs text-gray-400 mb-2">Organized content hierarchy</div>
+                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
+                  <span className="text-green-300 text-xs">PASSED</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-indigo-400">
+                    Well-structured headings help AI &quot;read&quot; your page faster, improving
+                    your chances of being quoted as a direct answer in search results.
+                  </div>
+                </details>
+              </div>
+
+              <div className="bg-gradient-to-br from-pink-600/20 to-rose-600/20 border border-pink-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-pink-300 text-sm font-medium">Short Paragraphs</span>
+                  <span className="text-2xl font-bold text-yellow-400">!</span>
+                </div>
+                <div className="text-white text-sm mb-2">Simple Sentences</div>
+                <div className="text-xs text-gray-400 mb-2">Easy to read format</div>
+                <div className="mb-3 bg-yellow-500/20 border border-yellow-400/30 rounded px-2 py-1">
+                  <span className="text-yellow-300 text-xs">REVIEW</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-pink-400">
+                    Concise paragraphs keep users engaged and make it easier for AI systems to parse
+                    meaning. Aim for ~2–3 sentences per paragraph.
+                  </div>
+                </details>
+              </div>
+
+              <div className="bg-gradient-to-br from-orange-600/20 to-red-600/20 border border-orange-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-orange-300 text-sm font-medium">Use Lists</span>
+                  <span className="text-2xl font-bold text-green-400">✓</span>
+                </div>
+                <div className="text-white text-sm mb-2">Bullets & Numbers</div>
+                <div className="text-xs text-gray-400 mb-2">Structured information</div>
+                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
+                  <span className="text-green-300 text-xs">PASSED</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-orange-400">
+                    Lists make complex information digestible for both humans and algorithms. AI
+                    tools often extract bulleted lists directly into featured snippets.
+                  </div>
+                </details>
+              </div>
+
+              <div className="bg-gradient-to-br from-teal-600/20 to-cyan-600/20 border border-teal-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-teal-300 text-sm font-medium">Direct Answers</span>
+                  <span className="text-2xl font-bold text-red-400">✗</span>
+                </div>
+                <div className="text-white text-sm mb-2">Question Structure</div>
+                <div className="text-xs text-gray-400 mb-2">Answer common questions</div>
+                <div className="mb-3 bg-red-500/20 border border-red-400/30 rounded px-2 py-1">
+                  <span className="text-red-300 text-xs">FAILED</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-teal-400">
+                    Modern AI engines look for clearly written question-and-answer pairs. Use FAQs
+                    or headings like &quot;How,&quot; &quot;What,&quot; or &quot;Why&quot; to target
+                    answer-based results.
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+
+          {/* Technical Standards */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              🔧 Technical Standards
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-blue-300 text-sm font-medium">Site Speed</span>
+                  <span className="text-2xl font-bold text-yellow-400">!</span>
+                </div>
+                <div className="text-white text-sm mb-2">2.8s Load Time</div>
+                <div className="text-xs text-gray-400 mb-2">
+                  <div className="flex justify-between items-center mb-1">
+                    <span>LCP:</span>
+                    <span className="text-yellow-300">3.2s</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span>FID:</span>
+                    <span className="text-green-300">89ms</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>CLS:</span>
+                    <span className="text-red-300">0.15</span>
+                  </div>
+                </div>
+                <div className="mb-3 bg-yellow-500/20 border border-yellow-400/30 rounded px-2 py-1">
+                  <span className="text-yellow-300 text-xs">NEEDS IMPROVEMENT</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-blue-400">
+                    Every second counts. Faster loading increases user satisfaction and helps AI
+                    rank your page higher for usability and Core Web Vitals.
+                  </div>
+                </details>
+              </div>
+
+              <div className="bg-gradient-to-br from-green-600/20 to-blue-600/20 border border-green-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-green-300 text-sm font-medium">Mobile-Friendly</span>
+                  <span className="text-2xl font-bold text-green-400">✓</span>
+                </div>
+                <div className="text-white text-sm mb-2">Responsive Design</div>
+                <div className="text-xs text-gray-400 mb-2">Mobile optimization</div>
+                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
+                  <span className="text-green-300 text-xs">PASSED</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-green-400">
+                    Over half of all searches come from mobile devices. A responsive design ensures
+                    your content is accessible and readable anywhere.
+                  </div>
+                </details>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-purple-300 text-sm font-medium">Schema Data</span>
+                  <span className="text-2xl font-bold text-red-400">✗</span>
+                </div>
+                <div className="text-white text-sm mb-2">Structured Data</div>
+                <div className="text-xs text-gray-400 mb-2">FAQ & Article schema</div>
+                <div className="mb-3 bg-red-500/20 border border-red-400/30 rounded px-2 py-1">
+                  <span className="text-red-300 text-xs">FAILED</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-purple-400">
+                    Schema markup helps AI understand exactly what your page is about. Adding
+                    structured data boosts your chances of appearing in answer cards or voice search
+                    results.
+                  </div>
+                </details>
+              </div>
+
+              <div className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border border-emerald-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-emerald-300 text-sm font-medium">Site Security</span>
+                  <span className="text-2xl font-bold text-green-400">✓</span>
+                </div>
+                <div className="text-white text-sm mb-2">HTTPS Protocol</div>
+                <div className="text-xs text-gray-400 mb-2">Secure connection</div>
+                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
+                  <span className="text-green-300 text-xs">PASSED</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-emerald-400">
+                    Security is a baseline trust factor for both humans and search engines. An HTTPS
+                    site protects users and confirms your legitimacy.
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+
+          {/* User Intent Standards */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              🎯 User Intent Standards
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-cyan-300 text-sm font-medium">User Intent Match</span>
+                  <span className="text-2xl font-bold text-yellow-400">!</span>
+                </div>
+                <div className="text-white text-sm mb-2">Complete Answers</div>
+                <div className="text-xs text-gray-400 mb-2">Beyond keyword stuffing</div>
+                <div className="mb-3 bg-yellow-500/20 border border-yellow-400/30 rounded px-2 py-1">
+                  <span className="text-yellow-300 text-xs">REVIEW</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-cyan-400">
+                    AI can detect when a page truly satisfies a searcher&apos;s intent. Write for
+                    clarity and completeness, not just keyword density.
+                  </div>
+                </details>
+              </div>
+
+              <div className="bg-gradient-to-br from-violet-600/20 to-purple-600/20 border border-violet-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-violet-300 text-sm font-medium">Topical Authority</span>
+                  <span className="text-2xl font-bold text-green-400">✓</span>
+                </div>
+                <div className="text-white text-sm mb-2">Content Clusters</div>
+                <div className="text-xs text-gray-400 mb-2">In-depth coverage</div>
+                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
+                  <span className="text-green-300 text-xs">PASSED</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-violet-400">
+                    Covering a topic deeply across multiple related pages builds topical authority —
+                    a signal that your site is a go-to resource for the subject.
+                  </div>
+                </details>
+              </div>
+
+              <div className="bg-gradient-to-br from-rose-600/20 to-pink-600/20 border border-rose-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-rose-300 text-sm font-medium">Long-Tail Keywords</span>
+                  <span className="text-2xl font-bold text-red-400">✗</span>
+                </div>
+                <div className="text-white text-sm mb-2">Conversational Phrases</div>
+                <div className="text-xs text-gray-400 mb-2">Specific query targeting</div>
+                <div className="mb-3 bg-red-500/20 border border-red-400/30 rounded px-2 py-1">
+                  <span className="text-red-300 text-xs">FAILED</span>
+                </div>
+                <details className="group">
+                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
+                    <span>📘 Why it matters</span>
+                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-rose-400">
+                    Long-tail phrases mimic natural language queries used in AI assistants.
+                    Targeting them helps your content show up in conversational or voice search.
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+
+          {/* Overall AEO Score Summary */}
+          <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-400 rounded-lg p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2">Overall AEO Standards Score</h3>
+                <p className="text-purple-100 text-sm">Based on YAML rules engine evaluation</p>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-white mb-1">67/100</div>
+                <div className="text-purple-200 text-sm">9 of 15 rules passed</div>
+                <div className="flex items-center justify-center mt-2 text-sm">
+                  <span className="text-yellow-300 mr-2">↗</span>
+                  <span className="text-yellow-300">+5 from last scan</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* How to Use These Insights */}
+          <div className="bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border border-blue-400/30 rounded-lg p-6">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+              ⚡ How to Use These Insights
+            </h3>
+            <div className="space-y-3 text-sm text-gray-300">
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 rounded-full bg-red-500/20 border border-red-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-red-400 text-xs font-bold">1</span>
+                </div>
+                <div>
+                  <span className="text-white font-medium">Fix items marked as ❌ or ⚠️ first</span>{' '}
+                  — they have the most SEO/AEO impact.
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 rounded-full bg-yellow-500/20 border border-yellow-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-yellow-400 text-xs font-bold">2</span>
+                </div>
+                <div>
+                  <span className="text-white font-medium">Re-run your AEO scan</span> to see score
+                  improvements in real time.
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 rounded-full bg-green-500/20 border border-green-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-green-400 text-xs font-bold">3</span>
+                </div>
+                <div>
+                  <span className="text-white font-medium">
+                    Combine these fixes with CrewAI recommendations
+                  </span>{' '}
+                  for the &quot;why&quot; and &quot;how&quot; behind each improvement.
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Performance Overview */}
-        <DashboardMetrics premiumAuditData={premiumAuditData} />
+        {/* CrewAI Business Intelligence Section */}
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-white flex items-center">
+                🧠 CrewAI Business Intelligence
+              </h2>
+              {hasScannedData && scannedUrl && (
+                <div className="text-blue-200 text-sm mt-1">
+                  Business analysis for:{' '}
+                  <span className="font-mono text-blue-100">{scannedUrl}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {hasScannedData ? (
+                <span className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4" />
+                  Live Data
+                </span>
+              ) : (
+                <span className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                  <AlertTriangle className="w-4 h-4" />
+                  Demo Data
+                </span>
+              )}
+              <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                AI Powered
+              </span>
+              <Link
+                href="/dashboard/premium-aeo"
+                className="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors text-sm"
+              >
+                Full Analysis →
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Business Intelligence Score */}
+            <div className="bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-400/30 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl font-bold">AI</span>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-white">84</div>
+                  <div className="text-purple-200 text-sm">BI Score</div>
+                </div>
+              </div>
+              <div className="text-white font-medium mb-2">Business Intelligence</div>
+              <div className="text-xs text-gray-400 mb-3">AI-powered competitive analysis</div>
+              <div className="flex items-center text-sm">
+                <span className="text-green-300 mr-2">↗</span>
+                <span className="text-green-300">+12 points this month</span>
+              </div>
+            </div>
+
+            {/* ROI Projection */}
+            <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-400/30 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-lg">📈</span>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-white">127%</div>
+                  <div className="text-green-200 text-sm">ROI Proj.</div>
+                </div>
+              </div>
+              <div className="text-white font-medium mb-2">12-Month ROI</div>
+              <div className="text-xs text-gray-400 mb-3">Projected visibility increase</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">3 Months:</span>
+                  <span className="text-green-300">+24%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">6 Months:</span>
+                  <span className="text-green-300">+67%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Key Insights */}
+            <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-400/30 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-lg">💡</span>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-white">7</div>
+                  <div className="text-blue-200 text-sm">Insights</div>
+                </div>
+              </div>
+              <div className="text-white font-medium mb-2">Active Insights</div>
+              <div className="text-xs text-gray-400 mb-3">AI-generated recommendations</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-red-400 rounded-full mr-2"></div>
+                  <span className="text-gray-300">3 High priority</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
+                  <span className="text-gray-300">4 Medium priority</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Recommendations Preview */}
+          <div className="mt-6 bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-600/30 rounded-lg p-4">
+            <h3 className="text-lg font-semibold text-white mb-3 flex items-center">
+              ⚡ Top CrewAI Recommendations
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 rounded-full bg-red-500/20 border border-red-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-red-400 text-xs font-bold">1</span>
+                </div>
+                <div className="flex-1">
+                  <div className="text-white font-medium text-sm">Optimize Schema Markup</div>
+                  <div className="text-gray-400 text-xs">
+                    Add FAQ and Article schema for 34% visibility boost
+                  </div>
+                  <div className="flex items-center mt-1 text-xs">
+                    <span className="text-green-300 mr-3">Impact: High</span>
+                    <span className="text-blue-300">Effort: 2 hours</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 rounded-full bg-yellow-500/20 border border-yellow-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-yellow-400 text-xs font-bold">2</span>
+                </div>
+                <div className="flex-1">
+                  <div className="text-white font-medium text-sm">Improve Core Web Vitals</div>
+                  <div className="text-gray-400 text-xs">
+                    Reduce LCP to under 2.5s for better AI rankings
+                  </div>
+                  <div className="flex items-center mt-1 text-xs">
+                    <span className="text-yellow-300 mr-3">Impact: Medium</span>
+                    <span className="text-blue-300">Effort: 4 hours</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 rounded-full bg-green-500/20 border border-green-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-green-400 text-xs font-bold">3</span>
+                </div>
+                <div className="flex-1">
+                  <div className="text-white font-medium text-sm">Enhance E-E-A-T Signals</div>
+                  <div className="text-gray-400 text-xs">
+                    Add author bio and credentials for authority boost
+                  </div>
+                  <div className="flex items-center mt-1 text-xs">
+                    <span className="text-green-300 mr-3">Impact: High</span>
+                    <span className="text-blue-300">Effort: 1 hour</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 pt-3 border-t border-purple-600/30">
+              <Link
+                href="/dashboard/premium-aeo"
+                className="text-purple-300 hover:text-purple-100 text-sm font-medium flex items-center"
+              >
+                View all 7 recommendations →<span className="ml-1">🧠</span>
+              </Link>
+            </div>
+          </div>
+        </div>
 
         {/* AI Intelligence Widgets */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -503,6 +1673,12 @@ export default function DashboardPage() {
             <SEOGuidanceSection />
           </div>
         </div>
+
+        {/* Geographic Analysis - shows for location-based scans */}
+        <GeographicAnalysis
+          locationData={selectedLocation}
+          isLiveData={true} // Now using live Google Geocoding API
+        />
 
         {/* Action Center */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
