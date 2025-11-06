@@ -4,6 +4,8 @@ import * as cheerio from 'cheerio';
 import { analyzeAndImproveJsonLd } from '@/lib/jsonld-analyzer';
 import { extractSchemaData } from '@/lib/schema/extract';
 import { auditSchemaData, SchemaAudit } from '@/lib/schema/audit';
+// Geocoding is now handled by separate non-blocking /api/location/resolve endpoint
+import { validateUrlServer } from '@/lib/url-validation';
 
 interface BusinessInfo {
   name: string;
@@ -50,31 +52,7 @@ interface PreviewResponse {
   schemaAudit: SchemaAudit;
 }
 
-// Mock geocoding function for preview (returns example coordinates)
-function mockGeocode(address: string): { lat: number; lng: number } {
-  // Return mock coordinates based on address patterns for preview
-  const cityCoords: { [key: string]: { lat: number; lng: number } } = {
-    'new york': { lat: 40.7128, lng: -74.006 },
-    'los angeles': { lat: 34.0522, lng: -118.2437 },
-    chicago: { lat: 41.8781, lng: -87.6298 },
-    houston: { lat: 29.7604, lng: -95.3698 },
-    phoenix: { lat: 33.4484, lng: -112.074 },
-    philadelphia: { lat: 39.9526, lng: -75.1652 },
-    'san antonio': { lat: 29.4241, lng: -98.4936 },
-    'san diego': { lat: 32.7157, lng: -117.1611 },
-    dallas: { lat: 32.7767, lng: -96.797 },
-    default: { lat: 39.8283, lng: -98.5795 }, // Center of US
-  };
-
-  const lowerAddress = address.toLowerCase();
-  for (const [city, coords] of Object.entries(cityCoords)) {
-    if (lowerAddress.includes(city)) {
-      return coords;
-    }
-  }
-
-  return cityCoords.default;
-}
+// Geocoding is now handled by separate non-blocking /api/location/resolve endpoint
 
 // Extract JSON-LD structured data
 function extractJSONLD($: cheerio.CheerioAPI): {
@@ -206,10 +184,14 @@ function extractContactInfo($: cheerio.CheerioAPI): {
   // Address patterns (look in footer typically)
   const footerText = $('footer, .footer, [class*="footer"], [id*="footer"]').text();
   const addressRegex =
-    /\d+\s+[A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd)[,\s]+[A-Za-z\s]+[,\s]+[A-Z]{2}\s+\d{5}/;
+    /\d+\s+[A-Za-z\s]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Parkway|Pkwy|Circle|Cir|Court|Ct|Place|Pl|Way)[,\s]+[A-Za-z\s]+[,\s]+[A-Z]{2}\s+\d{5}/;
   const addressMatch = footerText.match(addressRegex) || bodyText.match(addressRegex);
   if (addressMatch) {
     contact.address = addressMatch[0];
+    console.log(`📍 Address extracted from text: "${addressMatch[0]}"`);
+  } else {
+    console.log('📍 No address pattern matched in footer or body text');
+    console.log('Footer text sample:', footerText.substring(0, 200));
   }
 
   return contact;
@@ -249,16 +231,28 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Validate URL format
+    // Comprehensive URL validation
+    const validation = validateUrlServer(url);
+    if (!validation.ok) {
+      return NextResponse.json(
+        { error: validation.reason || 'Invalid URL format' },
+        { status: 400 }
+      );
+    }
+
+    // Use the validated/fixed URL
+    const finalUrl = validation.fixed || url;
+
+    // Parse the final URL for additional checks
     let validUrl: URL;
     try {
-      validUrl = new URL(url);
+      validUrl = new URL(finalUrl);
     } catch {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
     }
 
     // Fetch webpage with increased timeout for complex sites
-    const response = await axios.get(url, {
+    const response = await axios.get(finalUrl, {
       timeout: 15000, // 15 second timeout for more complex sites
       maxRedirects: 5,
       validateStatus: (status) => status < 500, // Accept 4xx errors but not 5xx
@@ -313,12 +307,18 @@ export async function GET(request: NextRequest) {
       quickFindings.push('Found address in content');
     }
 
-    // Step 4: Geocode if no coordinates found
-    if (!businessInfo.lat && businessInfo.address) {
-      const coords = mockGeocode(businessInfo.address);
-      businessInfo.lat = coords.lat;
-      businessInfo.lng = coords.lng;
-      quickFindings.push('Generated preview coordinates');
+    // Step 4: Skip external geocoding for free scan performance
+    // Coordinates will be resolved by client-side call to /api/location/resolve if needed
+    if (businessInfo.lat && businessInfo.lng) {
+      console.log(`✅ Coordinates already available: ${businessInfo.lat}, ${businessInfo.lng}`);
+      quickFindings.push('Location coordinates found in structured data');
+    } else if (businessInfo.address) {
+      console.log(
+        `📍 Address found: "${businessInfo.address}" - coordinates can be resolved separately`
+      );
+      quickFindings.push('Business address detected');
+    } else {
+      console.log('⚠️  No address or coordinates found');
     }
 
     // Fallback for business name
@@ -378,6 +378,23 @@ export async function GET(request: NextRequest) {
 
     const processingTime = Date.now() - startTime;
     console.log(`Preview analysis completed in ${processingTime}ms for: ${url}`);
+
+    // Note: Geocoding is now handled by separate non-blocking endpoint
+    // Client can call /api/location/resolve if coordinates are needed for mapping
+
+    // Debug location data
+    console.log('🏢 Final businessInfo being returned:', {
+      name: businessInfo.name,
+      address: businessInfo.address,
+      lat: businessInfo.lat,
+      lng: businessInfo.lng,
+      phone: businessInfo.phone,
+      hasCoordinates: !!(businessInfo.lat && businessInfo.lng),
+      coordinateTypes: {
+        lat: typeof businessInfo.lat,
+        lng: typeof businessInfo.lng,
+      },
+    });
 
     return NextResponse.json(result);
   } catch (error) {

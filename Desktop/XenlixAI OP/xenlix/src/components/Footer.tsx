@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { NAPDisplay } from './NAPDisplay';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 
@@ -12,9 +13,7 @@ export function Footer() {
             {/* Company Info */}
             <div className="lg:col-span-2">
               <Link href="/" className="inline-block mb-4">
-                <div className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent">
-                  XenlixAI
-                </div>
+                <Image src="/assets/logo.png" alt="XenlixAI Logo" width={160} height={50} />
               </Link>
               <p className="text-gray-300 mb-6 max-w-md">
                 AI-powered marketing & website automation platform. XenlixAI helps businesses scale

@@ -25,6 +25,8 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { BusinessInfo } from '@/lib/business-extractor';
+import { toast } from 'react-hot-toast';
+import { validateUrl } from '@/lib/url-validation';
 
 interface CompanyPreviewProps {
   businessInfo?: BusinessInfo;
@@ -46,8 +48,19 @@ export function CompanyPreview({
   const [showDetails, setShowDetails] = useState(true);
 
   const handleAnalyze = () => {
-    if (urlInput.trim() && onAnalyze) {
-      onAnalyze(urlInput.trim());
+    // Comprehensive URL validation
+    const validation = validateUrl(urlInput);
+
+    if (!validation.ok) {
+      toast.error(validation.reason || 'Please enter a valid website URL');
+      return;
+    }
+
+    // Use the fixed URL if one was suggested (e.g., protocol was added)
+    const finalUrl = validation.fixed || urlInput;
+
+    if (onAnalyze) {
+      onAnalyze(finalUrl);
     }
   };
 

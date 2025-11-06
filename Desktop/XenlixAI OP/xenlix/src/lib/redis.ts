@@ -2,6 +2,27 @@ import Redis from 'ioredis';
 import { Queue } from 'bullmq';
 import { getEnvironmentConfig } from './env-config';
 
+// Build-time suppression: skip Redis initialization when REDIS_URL is missing
+// or when explicitly building (NEXT_BUILD === "true"). Return a no-op client/queue.
+const SHOULD_SKIP_REDIS = !process.env.REDIS_URL || process.env.NEXT_BUILD === 'true';
+
+function createNoopRedis(): Redis {
+  // Generic no-op proxy that returns a function resolving to null for any method
+  return new Proxy({} as Redis, {
+    get() {
+      return () => Promise.resolve(null);
+    },
+  });
+}
+
+function createNoopQueue(): Queue {
+  return new Proxy({} as Queue, {
+    get() {
+      return () => Promise.resolve(null);
+    },
+  });
+}
+
 // Get Redis configuration from environment
 let redisConfig: any = null;
 let _redis: Redis | null = null;
@@ -25,14 +46,14 @@ function getRedisConfig() {
 // Lazy Redis client getters
 export function getRedisClient(): Redis {
   if (!_redis) {
-    _redis = new Redis(getRedisConfig());
+    _redis = SHOULD_SKIP_REDIS ? createNoopRedis() : new Redis(getRedisConfig());
   }
   return _redis;
 }
 
 export function getRedisSubscriber(): Redis {
   if (!_redisSubscriber) {
-    _redisSubscriber = new Redis(getRedisConfig());
+    _redisSubscriber = SHOULD_SKIP_REDIS ? createNoopRedis() : new Redis(getRedisConfig());
   }
   return _redisSubscriber;
 }
@@ -83,70 +104,79 @@ let _auditQueue: Queue | null = null;
 let _embeddingQueue: Queue | null = null;
 
 export function getCrawlQueue(): Queue {
-  if (
-    !_crawlQueue &&
-    typeof process !== 'undefined' &&
-    process.env.NODE_ENV &&
-    typeof window === 'undefined'
-  ) {
-    _crawlQueue = new Queue('crawl jobs', {
-      connection: getRedisConfig(),
-      defaultJobOptions: {
-        removeOnComplete: 100,
-        removeOnFail: 50,
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 2000,
+  if (!_crawlQueue) {
+    if (SHOULD_SKIP_REDIS) {
+      _crawlQueue = createNoopQueue();
+    } else if (
+      typeof process !== 'undefined' &&
+      process.env.NODE_ENV &&
+      typeof window === 'undefined'
+    ) {
+      _crawlQueue = new Queue('crawl jobs', {
+        connection: getRedisConfig(),
+        defaultJobOptions: {
+          removeOnComplete: 100,
+          removeOnFail: 50,
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 2000,
+          },
         },
-      },
-    });
+      });
+    }
   }
   return _crawlQueue!;
 }
 
 export function getAuditQueue(): Queue {
-  if (
-    !_auditQueue &&
-    typeof process !== 'undefined' &&
-    process.env.NODE_ENV &&
-    typeof window === 'undefined'
-  ) {
-    _auditQueue = new Queue('audit jobs', {
-      connection: getRedisConfig(),
-      defaultJobOptions: {
-        removeOnComplete: 100,
-        removeOnFail: 50,
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 2000,
+  if (!_auditQueue) {
+    if (SHOULD_SKIP_REDIS) {
+      _auditQueue = createNoopQueue();
+    } else if (
+      typeof process !== 'undefined' &&
+      process.env.NODE_ENV &&
+      typeof window === 'undefined'
+    ) {
+      _auditQueue = new Queue('audit jobs', {
+        connection: getRedisConfig(),
+        defaultJobOptions: {
+          removeOnComplete: 100,
+          removeOnFail: 50,
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 2000,
+          },
         },
-      },
-    });
+      });
+    }
   }
   return _auditQueue!;
 }
 
 export function getEmbeddingQueue(): Queue {
-  if (
-    !_embeddingQueue &&
-    typeof process !== 'undefined' &&
-    process.env.NODE_ENV &&
-    typeof window === 'undefined'
-  ) {
-    _embeddingQueue = new Queue('embedding jobs', {
-      connection: getRedisConfig(),
-      defaultJobOptions: {
-        removeOnComplete: 50,
-        removeOnFail: 25,
-        attempts: 2,
-        backoff: {
-          type: 'exponential',
-          delay: 1000,
+  if (!_embeddingQueue) {
+    if (SHOULD_SKIP_REDIS) {
+      _embeddingQueue = createNoopQueue();
+    } else if (
+      typeof process !== 'undefined' &&
+      process.env.NODE_ENV &&
+      typeof window === 'undefined'
+    ) {
+      _embeddingQueue = new Queue('embedding jobs', {
+        connection: getRedisConfig(),
+        defaultJobOptions: {
+          removeOnComplete: 50,
+          removeOnFail: 25,
+          attempts: 2,
+          backoff: {
+            type: 'exponential',
+            delay: 1000,
+          },
         },
-      },
-    });
+      });
+    }
   }
   return _embeddingQueue!;
 }

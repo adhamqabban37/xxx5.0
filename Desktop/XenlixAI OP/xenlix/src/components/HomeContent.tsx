@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Testimonials from '../app/(components)/Testimonials';
 import LogoRow from '../app/(components)/LogoRow';
 import JsonLd from '../app/(components)/JsonLd';
 import WebsiteBuilderButton from './WebsiteBuilderButton';
 import Hero3D from './Hero3D';
-import SEOServicesModal from './SEOServicesModal';
 import { useHydration } from '../hooks/useHydration';
 import { Footer } from './Footer';
 
@@ -17,7 +16,6 @@ interface HomeContentProps {
 }
 
 export default function HomeContent({ faqSchema, orgSchema }: HomeContentProps) {
-  const [isSEOModalOpen, setIsSEOModalOpen] = useState(false);
   const isHydrated = useHydration();
 
   return (
@@ -25,30 +23,10 @@ export default function HomeContent({ faqSchema, orgSchema }: HomeContentProps) 
       {/* Navigation */}
       <nav className="p-6" suppressHydrationWarning>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-white">
-            XenlixAI
+          <Link href="/" className="flex items-center">
+            <Image src="/assets/logo.png" alt="Logo" width={80} height={26} />
           </Link>
           <div className="hidden md:flex space-x-8">
-            {isHydrated ? (
-              <button
-                onClick={() => setIsSEOModalOpen(true)}
-                className="text-gray-300 hover:text-cyan-400 transition-colors flex items-center"
-                type="button"
-                suppressHydrationWarning
-              >
-                <span>SEO Services</span>
-                <span className="ml-2 bg-gray-500/20 backdrop-blur-sm border border-gray-400/30 rounded-full px-2 py-1 text-xs text-gray-400">
-                  Coming Soon
-                </span>
-              </button>
-            ) : (
-              <div className="text-gray-300 flex items-center">
-                <span>SEO Services</span>
-                <span className="ml-2 bg-gray-500/20 backdrop-blur-sm border border-gray-400/30 rounded-full px-2 py-1 text-xs text-gray-400">
-                  Coming Soon
-                </span>
-              </div>
-            )}
             <Link
               href="/case-studies"
               className="text-gray-300 hover:text-cyan-400 transition-colors"
@@ -259,11 +237,6 @@ export default function HomeContent({ faqSchema, orgSchema }: HomeContentProps) 
           </div>
         </div>
       </section>
-
-      {/* SEO Services Modal */}
-      {isHydrated && (
-        <SEOServicesModal isOpen={isSEOModalOpen} onClose={() => setIsSEOModalOpen(false)} />
-      )}
 
       {/* Site Footer with NAP Information */}
       <Footer />

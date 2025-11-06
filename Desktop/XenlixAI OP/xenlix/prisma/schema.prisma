@@ -943,6 +943,11 @@ model AeoValidation {
   implementationGuide   Json?    // Step-by-step implementation guide
   competitorAnalysis    Json?    // Competitor AEO analysis
   
+  // Raw JSON Analytics (Premium)
+  rawJson               Json?    // Complete validated AEO payload
+  schemaVersion         String?  // Schema version used for validation
+  analyzerVersion       String?  // AEO engine version
+  
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   

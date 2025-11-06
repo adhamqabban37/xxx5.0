@@ -1,7 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { kv } from '@vercel/kv';
+
+// Safe KV operations with fallback for development
+const safeKV = {
+  async get(key: string) {
+    if (process.env.KV_URL || process.env.VERCEL_ENV === 'production') {
+      try {
+        const { kv } = await import('@vercel/kv');
+        return await kv.get(key);
+      } catch (error) {
+        console.warn('KV get failed, returning null:', error);
+        return null;
+      }
+    }
+    // Development fallback - return null (job not found)
+    return null;
+  },
+};
 
 export async function GET(
   request: NextRequest,
@@ -32,7 +48,7 @@ export async function GET(
     }
 
     // Get job from cache
-    const jobData = await kv.get(`job:${jobId}`);
+    const jobData = await safeKV.get(`job:${jobId}`);
 
     if (!jobData) {
       return NextResponse.json(

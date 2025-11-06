@@ -4,328 +4,101 @@ import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { SignOutButton } from './_components/SignOutButton';
-import { Suspense, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import {
   CheckCircle,
-  AlertTriangle,
-  XCircle,
-  TrendingUp,
-  TrendingDown,
-  Users,
-  Calendar,
-  Download,
-  Code,
   Search,
   Globe,
   Zap,
   BarChart3,
+  Building,
+  Crown,
+  ArrowRight,
+  RotateCcw,
+  TrendingUp,
+  MapPin,
 } from 'lucide-react';
-import GSCDashboard from '@/components/GSCDashboard';
-import { DashboardCardWithSparkline, MiniSparkline } from '@/components/Sparkline';
-import { DashboardMetrics } from './_components/DashboardMetrics';
-import { CopyButton } from './_components/CopyButton';
-import SEOGuidanceSection from './_components/SEOGuidanceSection';
-import { QuickCompanyPreview } from '@/components/QuickCompanyPreview';
-import { QuickAIRankTracker } from '@/components/QuickAIRankTracker';
-import QuickReputationMonitor from '@/components/QuickReputationMonitor';
-import GeographicAnalysis from './_components/GeographicAnalysis';
-import FeatureStatus from './_components/FeatureStatus';
+import { useScanContext } from '@/state/scan-store';
+import { analyzeAPI } from '@/lib/api/analyze';
+import MapCard from '@/components/MapCard';
+import { validateUrl } from '@/lib/url-validation';
 
-// Type definitions for location data
-interface LocationData {
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-  formattedAddress: string;
-  addressComponents: {
-    city?: string;
-    state?: string;
-    country?: string;
-    zipCode?: string;
-  };
-  placeId: string;
-}
-
-interface LocationResult {
-  description: string;
-  place_id: string;
-  structured_formatting: {
-    main_text: string;
-    secondary_text: string;
-  };
-}
-
-interface ScanData {
-  url?: string;
-  location?: LocationData;
-  scanMode: 'url' | 'location';
-  timestamp: string;
-}
-
-export default function DashboardPage() {
-  // Client-side authentication check
+export default function FreeDashboardPage() {
   const { data: session, status } = useSession();
+  const { freeScan, setFreeScan, clear } = useScanContext();
 
-  // State for comprehensive scan functionality
   const [websiteUrl, setWebsiteUrl] = useState('');
-  const [scannedUrl, setScannedUrl] = useState(''); // Store the successfully scanned URL
-  const [isUrlLocked, setIsUrlLocked] = useState(false); // URL becomes locked after first scan
   const [isScanning, setIsScanning] = useState(false);
-  const [hasScannedData, setHasScannedData] = useState(false);
-  const [hasPremiumScan, setHasPremiumScan] = useState(false); // Track if premium deep scan was done
-  const [scanError, setScanError] = useState('');
-  const [scanTier, setScanTier] = useState<'none' | 'fast' | 'deep'>('none'); // Track scan tier
+  const [error, setErrorState] = useState<string | undefined>();
 
-  // Location detection state
-  const [locationQuery, setLocationQuery] = useState('');
-  const [locationResults, setLocationResults] = useState<LocationResult[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
-  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
-  const [scanMode, setScanMode] = useState<'url' | 'location'>('url'); // Toggle between URL and location modes
+  // Authentication check
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      redirect('/');
+    }
+  }, [status]);
 
   if (status === 'loading') {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+      </div>
+    );
   }
 
-  if (!session?.user?.email) {
-    redirect('/signin');
+  if (!session?.user) {
     return null;
   }
 
-  // Mock user for demo
-  const user = {
-    email: session.user.email,
-  };
+  const user = session.user;
 
-  // Handle location search
-  const handleLocationSearch = async (query: string) => {
-    if (query.length < 3) {
-      setLocationResults([]);
-      setShowLocationSuggestions(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/geocoding?q=${encodeURIComponent(query)}`);
-      const data = await response.json();
-
-      if (data.success && data.results) {
-        setLocationResults(data.results);
-        setShowLocationSuggestions(true);
-      }
-    } catch (error) {
-      console.error('Location search error:', error);
-    }
-  };
-
-  // Handle location selection
-  const handleLocationSelect = (location: LocationResult) => {
-    setSelectedLocation(location);
-    setLocationQuery(location.formattedAddress);
-    setShowLocationSuggestions(false);
-
-    // Try to detect website from business name if available
-    // This could be enhanced with additional business data APIs
-  };
-
-  // Handle comprehensive scan
-  const handleComprehensiveScan = async (e: React.FormEvent) => {
+  // Handle quick scan (FREE)
+  const handleQuickScan = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (scanMode === 'url' && !websiteUrl) {
-      setScanError('Please enter a website URL');
+    // Comprehensive URL validation
+    const validation = validateUrl(websiteUrl);
+
+    if (!validation.ok) {
+      toast.error(validation.reason || 'Please enter a valid website URL');
       return;
     }
 
-    if (scanMode === 'location' && !selectedLocation) {
-      setScanError('Please select a location from the suggestions');
-      return;
-    }
+    // Use the fixed URL if one was suggested (e.g., protocol was added)
+    const finalUrl = validation.fixed || websiteUrl;
 
     setIsScanning(true);
-    setScanError('');
+    setErrorState(undefined);
 
     try {
-      // Determine scan type based on current state
-      const isPremiumUser = true; // TODO: Replace with actual premium check
-      const isFirstScan = scanTier === 'none';
-      const isDeepScan = !isFirstScan && isPremiumUser;
+      // Run quick scan
+      const result = await analyzeAPI.quickScanFallback(finalUrl);
 
-      const scanData: ScanData = {
-        scanMode: scanMode,
-        timestamp: new Date().toISOString(),
-        scanType: isDeepScan ? 'deep' : 'fast',
-        features: isDeepScan
-          ? [
-              'aeo_standards',
-              'premium_aeo_intelligence',
-              'enhanced_aeo_intelligence',
-              'crewai_business_intelligence',
-              'competitor_tracking',
-              'location_intelligence',
-              'crawl4ai_analysis',
-            ]
-          : ['basic_aeo_standards', 'limited_analysis'],
-      };
-
-      if (scanMode === 'url') {
-        scanData.url = websiteUrl;
-      } else {
-        scanData.location = selectedLocation;
-        scanData.url = websiteUrl || 'https://example.com'; // Fallback URL for location-based scans
-      }
-
-      const response = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(scanData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to start ${isDeepScan ? 'deep' : 'fast'} scan`);
-      }
-
-      const data = await response.json();
-
-      // Update state based on scan completion
-      setHasScannedData(true);
-      setScannedUrl(websiteUrl); // Store the successfully scanned URL
-      setIsUrlLocked(true); // Lock URL after first scan
-
-      if (isDeepScan) {
-        setScanTier('deep');
-        setHasPremiumScan(true);
-      } else {
-        setScanTier('fast');
-      }
-
-      console.log(`${isDeepScan ? 'Deep' : 'Fast'} scan completed:`, data);
+      // Save free scan results
+      setFreeScan(result);
+      toast.success('🎉 Free scan complete! Basic insights are ready.');
     } catch (error) {
-      setScanError(error instanceof Error ? error.message : 'Failed to start scan');
+      console.error('Quick scan failed:', error);
+      const message = error instanceof Error ? error.message : 'Quick scan failed';
+      setErrorState(message);
+      toast.error(message);
     } finally {
       setIsScanning(false);
     }
   };
 
-  // Mock comprehensive audit data for premium dashboard
-  const premiumAuditData = {
-    overallScore: 58,
-    lastScanned: new Date().toISOString(),
-    nextScan: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    weeklyProgress: [
-      { date: '2024-01-01', score: 45 },
-      { date: '2024-01-08', score: 52 },
-      { date: '2024-01-15', score: 58 },
-      { date: '2024-01-22', score: 58 },
-    ],
-    traffic: {
-      current: 12543,
-      previous: 10234,
-      change: 22.6,
-      sparklineData: [8500, 9200, 9800, 10100, 10600, 11200, 11800, 12100, 12300, 12543],
-      trend: 'up' as const,
-    },
-    rankings: {
-      top10: 47,
-      previous: 42,
-      totalTracked: 150,
-      sparklineData: [38, 40, 41, 39, 42, 45, 44, 46, 47, 47],
-      trend: 'up' as const,
-    },
-    performance: {
-      score: 73,
-      previous: 69,
-      sparklineData: [65, 66, 68, 67, 69, 71, 70, 72, 73, 73],
-      trend: 'up' as const,
-    },
-    competitorAnalysis: [
-      { competitor: 'competitor1.com', score: 72, gap: 14 },
-      { competitor: 'competitor2.com', score: 68, gap: 10 },
-      { competitor: 'competitor3.com', score: 65, gap: 7 },
-    ],
-    priorityFixes: [
-      {
-        id: 1,
-        category: 'Technical SEO',
-        title: 'Missing Schema Markup',
-        impact: 'High',
-        effort: 'Medium',
-        description: 'Add structured data for better AI engine understanding',
-        code: `<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": "Your Business Name",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "123 Main St",
-    "addressLocality": "City",
-    "addressRegion": "State",
-    "postalCode": "12345"
-  }
-}
-</script>`,
-        status: 'pending',
-      },
-      {
-        id: 2,
-        category: 'AEO Optimization',
-        title: 'FAQ Schema Implementation',
-        impact: 'High',
-        effort: 'Low',
-        description: 'Add FAQ schema to improve AI answer engine visibility',
-        code: `<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [{
-    "@type": "Question",
-    "name": "What services do you offer?",
-    "acceptedAnswer": {
-      "@type": "Answer",
-      "text": "We offer..."
-    }
-  }]
-}
-</script>`,
-        status: 'pending',
-      },
-      {
-        id: 3,
-        category: 'Content Optimization',
-        title: 'Meta Descriptions Missing',
-        impact: 'Medium',
-        effort: 'Low',
-        description: 'Add compelling meta descriptions to improve CTR',
-        code: `<meta name="description" content="Professional [Service] in [City]. Get [Benefit] with our expert team. Call (555) 123-4567 for a free consultation.">`,
-        status: 'pending',
-      },
-    ],
-    categoryBreakdown: [
-      { category: 'Technical SEO', score: 45, issues: 12, color: 'red' },
-      { category: 'Content Quality', score: 62, issues: 8, color: 'yellow' },
-      { category: 'Local SEO', score: 71, issues: 5, color: 'green' },
-      { category: 'AEO Optimization', score: 38, issues: 15, color: 'red' },
-      { category: 'Site Performance', score: 55, issues: 10, color: 'yellow' },
-    ],
+  // Handle URL changes
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newUrl = e.target.value;
+    setWebsiteUrl(newUrl);
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-green-400';
-    if (score >= 50) return 'text-yellow-400';
-    return 'text-red-400';
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-400" />;
-      case 'in-progress':
-        return <Calendar className="w-5 h-5 text-yellow-400" />;
-      default:
-        return <AlertTriangle className="w-5 h-5 text-red-400" />;
-    }
+  // Handle starting new scan (clear current data)
+  const handleNewScan = () => {
+    clear();
+    setWebsiteUrl('');
+    setErrorState(undefined);
   };
 
   return (
@@ -336,32 +109,18 @@ export default function DashboardPage() {
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-4">
                 <h1 className="text-2xl font-bold text-white">XenlixAI Dashboard</h1>
-                <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                  Premium
+                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  Free
                 </span>
               </div>
               {/* Navigation Links */}
               <nav className="hidden md:flex items-center space-x-4">
                 <Link
-                  href="/dashboard/premium-aeo"
+                  href="/dashboard/premium"
                   className="text-purple-300 hover:text-purple-100 transition-colors flex items-center gap-2 text-sm font-medium"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                  AEO Intelligence
-                </Link>
-                <Link
-                  href="/dashboard/enhanced"
-                  className="text-green-300 hover:text-green-100 transition-colors flex items-center gap-2 text-sm font-medium"
-                >
-                  <Globe className="w-4 h-4" />
-                  Enhanced Dashboard
+                  <Crown className="w-4 h-4" />
+                  Premium Analysis
                 </Link>
                 <Link
                   href="/analytics"
@@ -380,8 +139,8 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      {/* Sticky URL Display - Shows when data is scanned */}
-      {hasScannedData && scannedUrl && (
+      {/* Sticky URL Display - Shows when free scan is complete */}
+      {freeScan && (
         <div className="sticky top-0 z-40 bg-gradient-to-r from-green-600 to-emerald-600 border-b border-green-400 shadow-lg">
           <div className="max-w-7xl mx-auto px-6 py-3">
             <div className="flex items-center justify-between">
@@ -391,16 +150,16 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <span className="text-green-100 text-sm font-medium block">
-                    Live Analysis Dashboard
+                    Free Scan Complete
                   </span>
                   <span className="text-white text-lg font-bold font-mono bg-green-800/40 px-3 py-1 rounded-lg border border-green-400/50">
-                    {scannedUrl}
+                    {freeScan.url}
                   </span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="bg-white/30 rounded-full px-3 py-2">
-                  <span className="text-white text-sm font-bold">LIVE DATA</span>
+                  <span className="text-white text-sm font-bold">QUICK SCAN</span>
                 </div>
                 <CheckCircle className="w-5 h-5 text-white" />
               </div>
@@ -413,212 +172,159 @@ export default function DashboardPage() {
         {/* Comprehensive Scan Section - Always Visible at Top */}
         <div className="bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900 rounded-2xl p-8 mb-8 shadow-2xl border border-blue-400/30">
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-white mb-2">🚀 XenlixAI Comprehensive Scan</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">🚀 XenlixAI Quick Scan</h1>
             <p className="text-blue-100 text-lg">
-              Enter your website URL or business location to unlock all features and get real-time
-              data across the entire dashboard
+              Enter your website URL to get basic insights and discover opportunities for
+              improvement
             </p>
           </div>
 
-          {/* Scan Mode Toggle */}
-          <div className="flex justify-center mb-6">
-            <div className="bg-black/20 p-1 rounded-xl">
-              <button
-                type="button"
-                onClick={() => setScanMode('url')}
-                className={`px-6 py-2 rounded-lg font-medium transition-all ${
-                  scanMode === 'url'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-blue-200 hover:text-white'
-                }`}
-              >
-                🌐 Website URL
-              </button>
-              <button
-                type="button"
-                onClick={() => setScanMode('location')}
-                className={`px-6 py-2 rounded-lg font-medium transition-all ${
-                  scanMode === 'location'
-                    ? 'bg-purple-600 text-white shadow-lg'
-                    : 'text-blue-200 hover:text-white'
-                }`}
-              >
-                📍 Business Location
-              </button>
-            </div>
-          </div>
-
-          <form onSubmit={handleComprehensiveScan} className="max-w-4xl mx-auto">
-            <div className="flex gap-4 items-end">
-              <div className="flex-1 relative">
-                {scanMode === 'url' ? (
-                  <>
-                    <label
-                      htmlFor="main-url-input"
-                      className="block text-sm font-medium text-blue-100 mb-2 flex items-center gap-2"
-                    >
-                      Website URL
-                      {isUrlLocked && (
-                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                          🔒 Locked
-                        </span>
-                      )}
-                    </label>
-                    {isUrlLocked ? (
-                      <div className="w-full px-6 py-4 text-xl border-2 border-green-400 rounded-xl bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 flex items-center justify-between shadow-lg">
-                        <span className="font-mono font-bold text-green-900">{scannedUrl}</span>
-                        <span className="text-sm text-green-600 bg-green-200 px-3 py-1 rounded-full flex items-center gap-1">
-                          🔒 Locked after scan
-                        </span>
-                      </div>
-                    ) : (
-                      <input
-                        id="main-url-input"
-                        type="url"
-                        value={websiteUrl}
-                        onChange={(e) => setWebsiteUrl(e.target.value)}
-                        placeholder="https://your-website.com"
-                        className="w-full px-4 py-3 text-lg border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/95 backdrop-blur-sm"
-                        required
-                      />
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <label
-                      htmlFor="location-input"
-                      className="block text-sm font-medium text-blue-100 mb-2"
-                    >
-                      Business Name or Address
-                    </label>
-                    <input
-                      id="location-input"
-                      type="text"
-                      value={locationQuery}
-                      onChange={(e) => {
-                        setLocationQuery(e.target.value);
-                        handleLocationSearch(e.target.value);
-                      }}
-                      placeholder="e.g., 'Starbucks Seattle' or '123 Main St, City'"
-                      className="w-full px-4 py-3 text-lg border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/95 backdrop-blur-sm"
-                      required
-                    />
-
-                    {/* Location Suggestions Dropdown */}
-                    {showLocationSuggestions && locationResults.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 bg-white rounded-xl shadow-2xl border border-gray-200 mt-2 z-50 max-h-60 overflow-y-auto">
-                        {locationResults.map((result, index) => (
-                          <button
-                            key={index}
-                            type="button"
-                            onClick={() => handleLocationSelect(result)}
-                            className="w-full text-left px-4 py-3 hover:bg-gray-100 border-b border-gray-100 last:border-b-0 transition-colors"
-                          >
-                            <div className="font-medium text-gray-900">
-                              {result.formattedAddress}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              📍 {result.coordinates.lat.toFixed(4)},{' '}
-                              {result.coordinates.lng.toFixed(4)}
-                              {result.addressComponents.city &&
-                                ` • ${result.addressComponents.city}`}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Optional URL field for location mode */}
-                    {selectedLocation && (
-                      <div className="mt-3">
-                        <label className="block text-sm font-medium text-blue-100 mb-2">
-                          Website URL (Optional)
-                        </label>
-                        <input
-                          type="url"
-                          value={websiteUrl}
-                          onChange={(e) => setWebsiteUrl(e.target.value)}
-                          placeholder="https://your-website.com (optional)"
-                          className="w-full px-3 py-2 text-sm border border-blue-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/95 backdrop-blur-sm"
-                        />
-                      </div>
-                    )}
-                  </>
-                )}
+          {/* Quick Scan Form or Results */}
+          {!freeScan ? (
+            <form onSubmit={handleQuickScan} className="max-w-4xl mx-auto">
+              <div className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <label
+                    htmlFor="website-url"
+                    className="block text-sm font-medium text-blue-100 mb-2"
+                  >
+                    Website URL
+                  </label>
+                  <input
+                    id="website-url"
+                    type="url"
+                    value={websiteUrl}
+                    onChange={handleUrlChange}
+                    placeholder="https://your-website.com"
+                    className="w-full px-4 py-3 text-lg border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/95 backdrop-blur-sm"
+                    required
+                    disabled={isScanning}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isScanning || !websiteUrl.trim()}
+                  className="px-8 py-3 text-white font-bold text-lg rounded-xl transition-all duration-300 flex items-center gap-3 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px] justify-center bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                >
+                  {isScanning ? (
+                    <>
+                      <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                      Scanning...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-6 h-6" />
+                      🚀 Start Free Quick Scan
+                    </>
+                  )}
+                </button>
               </div>
-              <button
-                type="submit"
-                disabled={
-                  isScanning ||
-                  (scanMode === 'url' && !websiteUrl && !isUrlLocked) ||
-                  scanTier === 'deep'
-                }
-                className={`px-8 py-3 text-white font-bold text-lg rounded-xl transition-all duration-300 flex items-center gap-3 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px] justify-center ${
-                  scanTier === 'none'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
-                    : scanTier === 'fast'
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
-                      : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600'
-                }`}
-              >
-                {isScanning ? (
-                  <>
-                    <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
-                    {scanTier === 'fast' ? 'Deep Scanning...' : 'Fast Scanning...'}
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-6 h-6" />
-                    {scanTier === 'none'
-                      ? 'Start Fast Scan'
-                      : scanTier === 'fast'
-                        ? '🚀 Unlock Deep Scan (Premium)'
-                        : 'Deep Scan Complete'}
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+            </form>
+          ) : (
+            /* Results Display */
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-green-500/20 border border-green-400 rounded-xl p-6 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-green-100 mb-2">
+                      ✅ Quick Scan Complete!
+                    </h3>
+                    <p className="text-green-200">
+                      Basic insights for{' '}
+                      <span className="font-mono bg-green-800/40 px-2 py-1 rounded">
+                        {freeScan.url}
+                      </span>
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleNewScan}
+                    className="text-green-200 hover:text-white transition-colors flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    New Scan
+                  </button>
+                </div>
 
-          {scanError && (
+                {/* Business Info Display */}
+                {freeScan.business && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div className="bg-white/10 rounded-lg p-4">
+                      <h4 className="text-white font-semibold mb-2">Business Details</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="text-blue-200">
+                          <span className="text-blue-100 font-medium">Name:</span>{' '}
+                          {freeScan.business.name || 'Not detected'}
+                        </div>
+                        <div className="text-blue-200">
+                          <span className="text-blue-100 font-medium">Type:</span>{' '}
+                          {freeScan.business.type || 'Not detected'}
+                        </div>
+                        <div className="text-blue-200">
+                          <span className="text-blue-100 font-medium">Location:</span>{' '}
+                          {freeScan.business.location || 'Not detected'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white/10 rounded-lg p-4">
+                      <h4 className="text-white font-semibold mb-2">Quick Analysis</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="text-blue-200">
+                          <span className="text-blue-100 font-medium">Issues Found:</span>{' '}
+                          {freeScan.issuesFound}
+                        </div>
+                        <div className="text-blue-200">
+                          <span className="text-blue-100 font-medium">Overall Score:</span>{' '}
+                          <span className="font-bold text-yellow-300">
+                            {freeScan.quickScore}/100
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Premium CTA */}
+                <div className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 border border-purple-400/50 rounded-xl p-6">
+                  <div className="text-center">
+                    <h4 className="text-xl font-bold text-white mb-2">
+                      🚀 Ready for the Full Analysis?
+                    </h4>
+                    <p className="text-purple-100 mb-4">
+                      Unlock comprehensive insights, AEO optimization, competitor analysis, and more
+                      with our Premium scan.
+                    </p>
+                    <Link
+                      href="/dashboard/premium"
+                      className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 shadow-lg"
+                    >
+                      <Crown className="w-5 h-5" />
+                      Unlock Premium Analysis
+                      <ArrowRight className="w-5 h-5" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Display */}
+          {error && (
             <div className="mt-4 p-4 bg-red-500/20 border border-red-400 rounded-xl text-red-100 text-center">
-              <strong>Error:</strong> {scanError}
+              <strong>Error:</strong> {error}
             </div>
           )}
 
           {/* Scan Status Indicator */}
-          <div className="mt-6 flex items-center justify-center gap-6">
-            <div
-              className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-                scanTier === 'deep'
-                  ? 'bg-green-500/20 border border-green-400 text-green-100'
-                  : scanTier === 'fast'
-                    ? 'bg-blue-500/20 border border-blue-400 text-blue-100'
-                    : 'bg-orange-500/20 border border-orange-400 text-orange-100'
-              }`}
-            >
-              {scanTier === 'deep' ? (
-                <>
-                  <CheckCircle className="w-5 h-5" />
-                  <span className="font-medium">
-                    🚀 All Premium Features Active - Deep Analysis Complete
-                  </span>
-                </>
-              ) : scanTier === 'fast' ? (
-                <>
-                  <Zap className="w-5 h-5" />
-                  <span className="font-medium">
-                    ⚡ Fast Scan Complete - Upgrade for Premium Features
-                  </span>
-                </>
-              ) : (
-                <>
-                  <AlertTriangle className="w-5 h-5" />
-                  <span className="font-medium">⚠️ Enter URL and start your first scan</span>
-                </>
-              )}
+          {!freeScan && (
+            <div className="mt-6 flex items-center justify-center">
+              <div className="flex items-center gap-2 px-6 py-3 rounded-full bg-blue-500/20 border border-blue-400 text-blue-100">
+                <Search className="w-5 h-5" />
+                <span className="font-medium">
+                  Ready to analyze your website • Free quick scan available
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Feature Preview */}
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -626,1078 +332,234 @@ export default function DashboardPage() {
               <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
                 <Search className="w-6 h-6 text-white" />
               </div>
-              <div className="text-blue-100 text-sm font-medium">AEO Standards</div>
+              <div className="text-blue-100 text-sm font-medium">Basic Analysis</div>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
                 <Zap className="w-6 h-6 text-white" />
               </div>
-              <div className="text-blue-100 text-sm font-medium">CrewAI Intelligence</div>
+              <div className="text-blue-100 text-sm font-medium">Quick Insights</div>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
-              <div className="text-blue-100 text-sm font-medium">Performance Metrics</div>
+              <div className="text-blue-100 text-sm font-medium">Performance Score</div>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-2">
                 <BarChart3 className="w-6 h-6 text-white" />
               </div>
-              <div className="text-blue-100 text-sm font-medium">Competitor Analysis</div>
+              <div className="text-blue-100 text-sm font-medium">Basic Recommendations</div>
             </div>
           </div>
         </div>
 
-        {/* Currently Analyzed Website Display */}
-        {hasScannedData && scannedUrl && (
-          <div className="bg-gradient-to-r from-blue-900/60 to-indigo-900/60 border-2 border-blue-400/70 rounded-xl p-8 mb-8 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <div className="bg-blue-500 rounded-full p-4 shadow-lg">
-                  <Globe className="w-10 h-10 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-white mb-3">Currently Analyzing</h3>
-                  <div className="flex items-center gap-3">
-                    <span className="text-white text-2xl font-mono font-bold bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 rounded-xl border-2 border-blue-400/50 shadow-lg">
-                      {scannedUrl}
-                    </span>
-                    <span className="bg-green-500 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg">
-                      <CheckCircle className="w-4 h-4" />
-                      LIVE DATA
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-blue-200 text-lg font-medium">
-                  All insights below generated from:
-                </div>
-                <div className="text-white text-xl font-bold">Your Comprehensive Analysis</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Overall Dashboard Status */}
-        {scanTier === 'deep' && (
-          <div className="bg-gradient-to-r from-green-900/70 to-emerald-900/70 border-2 border-green-400/70 rounded-xl p-6 mb-8 shadow-xl">
-            <div className="flex items-center justify-center gap-4">
-              <CheckCircle className="w-8 h-8 text-green-400" />
-              <div className="text-center">
-                <div className="text-green-100 text-lg font-bold mb-2">
-                  🎉 All Premium Features Unlocked!
-                </div>
-                <div className="text-green-200 font-medium">
-                  Deep scan analysis complete for
-                  <span className="font-mono font-bold bg-green-800/50 px-3 py-1 rounded-lg ml-2 border border-green-400/50">
-                    {scannedUrl}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        {scanTier === 'fast' && (
-          <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 border border-blue-400/50 rounded-xl p-4 mb-6">
-            <div className="flex items-center justify-center gap-3">
-              <Zap className="w-6 h-6 text-blue-400" />
-              <span className="text-blue-100 font-medium">
-                ⚡ Fast scan complete for {scannedUrl}. Click "Deep Scan" to unlock all premium
-                features!
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Feature Status Component */}
-        <FeatureStatus scanTier={scanTier} scannedUrl={scannedUrl} />
-
-        {/* Premium AEO Intelligence Dashboard - Only show for deep scan */}
-        {scanTier === 'deep' && (
-          <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400 rounded-xl p-6 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="bg-purple-600 rounded-full p-2">
-                  <svg
-                    className="w-8 h-8 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white mb-1">
-                    ⚡ Premium AEO Intelligence Dashboard
-                  </h2>
-                  <p className="text-purple-100 text-sm">
-                    Company visibility tracking • Competitor analysis • Citation authority • AI
-                    visibility scores • Action roadmaps
-                  </p>
-                </div>
-              </div>
-              <a
-                href="/dashboard/premium-aeo"
-                className="px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-                Launch AEO Dashboard
-              </a>
-            </div>
-          </div>
-        )}
-
-        {/* Enhanced Dashboard Promotion Banner - Only show for deep scan */}
-        {scanTier === 'deep' && (
-          <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 border border-green-400 rounded-xl p-6 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Zap className="w-8 h-8 text-green-400" />
-                <div>
-                  <h2 className="text-xl font-bold text-white mb-1">
-                    🚀 New Enhanced AEO Intelligence Dashboard
-                  </h2>
-                  <p className="text-green-100 text-sm">
-                    AI-powered business extraction • Interactive AEO tooltips • Auto schema
-                    generation • Smart questionnaires
-                  </p>
-                </div>
-              </div>
-              <a
-                href="/dashboard/enhanced"
-                className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 shadow-lg"
-              >
-                <Globe className="w-5 h-5" />
-                Try Enhanced Dashboard
-              </a>
-            </div>
-          </div>
-        )}
-
-        {/* Premium Dashboard Banner - Only show for deep scan */}
-        {scanTier === 'deep' && (
-          <div className="bg-gradient-to-r from-green-900/20 to-blue-900/20 border border-green-600 rounded-xl p-6 mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-white mb-2">✅ Premium Access Activated</h3>
-                <p className="text-green-400">
-                  You now have access to detailed SEO + AEO reports and priority fixes
-                </p>
-              </div>
-              <div className="text-green-400">
-                <CheckCircle className="w-12 h-12" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Performance Overview - Only show for deep scan */}
-        {scanTier === 'deep' && <DashboardMetrics premiumAuditData={premiumAuditData} />}
-
-        {/* YAML Rules - AEO Standards Overview */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-white flex items-center">
-                🛡️ AEO Standards Assessment
-              </h2>
-              {hasScannedData && scannedUrl && (
-                <div className="text-blue-200 text-sm mt-1">
-                  Analyzing: <span className="font-mono text-blue-100">{scannedUrl}</span>
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {hasScannedData ? (
-                <span className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4" />
-                  Live Results
-                </span>
-              ) : (
-                <span className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                  <AlertTriangle className="w-4 h-4" />
-                  Demo Results
-                </span>
-              )}
-              <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                YAML Rules Engine
-              </span>
-            </div>
-          </div>
-
-          {/* E-E-A-T Standards */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-              👑 E-E-A-T Authority Standards
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-purple-300 text-sm font-medium">Experience</span>
-                  <span className="text-2xl font-bold text-green-400">✓</span>
-                </div>
-                <div className="text-white text-sm mb-2">Hands-on Content</div>
-                <div className="text-xs text-gray-400 mb-2">Real experience with the topic</div>
-                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
-                  <span className="text-green-300 text-xs">PASSED</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-purple-400">
-                    AI models reward content written by people who've actually done the work.
-                    Demonstrating firsthand experience builds credibility and makes your answers
-                    more trustworthy.
-                  </div>
-                </details>
-              </div>
-
-              <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-blue-300 text-sm font-medium">Expertise</span>
-                  <span className="text-2xl font-bold text-yellow-400">!</span>
-                </div>
-                <div className="text-white text-sm mb-2">Author Qualifications</div>
-                <div className="text-xs text-gray-400 mb-2">Knowledge & credentials</div>
-                <div className="mb-3 bg-yellow-500/20 border border-yellow-400/30 rounded px-2 py-1">
-                  <span className="text-yellow-300 text-xs">REVIEW</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-blue-400">
-                    Clearly showing author credentials, certifications, or years of experience helps
-                    AI understand that your information comes from a verified expert, not a generic
-                    source.
-                  </div>
-                </details>
-              </div>
-
-              <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-green-300 text-sm font-medium">Authority</span>
-                  <span className="text-2xl font-bold text-green-400">✓</span>
-                </div>
-                <div className="text-white text-sm mb-2">Domain Recognition</div>
-                <div className="text-xs text-gray-400 mb-2">Recognized authority</div>
-                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
-                  <span className="text-green-300 text-xs">PASSED</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-green-400">
-                    When other reputable websites mention or link to yours, it signals that
-                    you&apos;re an established authority in your field — a key factor for AI
-                    visibility and ranking.
-                  </div>
-                </details>
-              </div>
-
-              <div className="bg-gradient-to-br from-emerald-600/20 to-teal-600/20 border border-emerald-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-emerald-300 text-sm font-medium">Trustworthiness</span>
-                  <span className="text-2xl font-bold text-green-400">✓</span>
-                </div>
-                <div className="text-white text-sm mb-2">HTTPS & Accuracy</div>
-                <div className="text-xs text-gray-400 mb-2">Secure & reliable info</div>
-                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
-                  <span className="text-green-300 text-xs">PASSED</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-emerald-400">
-                    Trust begins with security. An HTTPS connection and accurate, up-to-date
-                    information show users and AI engines that your site is safe and credible.
-                  </div>
-                </details>
-              </div>
-            </div>
-          </div>
-
-          {/* Content Structure Standards */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-              📝 Content Structure Standards
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-gradient-to-br from-indigo-600/20 to-purple-600/20 border border-indigo-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-indigo-300 text-sm font-medium">Clear Headings</span>
-                  <span className="text-2xl font-bold text-green-400">✓</span>
-                </div>
-                <div className="text-white text-sm mb-2">H2 & H3 Structure</div>
-                <div className="text-xs text-gray-400 mb-2">Organized content hierarchy</div>
-                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
-                  <span className="text-green-300 text-xs">PASSED</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-indigo-400">
-                    Well-structured headings help AI &quot;read&quot; your page faster, improving
-                    your chances of being quoted as a direct answer in search results.
-                  </div>
-                </details>
-              </div>
-
-              <div className="bg-gradient-to-br from-pink-600/20 to-rose-600/20 border border-pink-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-pink-300 text-sm font-medium">Short Paragraphs</span>
-                  <span className="text-2xl font-bold text-yellow-400">!</span>
-                </div>
-                <div className="text-white text-sm mb-2">Simple Sentences</div>
-                <div className="text-xs text-gray-400 mb-2">Easy to read format</div>
-                <div className="mb-3 bg-yellow-500/20 border border-yellow-400/30 rounded px-2 py-1">
-                  <span className="text-yellow-300 text-xs">REVIEW</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-pink-400">
-                    Concise paragraphs keep users engaged and make it easier for AI systems to parse
-                    meaning. Aim for ~2–3 sentences per paragraph.
-                  </div>
-                </details>
-              </div>
-
-              <div className="bg-gradient-to-br from-orange-600/20 to-red-600/20 border border-orange-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-orange-300 text-sm font-medium">Use Lists</span>
-                  <span className="text-2xl font-bold text-green-400">✓</span>
-                </div>
-                <div className="text-white text-sm mb-2">Bullets & Numbers</div>
-                <div className="text-xs text-gray-400 mb-2">Structured information</div>
-                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
-                  <span className="text-green-300 text-xs">PASSED</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-orange-400">
-                    Lists make complex information digestible for both humans and algorithms. AI
-                    tools often extract bulleted lists directly into featured snippets.
-                  </div>
-                </details>
-              </div>
-
-              <div className="bg-gradient-to-br from-teal-600/20 to-cyan-600/20 border border-teal-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-teal-300 text-sm font-medium">Direct Answers</span>
-                  <span className="text-2xl font-bold text-red-400">✗</span>
-                </div>
-                <div className="text-white text-sm mb-2">Question Structure</div>
-                <div className="text-xs text-gray-400 mb-2">Answer common questions</div>
-                <div className="mb-3 bg-red-500/20 border border-red-400/30 rounded px-2 py-1">
-                  <span className="text-red-300 text-xs">FAILED</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-teal-400">
-                    Modern AI engines look for clearly written question-and-answer pairs. Use FAQs
-                    or headings like &quot;How,&quot; &quot;What,&quot; or &quot;Why&quot; to target
-                    answer-based results.
-                  </div>
-                </details>
-              </div>
-            </div>
-          </div>
-
-          {/* Technical Standards */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-              🔧 Technical Standards
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-blue-300 text-sm font-medium">Site Speed</span>
-                  <span className="text-2xl font-bold text-yellow-400">!</span>
-                </div>
-                <div className="text-white text-sm mb-2">2.8s Load Time</div>
-                <div className="text-xs text-gray-400 mb-2">
-                  <div className="flex justify-between items-center mb-1">
-                    <span>LCP:</span>
-                    <span className="text-yellow-300">3.2s</span>
-                  </div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span>FID:</span>
-                    <span className="text-green-300">89ms</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>CLS:</span>
-                    <span className="text-red-300">0.15</span>
-                  </div>
-                </div>
-                <div className="mb-3 bg-yellow-500/20 border border-yellow-400/30 rounded px-2 py-1">
-                  <span className="text-yellow-300 text-xs">NEEDS IMPROVEMENT</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-blue-400">
-                    Every second counts. Faster loading increases user satisfaction and helps AI
-                    rank your page higher for usability and Core Web Vitals.
-                  </div>
-                </details>
-              </div>
-
-              <div className="bg-gradient-to-br from-green-600/20 to-blue-600/20 border border-green-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-green-300 text-sm font-medium">Mobile-Friendly</span>
-                  <span className="text-2xl font-bold text-green-400">✓</span>
-                </div>
-                <div className="text-white text-sm mb-2">Responsive Design</div>
-                <div className="text-xs text-gray-400 mb-2">Mobile optimization</div>
-                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
-                  <span className="text-green-300 text-xs">PASSED</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-green-400">
-                    Over half of all searches come from mobile devices. A responsive design ensures
-                    your content is accessible and readable anywhere.
-                  </div>
-                </details>
-              </div>
-
-              <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-purple-300 text-sm font-medium">Schema Data</span>
-                  <span className="text-2xl font-bold text-red-400">✗</span>
-                </div>
-                <div className="text-white text-sm mb-2">Structured Data</div>
-                <div className="text-xs text-gray-400 mb-2">FAQ & Article schema</div>
-                <div className="mb-3 bg-red-500/20 border border-red-400/30 rounded px-2 py-1">
-                  <span className="text-red-300 text-xs">FAILED</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-purple-400">
-                    Schema markup helps AI understand exactly what your page is about. Adding
-                    structured data boosts your chances of appearing in answer cards or voice search
-                    results.
-                  </div>
-                </details>
-              </div>
-
-              <div className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border border-emerald-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-emerald-300 text-sm font-medium">Site Security</span>
-                  <span className="text-2xl font-bold text-green-400">✓</span>
-                </div>
-                <div className="text-white text-sm mb-2">HTTPS Protocol</div>
-                <div className="text-xs text-gray-400 mb-2">Secure connection</div>
-                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
-                  <span className="text-green-300 text-xs">PASSED</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-emerald-400">
-                    Security is a baseline trust factor for both humans and search engines. An HTTPS
-                    site protects users and confirms your legitimacy.
-                  </div>
-                </details>
-              </div>
-            </div>
-          </div>
-
-          {/* User Intent Standards */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-              🎯 User Intent Standards
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-cyan-300 text-sm font-medium">User Intent Match</span>
-                  <span className="text-2xl font-bold text-yellow-400">!</span>
-                </div>
-                <div className="text-white text-sm mb-2">Complete Answers</div>
-                <div className="text-xs text-gray-400 mb-2">Beyond keyword stuffing</div>
-                <div className="mb-3 bg-yellow-500/20 border border-yellow-400/30 rounded px-2 py-1">
-                  <span className="text-yellow-300 text-xs">REVIEW</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-cyan-400">
-                    AI can detect when a page truly satisfies a searcher&apos;s intent. Write for
-                    clarity and completeness, not just keyword density.
-                  </div>
-                </details>
-              </div>
-
-              <div className="bg-gradient-to-br from-violet-600/20 to-purple-600/20 border border-violet-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-violet-300 text-sm font-medium">Topical Authority</span>
-                  <span className="text-2xl font-bold text-green-400">✓</span>
-                </div>
-                <div className="text-white text-sm mb-2">Content Clusters</div>
-                <div className="text-xs text-gray-400 mb-2">In-depth coverage</div>
-                <div className="mb-3 bg-green-500/20 border border-green-400/30 rounded px-2 py-1">
-                  <span className="text-green-300 text-xs">PASSED</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-violet-400">
-                    Covering a topic deeply across multiple related pages builds topical authority —
-                    a signal that your site is a go-to resource for the subject.
-                  </div>
-                </details>
-              </div>
-
-              <div className="bg-gradient-to-br from-rose-600/20 to-pink-600/20 border border-rose-400/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-rose-300 text-sm font-medium">Long-Tail Keywords</span>
-                  <span className="text-2xl font-bold text-red-400">✗</span>
-                </div>
-                <div className="text-white text-sm mb-2">Conversational Phrases</div>
-                <div className="text-xs text-gray-400 mb-2">Specific query targeting</div>
-                <div className="mb-3 bg-red-500/20 border border-red-400/30 rounded px-2 py-1">
-                  <span className="text-red-300 text-xs">FAILED</span>
-                </div>
-                <details className="group">
-                  <summary className="cursor-pointer text-xs text-blue-300 hover:text-blue-100 transition-colors flex items-center">
-                    <span>📘 Why it matters</span>
-                    <span className="ml-1 transform group-open:rotate-180 transition-transform">
-                      ▼
-                    </span>
-                  </summary>
-                  <div className="mt-2 text-xs text-gray-300 bg-slate-900/50 rounded p-2 border-l-2 border-rose-400">
-                    Long-tail phrases mimic natural language queries used in AI assistants.
-                    Targeting them helps your content show up in conversational or voice search.
-                  </div>
-                </details>
-              </div>
-            </div>
-          </div>
-
-          {/* Overall AEO Score Summary */}
-          <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-400 rounded-lg p-6 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-white mb-2">Overall AEO Standards Score</h3>
-                <p className="text-purple-100 text-sm">Based on YAML rules engine evaluation</p>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-1">67/100</div>
-                <div className="text-purple-200 text-sm">9 of 15 rules passed</div>
-                <div className="flex items-center justify-center mt-2 text-sm">
-                  <span className="text-yellow-300 mr-2">↗</span>
-                  <span className="text-yellow-300">+5 from last scan</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* How to Use These Insights */}
-          <div className="bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border border-blue-400/30 rounded-lg p-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-              ⚡ How to Use These Insights
-            </h3>
-            <div className="space-y-3 text-sm text-gray-300">
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 rounded-full bg-red-500/20 border border-red-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-red-400 text-xs font-bold">1</span>
-                </div>
-                <div>
-                  <span className="text-white font-medium">Fix items marked as ❌ or ⚠️ first</span>{' '}
-                  — they have the most SEO/AEO impact.
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 rounded-full bg-yellow-500/20 border border-yellow-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-yellow-400 text-xs font-bold">2</span>
-                </div>
-                <div>
-                  <span className="text-white font-medium">Re-run your AEO scan</span> to see score
-                  improvements in real time.
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 rounded-full bg-green-500/20 border border-green-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-green-400 text-xs font-bold">3</span>
-                </div>
-                <div>
-                  <span className="text-white font-medium">
-                    Combine these fixes with CrewAI recommendations
-                  </span>{' '}
-                  for the &quot;why&quot; and &quot;how&quot; behind each improvement.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* CrewAI Business Intelligence Section */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-white flex items-center">
-                🧠 CrewAI Business Intelligence
-              </h2>
-              {hasScannedData && scannedUrl && (
-                <div className="text-blue-200 text-sm mt-1">
-                  Business analysis for:{' '}
-                  <span className="font-mono text-blue-100">{scannedUrl}</span>
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {hasScannedData ? (
-                <span className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4" />
-                  Live Data
-                </span>
-              ) : (
-                <span className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                  <AlertTriangle className="w-4 h-4" />
-                  Demo Data
-                </span>
-              )}
-              <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                AI Powered
-              </span>
-              <Link
-                href="/dashboard/premium-aeo"
-                className="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors text-sm"
-              >
-                Full Analysis →
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Business Intelligence Score */}
-            <div className="bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-400/30 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl font-bold">AI</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold text-white">84</div>
-                  <div className="text-purple-200 text-sm">BI Score</div>
-                </div>
-              </div>
-              <div className="text-white font-medium mb-2">Business Intelligence</div>
-              <div className="text-xs text-gray-400 mb-3">AI-powered competitive analysis</div>
-              <div className="flex items-center text-sm">
-                <span className="text-green-300 mr-2">↗</span>
-                <span className="text-green-300">+12 points this month</span>
-              </div>
-            </div>
-
-            {/* ROI Projection */}
-            <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-400/30 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-lg">📈</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold text-white">127%</div>
-                  <div className="text-green-200 text-sm">ROI Proj.</div>
-                </div>
-              </div>
-              <div className="text-white font-medium mb-2">12-Month ROI</div>
-              <div className="text-xs text-gray-400 mb-3">Projected visibility increase</div>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">3 Months:</span>
-                  <span className="text-green-300">+24%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">6 Months:</span>
-                  <span className="text-green-300">+67%</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Key Insights */}
-            <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-400/30 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-lg">💡</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold text-white">7</div>
-                  <div className="text-blue-200 text-sm">Insights</div>
-                </div>
-              </div>
-              <div className="text-white font-medium mb-2">Active Insights</div>
-              <div className="text-xs text-gray-400 mb-3">AI-generated recommendations</div>
-              <div className="space-y-1 text-xs">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-red-400 rounded-full mr-2"></div>
-                  <span className="text-gray-300">3 High priority</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
-                  <span className="text-gray-300">4 Medium priority</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Recommendations Preview */}
-          <div className="mt-6 bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-600/30 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-white mb-3 flex items-center">
-              ⚡ Top CrewAI Recommendations
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 rounded-full bg-red-500/20 border border-red-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-red-400 text-xs font-bold">1</span>
-                </div>
-                <div className="flex-1">
-                  <div className="text-white font-medium text-sm">Optimize Schema Markup</div>
-                  <div className="text-gray-400 text-xs">
-                    Add FAQ and Article schema for 34% visibility boost
-                  </div>
-                  <div className="flex items-center mt-1 text-xs">
-                    <span className="text-green-300 mr-3">Impact: High</span>
-                    <span className="text-blue-300">Effort: 2 hours</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 rounded-full bg-yellow-500/20 border border-yellow-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-yellow-400 text-xs font-bold">2</span>
-                </div>
-                <div className="flex-1">
-                  <div className="text-white font-medium text-sm">Improve Core Web Vitals</div>
-                  <div className="text-gray-400 text-xs">
-                    Reduce LCP to under 2.5s for better AI rankings
-                  </div>
-                  <div className="flex items-center mt-1 text-xs">
-                    <span className="text-yellow-300 mr-3">Impact: Medium</span>
-                    <span className="text-blue-300">Effort: 4 hours</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 rounded-full bg-green-500/20 border border-green-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-green-400 text-xs font-bold">3</span>
-                </div>
-                <div className="flex-1">
-                  <div className="text-white font-medium text-sm">Enhance E-E-A-T Signals</div>
-                  <div className="text-gray-400 text-xs">
-                    Add author bio and credentials for authority boost
-                  </div>
-                  <div className="flex items-center mt-1 text-xs">
-                    <span className="text-green-300 mr-3">Impact: High</span>
-                    <span className="text-blue-300">Effort: 1 hour</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 pt-3 border-t border-purple-600/30">
-              <Link
-                href="/dashboard/premium-aeo"
-                className="text-purple-300 hover:text-purple-100 text-sm font-medium flex items-center"
-              >
-                View all 7 recommendations →<span className="ml-1">🧠</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* AI Intelligence Widgets */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <QuickCompanyPreview />
-          <QuickAIRankTracker />
-          <QuickReputationMonitor
-            onViewDetails={() => window.open('/dashboard/enhanced', '_blank')}
-          />
-        </div>
-
-        {/* AI Features Overview */}
-        <div className="bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-xl p-6 mb-8">
-          <h3 className="text-xl font-bold text-white mb-4">🚀 AI-Powered Business Intelligence</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-purple-100">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span className="text-sm">Business extraction</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span className="text-sm">Schema generation</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-              <span className="text-sm">AEO optimization</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-              <span className="text-sm">AI rank tracking</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Priority Quick Fixes */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">🚨 Priority Quick Fixes</h2>
-            <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-              High Impact
-            </span>
-          </div>
-
-          <div className="space-y-6">
-            {premiumAuditData.priorityFixes.map((fix) => (
-              <div key={fix.id} className="border border-slate-600 rounded-lg p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      {getStatusIcon(fix.status)}
-                      <h3 className="text-lg font-semibold text-white">{fix.title}</h3>
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          fix.impact === 'High'
-                            ? 'bg-red-600 text-white'
-                            : fix.impact === 'Medium'
-                              ? 'bg-yellow-600 text-white'
-                              : 'bg-green-600 text-white'
-                        }`}
-                      >
-                        {fix.impact} Impact
-                      </span>
-                      <span className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium">
-                        {fix.effort} Effort
-                      </span>
-                    </div>
-                    <p className="text-gray-300 mb-4">{fix.description}</p>
-                    <div className="bg-slate-900 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-400">
-                          Copy & Paste This Code:
-                        </span>
-                        <CopyButton code={fix.code} />
-                      </div>
-                      <pre className="text-sm text-green-400 overflow-x-auto">
-                        <code>{fix.code}</code>
-                      </pre>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Category Breakdown */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6">Category Breakdown</h2>
-            <div className="space-y-4">
-              {premiumAuditData.categoryBreakdown.map((category) => (
-                <div key={category.category} className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-white font-medium">{category.category}</span>
-                      <div className="flex items-center space-x-2">
-                        <span className={`font-bold ${getScoreColor(category.score)}`}>
-                          {category.score}/100
-                        </span>
-                        <span className="text-gray-400 text-sm">{category.issues} issues</span>
-                      </div>
-                    </div>
-                    <div className="w-full bg-slate-700 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full ${
-                          category.color === 'green'
-                            ? 'bg-green-500'
-                            : category.color === 'yellow'
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                        }`}
-                        style={{ width: `${category.score}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6">Competitor Analysis</h2>
-            <div className="space-y-4">
-              {premiumAuditData.competitorAnalysis.map((competitor, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg"
-                >
+        {/* Dashboard Content - Show based on free scan state */}
+        {freeScan && (
+          <div className="space-y-8">
+            {/* Basic Business Info Display */}
+            {freeScan.business && (
+              <div className="bg-gradient-to-br from-slate-900/90 to-blue-900/90 border border-slate-600/30 rounded-2xl p-8 shadow-2xl">
+                <div className="flex items-center justify-between mb-6">
                   <div>
-                    <div className="text-white font-medium">{competitor.competitor}</div>
-                    <div className="text-gray-400 text-sm">Score: {competitor.score}/100</div>
+                    <h2 className="text-2xl font-bold text-white mb-2">🏢 Business Information</h2>
+                    <p className="text-slate-300">Basic details from your quick scan</p>
                   </div>
-                  <div className="text-right">
-                    <div className="text-red-400 font-semibold">-{competitor.gap} points</div>
-                    <div className="text-gray-400 text-sm">behind</div>
+                  <div className="bg-blue-600 rounded-full p-3">
+                    <Building className="w-8 h-8 text-white" />
                   </div>
                 </div>
-              ))}
+
+                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  {/* Business Details */}
+                  <div className="space-y-4">
+                    <div className="bg-blue-800/30 border border-blue-600/30 rounded-xl p-5">
+                      <h3 className="text-lg font-bold text-white mb-3">Business Name</h3>
+                      <p className="text-blue-200">{freeScan.business.name || 'Not detected'}</p>
+                    </div>
+                    <div className="bg-blue-800/30 border border-blue-600/30 rounded-xl p-5">
+                      <h3 className="text-lg font-bold text-white mb-3">Business Type</h3>
+                      <p className="text-blue-200">{freeScan.business.type || 'Not detected'}</p>
+                    </div>
+                    <div className="bg-blue-800/30 border border-blue-600/30 rounded-xl p-5">
+                      <h3 className="text-lg font-bold text-white mb-3">Address</h3>
+                      <p className="text-blue-200">
+                        {freeScan.business.address || freeScan.business.location || 'Not detected'}
+                      </p>
+                    </div>
+                    {freeScan.business.phone && (
+                      <div className="bg-blue-800/30 border border-blue-600/30 rounded-xl p-5">
+                        <h3 className="text-lg font-bold text-white mb-3">Phone</h3>
+                        <p className="text-blue-200">{freeScan.business.phone}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Business Location Map */}
+                  <div className="bg-blue-800/30 border border-blue-600/30 rounded-xl p-5">
+                    <div className="flex items-center gap-3 mb-4">
+                      <MapPin className="w-6 h-6 text-blue-400" />
+                      <h3 className="text-lg font-bold text-white">Business Location</h3>
+                    </div>
+                    {(freeScan.business.lat && freeScan.business.lng) ||
+                    freeScan.business.address ? (
+                      <div className="rounded-lg overflow-hidden">
+                        <MapCard
+                          lat={freeScan.business.lat}
+                          lng={freeScan.business.lng}
+                          address={freeScan.business.address}
+                          businessName={freeScan.business.name}
+                          className="h-64"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-64 bg-blue-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-blue-600/50">
+                        <div className="text-center">
+                          <MapPin className="w-12 h-12 text-blue-400/50 mx-auto mb-3" />
+                          <p className="text-blue-300 font-medium">Location Not Available</p>
+                          <p className="text-blue-400 text-sm mt-1">
+                            Business address could not be detected or geocoded
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Analysis Results */}
+            <div className="bg-gradient-to-br from-slate-900/90 to-purple-900/90 border border-slate-600/30 rounded-2xl p-8 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">⚡ Quick Analysis</h2>
+                  <p className="text-slate-300">Basic insights from your free scan</p>
+                </div>
+                <div className="bg-purple-600 rounded-full p-3">
+                  <Search className="w-8 h-8 text-white" />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div className="bg-purple-800/30 border border-purple-600/30 rounded-xl p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">Overall Score</h3>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-yellow-400 mb-2">
+                      {freeScan.quickScore}/100
+                    </div>
+                    <p className="text-purple-200">Quick assessment score</p>
+                  </div>
+                </div>
+                <div className="bg-purple-800/30 border border-purple-600/30 rounded-xl p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">Issues Found</h3>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-red-400 mb-2">
+                      {freeScan.issuesFound}
+                    </div>
+                    <p className="text-purple-200">Potential improvements</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-purple-800/20 border border-purple-600/30 rounded-xl p-6">
+                <h4 className="text-lg font-bold text-white mb-3">🎯 Ready for More?</h4>
+                <p className="text-purple-200 mb-4">
+                  This quick scan provides basic insights. Unlock comprehensive analysis, competitor
+                  tracking, AEO optimization, and detailed recommendations with our Premium scan.
+                </p>
+                <Link
+                  href="/dashboard/premium"
+                  className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold px-6 py-3 rounded-xl transition-all duration-300 shadow-lg"
+                >
+                  <Crown className="w-5 h-5" />
+                  Unlock Premium Analysis
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Basic Recommendations */}
+            <div className="bg-gradient-to-br from-slate-900/90 to-green-900/90 border border-slate-600/30 rounded-2xl p-8 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">💡 Basic Recommendations</h2>
+                  <p className="text-slate-300">Quick wins from your free scan</p>
+                </div>
+                <div className="bg-green-600 rounded-full p-3">
+                  <CheckCircle className="w-8 h-8 text-white" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-green-800/20 border border-green-600/30 rounded-xl p-5">
+                  <h4 className="text-lg font-bold text-white mb-2">🔍 SEO Basics</h4>
+                  <p className="text-green-200">
+                    Ensure your website has proper meta descriptions, title tags, and header
+                    structure for better search visibility.
+                  </p>
+                </div>
+                <div className="bg-green-800/20 border border-green-600/30 rounded-xl p-5">
+                  <h4 className="text-lg font-bold text-white mb-2">📱 Mobile Optimization</h4>
+                  <p className="text-green-200">
+                    Make sure your website is mobile-friendly and loads quickly on all devices.
+                  </p>
+                </div>
+                <div className="bg-green-800/20 border border-green-600/30 rounded-xl p-5">
+                  <h4 className="text-lg font-bold text-white mb-2">🎯 Content Quality</h4>
+                  <p className="text-green-200">
+                    Create valuable, informative content that directly answers your customers&apos;
+                    questions.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 text-center">
+                <p className="text-slate-400 mb-4">
+                  Want detailed, actionable recommendations tailored to your business?
+                </p>
+                <Link
+                  href="/dashboard/premium"
+                  className="inline-flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold px-6 py-3 rounded-xl transition-all duration-300 shadow-lg"
+                >
+                  <Crown className="w-5 h-5" />
+                  Get Detailed Analysis
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Progress Tracking */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Progress Over Time</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {premiumAuditData.weeklyProgress.map((week, index) => (
-              <div key={index} className="bg-slate-700/50 rounded-lg p-4">
-                <div className="text-gray-400 text-sm mb-2">
-                  {new Date(week.date).toLocaleDateString()}
+        {/* Call to Action for New Users */}
+        {!freeScan && (
+          <div className="bg-gradient-to-br from-slate-800/50 to-blue-800/50 border border-slate-600/30 rounded-2xl p-8 text-center">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold text-white mb-4">
+                🚀 Ready to Optimize Your Website?
+              </h2>
+              <p className="text-slate-300 text-lg mb-6">
+                Enter your website URL above to get started with a free quick scan. Analyze your
+                website&apos;s performance, discover opportunities, and get actionable
+                recommendations.
+              </p>
+              <div className="flex items-center justify-center gap-8 text-sm text-slate-400">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <span>Free Quick Scan</span>
                 </div>
-                <div className={`text-2xl font-bold ${getScoreColor(week.score)}`}>
-                  {week.score}/100
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <span>Basic Recommendations</span>
                 </div>
-                {index > 0 && (
-                  <div
-                    className={`text-sm ${
-                      week.score > premiumAuditData.weeklyProgress[index - 1].score
-                        ? 'text-green-400'
-                        : 'text-red-400'
-                    }`}
-                  >
-                    {week.score > premiumAuditData.weeklyProgress[index - 1].score ? '+' : ''}
-                    {week.score - premiumAuditData.weeklyProgress[index - 1].score} pts
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <span>No Credit Card Required</span>
+                </div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-
-        {/* Google Search Console Dashboard */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-            <Globe className="w-6 h-6 mr-3 text-cyan-400" />
-            Google Search Console Analytics
-          </h2>
-          <Suspense
-            fallback={<div className="text-gray-400 p-4">Loading Search Console data...</div>}
-          >
-            <GSCDashboard />
-          </Suspense>
-        </div>
-
-        {/* SEO Optimization Guide */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-white mb-2">📈 SEO & AEO Optimization Guide</h2>
-            <p className="text-gray-300">
-              AI-powered recommendations to improve your search engine and answer engine visibility
-            </p>
-          </div>
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
-            <SEOGuidanceSection />
-          </div>
-        </div>
-
-        {/* Geographic Analysis - shows for location-based scans */}
-        <GeographicAnalysis
-          locationData={selectedLocation}
-          isLiveData={true} // Now using live Google Geocoding API
-        />
-
-        {/* Action Center */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
-          <h2 className="text-2xl font-bold text-white mb-6">Action Center</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
-              <Download className="w-5 h-5 inline mr-2" />
-              Download Full Report
-            </button>
-            <button className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
-              <Zap className="w-5 h-5 inline mr-2" />
-              Schedule Consultation
-            </button>
-            <button className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
-              <Code className="w-5 h-5 inline mr-2" />
-              Implementation Guide
-            </button>
-          </div>
-        </div>
+        )}
       </main>
     </div>
   );

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Metadata } from 'next';
 import HomeContent from '../components/HomeContent';
 import { orgAggregateRatingJsonLd, calculateAggregateRating } from './(lib)/schema';
@@ -20,9 +19,10 @@ const testimonials = [
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<Metadata> {
-  const baseMetadata = await MetadataTemplates.homepage(searchParams);
+  const resolvedSearchParams = await searchParams;
+  const baseMetadata = await MetadataTemplates.homepage(resolvedSearchParams);
 
   return {
     ...baseMetadata,

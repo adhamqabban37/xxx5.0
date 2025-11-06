@@ -1,29 +1,29 @@
 'use client';
 
-import { DashboardCardWithSparkline, MiniSparkline } from '@/components/Sparkline';
+import { DashboardCardWithSparkline } from '@/components/Sparkline';
 import { TrendingUp, Search, Calendar } from 'lucide-react';
 import { Trend } from '@/types/aeo';
 
 interface DashboardMetricsProps {
-  premiumAuditData: {
-    overallScore: number;
-    performance: {
-      trend: Trend;
-      sparklineData: number[];
+  premiumAuditData?: {
+    overallScore?: number;
+    performance?: {
+      trend?: Trend;
+      sparklineData?: number[];
     };
-    traffic: {
-      current: number;
-      trend: Trend;
-      sparklineData: number[];
-      change: number;
+    traffic?: {
+      current?: number;
+      trend?: Trend;
+      sparklineData?: number[];
+      change?: number;
     };
-    rankings: {
-      top10: number;
-      trend: Trend;
-      sparklineData: number[];
-      totalTracked: number;
+    rankings?: {
+      top10?: number;
+      trend?: Trend;
+      sparklineData?: number[];
+      totalTracked?: number;
     };
-    nextScan: string;
+    nextScan?: string;
   };
 }
 
@@ -36,40 +36,62 @@ function getScoreColor(score: number): string {
 }
 
 export function DashboardMetrics({ premiumAuditData }: DashboardMetricsProps) {
+  // Add null checks and default values to prevent runtime errors
+  const safeAuditData = {
+    overallScore: premiumAuditData?.overallScore ?? 0,
+    performance: {
+      trend: premiumAuditData?.performance?.trend ?? 'up',
+      sparklineData: premiumAuditData?.performance?.sparklineData ?? [0, 0, 0, 0, 0],
+    },
+    traffic: {
+      current: premiumAuditData?.traffic?.current ?? 0,
+      trend: premiumAuditData?.traffic?.trend ?? 'up',
+      sparklineData: premiumAuditData?.traffic?.sparklineData ?? [0, 0, 0, 0, 0],
+      change: premiumAuditData?.traffic?.change ?? 0,
+    },
+    rankings: {
+      top10: premiumAuditData?.rankings?.top10 ?? 0,
+      trend: premiumAuditData?.rankings?.trend ?? 'up',
+      sparklineData: premiumAuditData?.rankings?.sparklineData ?? [0, 0, 0, 0, 0],
+      totalTracked: premiumAuditData?.rankings?.totalTracked ?? 0,
+    },
+    nextScan: premiumAuditData?.nextScan ?? 'Not scheduled',
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
       <DashboardCardWithSparkline
         title="Overall Score"
-        value={`${premiumAuditData.overallScore}/100`}
-        trend={premiumAuditData.performance.trend}
-        sparklineData={premiumAuditData.performance.sparklineData}
-        className={getScoreColor(premiumAuditData.overallScore)}
+        value={`${safeAuditData.overallScore}/100`}
+        trend={safeAuditData.performance.trend}
+        sparklineData={safeAuditData.performance.sparklineData}
+        className={getScoreColor(safeAuditData.overallScore)}
       >
         <div className="w-full bg-slate-700 rounded-full h-2 mt-2">
           <div
             className="bg-gradient-to-r from-red-500 to-yellow-500 h-2 rounded-full"
-            style={{ width: `${premiumAuditData.overallScore}%` }}
+            style={{ width: `${safeAuditData.overallScore}%` }}
           />
         </div>
       </DashboardCardWithSparkline>
 
       <DashboardCardWithSparkline
         title="Monthly Traffic"
-        value={premiumAuditData.traffic.current.toLocaleString()}
-        trend={premiumAuditData.traffic.trend}
-        sparklineData={premiumAuditData.traffic.sparklineData}
+        value={safeAuditData.traffic.current.toLocaleString()}
+        trend={safeAuditData.traffic.trend}
+        sparklineData={safeAuditData.traffic.sparklineData}
         icon={<TrendingUp className="w-5 h-5 text-green-400" />}
-        subtitle={`+${premiumAuditData.traffic.change}% vs last month`}
+        subtitle={`+${safeAuditData.traffic.change}% vs last month`}
         subtitleClass="text-green-400"
       />
 
       <DashboardCardWithSparkline
         title="Top 10 Rankings"
-        value={premiumAuditData.rankings.top10.toString()}
-        trend={premiumAuditData.rankings.trend}
-        sparklineData={premiumAuditData.rankings.sparklineData}
+        value={safeAuditData.rankings.top10.toString()}
+        trend={safeAuditData.rankings.trend}
+        sparklineData={safeAuditData.rankings.sparklineData}
         icon={<Search className="w-5 h-5 text-blue-400" />}
-        subtitle={`of ${premiumAuditData.rankings.totalTracked} keywords`}
+        subtitle={`of ${safeAuditData.rankings.totalTracked} keywords`}
       />
 
       <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
@@ -102,7 +124,9 @@ export function DashboardMetrics({ premiumAuditData }: DashboardMetricsProps) {
           <Calendar className="w-5 h-5 text-purple-400" />
         </div>
         <div className="text-lg font-bold text-white">
-          {new Date(premiumAuditData.nextScan).toLocaleDateString()}
+          {safeAuditData.nextScan !== 'Not scheduled'
+            ? new Date(safeAuditData.nextScan).toLocaleDateString()
+            : safeAuditData.nextScan}
         </div>
         <div className="text-sm text-gray-400">Auto-scheduled</div>
       </div>

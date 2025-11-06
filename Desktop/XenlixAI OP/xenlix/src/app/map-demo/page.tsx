@@ -1,7 +1,7 @@
 import React from 'react';
 import { BusinessMap } from '../components/map/BusinessMap';
-import { BusinessMapWithAutocomplete } from '../components/map/BusinessMapWithAutocomplete';
 import { MapPin, Settings, Code, Search } from 'lucide-react';
+import { AutocompleteExampleClient } from './AutocompleteExampleClient';
 
 /**
  * Demo page showcasing BusinessMap component usage examples
@@ -190,18 +190,7 @@ export default function MapDemoPage() {
               </div>
             </div>
             <div className="max-w-4xl">
-              <BusinessMapWithAutocomplete
-                initialAddress="Dallas, TX"
-                businessName="Search Result"
-                zoom={13}
-                height="320px"
-                showControls={true}
-                className="shadow-lg rounded-lg"
-                onLocationChange={(location) => console.log('Location changed:', location)}
-              />
-              <p className="text-sm text-gray-600 mt-2">
-                🔍 Try searching for businesses, addresses, or landmarks
-              </p>
+              <AutocompleteExampleClient />
             </div>
           </div>
 
@@ -302,7 +291,7 @@ export default function MapDemoPage() {
                 <tr>
                   <td className="py-3 px-4 font-mono text-blue-600">height</td>
                   <td className="py-3 px-4 text-gray-600">string?</td>
-                  <td className="py-3 px-4 text-gray-500">'320px'</td>
+                  <td className="py-3 px-4 text-gray-500">&apos;320px&apos;</td>
                   <td className="py-3 px-4 text-gray-700">CSS height value</td>
                 </tr>
                 <tr>
@@ -314,7 +303,7 @@ export default function MapDemoPage() {
                 <tr>
                   <td className="py-3 px-4 font-mono text-blue-600">className</td>
                   <td className="py-3 px-4 text-gray-600">string?</td>
-                  <td className="py-3 px-4 text-gray-500">''</td>
+                  <td className="py-3 px-4 text-gray-500">&apos;&apos;</td>
                   <td className="py-3 px-4 text-gray-700">Additional CSS classes</td>
                 </tr>
               </tbody>

@@ -9,12 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Clock, CreditCard } from 'lucide-react';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     session_id?: string;
-  };
+  }>;
 }
 
 async function getValidationResult(id: string, userId?: string) {
@@ -47,14 +47,16 @@ async function getValidationResult(id: string, userId?: string) {
 
 export default async function ValidationResultPage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions);
-  const validation = await getValidationResult(params.id, session?.user?.id);
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const validation = await getValidationResult(resolvedParams.id, session?.user?.id);
 
   if (!validation) {
     notFound();
   }
 
   // Check if this is a return from successful payment
-  const isPaymentSuccess = searchParams.session_id && validation.paymentStatus === 'paid';
+  const isPaymentSuccess = resolvedSearchParams.session_id && validation.paymentStatus === 'paid';
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import AuthProvider from '../components/AuthProvider';
 import { ToastProvider, ToastContainer } from '../components/toast/ToastProvider';
+import { Toaster } from 'react-hot-toast';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -15,6 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://localhost:3000'),
   title: 'XenlixAI | AI Marketing Automation Platform for Small Business',
   description:
     'AI-powered marketing & website automation platform. XenlixAI helps businesses scale with AI-driven ad creation, website optimization, SEO automation, and analytics dashboards.',
@@ -60,7 +62,7 @@ export default function RootLayout({
     name: 'XenlixAI',
     legalName: 'XenlixAI LLC',
     url: 'https://www.xenlixai.com',
-    logo: 'https://www.xenlixai.com/logo.png',
+    logo: 'https://www.xenlixai.com/assets/logo.png',
     description:
       'AI-powered marketing & website automation platform. XenlixAI helps businesses scale with AI-driven ad creation, website optimization, SEO automation, and analytics dashboards.',
     address: {
@@ -116,6 +118,7 @@ export default function RootLayout({
         <ToastProvider>
           <AuthProvider>{children}</AuthProvider>
           <ToastContainer />
+          <Toaster position="top-right" />
         </ToastProvider>
       </body>
     </html>

@@ -111,7 +111,7 @@ export function loadEnvironmentConfig(): EnvironmentConfig {
   return {
     // Redis Configuration
     redis: {
-      url: process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL || 'redis://localhost:6379',
+      url: process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL || '', // No fallback - let Redis be optional
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT || '6379'),
       password: process.env.REDIS_PASSWORD,

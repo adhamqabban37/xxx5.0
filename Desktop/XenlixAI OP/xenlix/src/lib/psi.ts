@@ -247,7 +247,14 @@ async function makePSIRequest(
     const data = await response.body.json();
 
     // Validate response structure
-    const validatedData = PSIResponseSchema.parse(data);
+    const validation = PSIResponseSchema.safeParse(data);
+
+    if (!validation.success) {
+      console.warn('PSI response validation failed:', validation.error);
+      throw new Error('Invalid PSI API response format');
+    }
+
+    const validatedData = validation.data;
 
     if (validatedData.error) {
       throw new Error(`PSI API error: ${validatedData.error.message}`);

@@ -9,13 +9,24 @@ import cacheClient from '@/lib/enhanced-redis-cache';
 
 // Rate limiting - allow 2 full analysis requests per minute
 let fullAnalysisLimiter: any;
-try {
-  fullAnalysisLimiter = new Ratelimit({
-    redis: kv,
-    limiter: Ratelimit.slidingWindow(2, '1 m'),
-  });
-} catch (error) {
-  // Fallback rate limiter for development
+
+// Check if Vercel KV is available in development
+const isVercelKVAvailable = process.env.KV_URL || process.env.VERCEL_ENV === 'production';
+
+if (isVercelKVAvailable) {
+  try {
+    fullAnalysisLimiter = new Ratelimit({
+      redis: kv,
+      limiter: Ratelimit.slidingWindow(2, '1 m'),
+    });
+  } catch (error) {
+    console.warn('Failed to initialize Vercel KV rate limiter, using fallback');
+    fullAnalysisLimiter = {
+      limit: async () => ({ success: true, limit: 2, remaining: 1, reset: new Date() }),
+    };
+  }
+} else {
+  // Development fallback - no external Redis/KV needed
   fullAnalysisLimiter = {
     limit: async () => ({ success: true, limit: 2, remaining: 1, reset: new Date() }),
   };

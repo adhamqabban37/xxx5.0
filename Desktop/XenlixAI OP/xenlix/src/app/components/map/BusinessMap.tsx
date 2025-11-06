@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
 import { MapPin, AlertCircle, Copy, ExternalLink } from 'lucide-react';
 import { defaultMapOptions } from './styles/mapStyles';
 
@@ -42,7 +42,7 @@ interface MapState {
 /**
  * Google Maps API libraries to load
  */
-const GOOGLE_MAPS_LIBRARIES: ('places' | 'geometry')[] = ['places', 'geometry'];
+const GOOGLE_MAPS_LIBRARIES = ['places', 'geometry'] as const;
 
 /**
  * Production-ready Google Maps component with graceful fallbacks
@@ -57,6 +57,12 @@ export const BusinessMap: React.FC<BusinessMapProps> = ({
   showControls = false,
   className = '',
 }) => {
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+    libraries: GOOGLE_MAPS_LIBRARIES,
+  });
+
   const [state, setState] = useState<MapState>({
     isLoading: false,
     error: null,
@@ -380,72 +386,89 @@ export const BusinessMap: React.FC<BusinessMapProps> = ({
     state.formattedAddress ||
     `Business Location (${state.coordinates.lat.toFixed(4)}, ${state.coordinates.lng.toFixed(4)})`;
 
+  // Handle loading states from useJsApiLoader
+  if (loadError) {
+    console.error('Google Maps loadError:', loadError);
+    return (
+      <div
+        className={`relative border border-gray-200 rounded-lg overflow-hidden ${className} bg-red-50 flex items-center justify-center`}
+        style={{ height }}
+      >
+        <div className="text-center p-4">
+          <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+          <p className="text-red-600 font-medium">Failed to load Google Maps</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isLoaded || typeof window === 'undefined') {
+    return (
+      <div
+        className={`relative border border-gray-200 rounded-lg overflow-hidden ${className} bg-gray-100 flex items-center justify-center`}
+        style={{ height }}
+      >
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-sm text-gray-600">Loading map…</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`relative border border-gray-200 rounded-lg overflow-hidden ${className}`}
       style={{ height }}
     >
-      <LoadScript
-        googleMapsApiKey={apiKey!}
-        libraries={GOOGLE_MAPS_LIBRARIES}
-        loadingElement={
-          <div className="h-full bg-gray-100 flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-              <p className="text-sm text-gray-600">Loading map...</p>
-            </div>
-          </div>
-        }
+      <GoogleMap
+        mapContainerStyle={{ width: '100%', height: '100%' }}
+        center={state.coordinates}
+        zoom={zoom}
+        options={mapOptions}
+        onLoad={onMapLoad}
       >
-        <GoogleMap
-          mapContainerStyle={{ width: '100%', height: '100%' }}
-          center={state.coordinates}
-          zoom={zoom}
-          options={mapOptions}
-          onLoad={onMapLoad}
-        >
-          <Marker
-            position={state.coordinates}
-            title={markerTitle}
-            onClick={() => setState((prev) => ({ ...prev, showInfoWindow: !prev.showInfoWindow }))}
-          />
+        <Marker
+          position={state.coordinates}
+          title={markerTitle}
+          onClick={() => setState((prev) => ({ ...prev, showInfoWindow: !prev.showInfoWindow }))}
+        />
 
-          {state.showInfoWindow && (
-            <InfoWindow
-              position={state.coordinates}
-              onCloseClick={() => setState((prev) => ({ ...prev, showInfoWindow: false }))}
-            >
-              <div className="p-2 max-w-xs">
-                <h4 className="font-semibold text-gray-900 mb-1">
-                  {businessName || 'Business Location'}
-                </h4>
-                {state.formattedAddress && (
-                  <p className="text-sm text-gray-600 mb-2">{state.formattedAddress}</p>
-                )}
-                <p className="text-xs text-gray-500 mb-2">
-                  {state.coordinates.lat.toFixed(6)}, {state.coordinates.lng.toFixed(6)}
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={copyCoordinates}
-                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
-                  >
-                    <Copy className="h-3 w-3 mr-1" />
-                    Copy
-                  </button>
-                  <button
-                    onClick={openInGoogleMaps}
-                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
-                  >
-                    <ExternalLink className="h-3 w-3 mr-1" />
-                    Directions
-                  </button>
-                </div>
+        {state.showInfoWindow && (
+          <InfoWindow
+            position={state.coordinates}
+            onCloseClick={() => setState((prev) => ({ ...prev, showInfoWindow: false }))}
+          >
+            <div className="p-2 max-w-xs">
+              <h4 className="font-semibold text-gray-900 mb-1">
+                {businessName || 'Business Location'}
+              </h4>
+              {state.formattedAddress && (
+                <p className="text-sm text-gray-600 mb-2">{state.formattedAddress}</p>
+              )}
+              <p className="text-xs text-gray-500 mb-2">
+                {state.coordinates.lat.toFixed(6)}, {state.coordinates.lng.toFixed(6)}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={copyCoordinates}
+                  className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
+                >
+                  <Copy className="h-3 w-3 mr-1" />
+                  Copy
+                </button>
+                <button
+                  onClick={openInGoogleMaps}
+                  className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                >
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  Directions
+                </button>
               </div>
-            </InfoWindow>
-          )}
-        </GoogleMap>
-      </LoadScript>
+            </div>
+          </InfoWindow>
+        )}
+      </GoogleMap>
 
       {/* Accessibility fallback */}
       <noscript>

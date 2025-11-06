@@ -2,7 +2,7 @@
 // Demonstrates the SameAsProfileIntegrator component
 
 import { Metadata } from 'next';
-import { SameAsProfileIntegrator } from '@/components/SameAsProfileIntegrator';
+import SchemaToolClient from './SchemaToolClient';
 
 export const metadata: Metadata = {
   title: 'Schema.org Social Media Validation Tool - Xenlix AI',
@@ -33,14 +33,11 @@ export default function SchemaToolsPage() {
               and generate optimized Schema.org JSON-LD markup with proper sameAs properties.
             </p>
 
-            <SameAsProfileIntegrator
-              businessData={{
+            <SchemaToolClient
+              initialBusinessData={{
                 name: 'Your Business Name',
                 website: 'https://yourbusiness.com',
                 description: 'Your business description',
-              }}
-              onSchemasGenerated={(schemas: any[], output: string) => {
-                console.log('Generated Schemas:', schemas, output);
               }}
             />
           </div>

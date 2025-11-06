@@ -12,6 +12,7 @@ interface LeafletBusinessMapProps {
   height?: string;
   showControls?: boolean;
   className?: string;
+  mapMode?: 'free' | 'premium';
 }
 
 interface GeocodingResult {
@@ -41,6 +42,7 @@ export default function LeafletBusinessMap({
   height = '320px',
   showControls = true,
   className = '',
+  mapMode = 'premium',
 }: LeafletBusinessMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -53,44 +55,44 @@ export default function LeafletBusinessMap({
   });
 
   /**
-   * Geocode address using Nominatim (OpenStreetMap's free geocoding service)
+   * Geocode address using server-side proxy to avoid CORS issues
    */
   const geocodeAddress = useCallback(
     async (addressToGeocode: string): Promise<GeocodingResult | null> => {
       try {
         // Check session cache first
-        const cacheKey = `leaflet_geocode_${addressToGeocode}`;
+        const cacheKey = `leaflet_geocode_${mapMode}_${addressToGeocode}`;
         const cached = sessionStorage.getItem(cacheKey);
 
         if (cached) {
           return JSON.parse(cached);
         }
 
-        // Use Nominatim geocoding service (free, no API key required)
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?` +
-            `format=json&q=${encodeURIComponent(addressToGeocode)}&limit=1&addressdetails=1`,
-          {
-            headers: {
-              'User-Agent': 'BusinessMap/1.0 (contact@example.com)', // Required by Nominatim
-            },
-          }
-        );
+        // Use server-side geocoding proxy (no CORS issues)
+        const endpoint = mapMode === 'premium' ? '/api/geocode/osm' : '/api/location/resolve';
+        const response = await fetch(`${endpoint}?q=${encodeURIComponent(addressToGeocode)}`);
 
         if (!response.ok) {
-          throw new Error('Geocoding service unavailable');
+          const errorData = await response.json().catch(() => ({}));
+          if (response.status === 429) {
+            throw new Error('Geocoding service rate limited');
+          }
+          if (response.status === 404) {
+            throw new Error('Address not found. Please check the address format.');
+          }
+          throw new Error(errorData.error || 'Geocoding service unavailable');
         }
 
         const data = await response.json();
 
-        if (data.length === 0) {
+        if (!data.lat || !data.lng) {
           throw new Error('Address not found. Please check the address format.');
         }
 
         const result: GeocodingResult = {
-          lat: parseFloat(data[0].lat),
-          lng: parseFloat(data[0].lon),
-          display_name: data[0].display_name,
+          lat: data.lat,
+          lng: data.lng,
+          display_name: data.address || data.display_name || `${data.lat}, ${data.lng}`,
         };
 
         // Cache the result
@@ -102,7 +104,7 @@ export default function LeafletBusinessMap({
         throw err;
       }
     },
-    []
+    [mapMode]
   );
 
   /**

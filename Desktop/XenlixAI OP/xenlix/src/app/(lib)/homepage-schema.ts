@@ -224,7 +224,7 @@ export const XENLIX_HOMEPAGE_CONFIG: HomepageSchemaConfig = {
     'https://angel.co/company/xenlixai', // Startup ecosystem presence
     'https://www.g2.com/products/xenlixai', // Software review authority & testimonials
   ],
-  logo: 'https://xenlix.ai/logo.png',
+  logo: 'https://www.xenlixai.com/assets/logo.png',
 };
 
 // NAP Analysis: Missing Fields for Complete Local Business Schema

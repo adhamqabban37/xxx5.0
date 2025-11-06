@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -73,8 +74,8 @@ export default function AISeOAutomationPage() {
       {/* Navigation */}
       <nav className="p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-white">
-            XenlixAI
+          <Link href="/" className="flex items-center">
+            <Image src="/assets/logo.png" alt="XenlixAI Logo" width={160} height={50} />
           </Link>
           <div className="hidden md:flex space-x-8">
             <Link href="/" className="text-gray-300 hover:text-white transition-colors">

@@ -108,7 +108,21 @@ function AEOSummaryContent() {
           return checkUrlAndFetch(attempt + 1);
         }
 
-        // Handle specific timeout errors
+        // Handle specific error types with user-friendly messages
+        if (response.status === 404) {
+          throw new Error(
+            errorData.error ||
+              'Could not find the website. Please check that the URL is correct and the website is online.'
+          );
+        }
+
+        if (response.status === 403) {
+          throw new Error(
+            errorData.error ||
+              'Access denied. The website is blocking our analysis tool. Try a different URL or check if the site allows automated access.'
+          );
+        }
+
         if (response.status === 408) {
           throw new Error(
             errorData.error ||
@@ -116,7 +130,18 @@ function AEOSummaryContent() {
           );
         }
 
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to analyze website`);
+        if (response.status === 503) {
+          throw new Error(
+            errorData.error ||
+              'The website server is currently unavailable. Please try again later.'
+          );
+        }
+
+        // Generic error for other status codes
+        throw new Error(
+          errorData.error ||
+            `Failed to analyze website (HTTP ${response.status}). Please check the URL and try again.`
+        );
       }
 
       const previewData = await response.json();
@@ -133,13 +158,34 @@ function AEOSummaryContent() {
         return checkUrlAndFetch(attempt + 1);
       }
 
-      // Final error handling
+      // Final error handling with user-friendly messages
       if (err instanceof Error && err.name === 'AbortError') {
         setError(
           'Request timed out after multiple attempts. The website appears to be very slow or unresponsive. Please try again later or verify the URL is accessible.'
         );
+      } else if (err instanceof Error) {
+        // Provide more user-friendly error messages
+        let errorMessage = err.message;
+
+        if (err.message.includes('Could not find the website')) {
+          errorMessage =
+            'Website not found. Please verify the URL is correct (including .com, .org, etc.) and the site is online.';
+        } else if (err.message.includes('taking too long')) {
+          errorMessage =
+            'The website is taking too long to respond. Please try again or check if the site is accessible.';
+        } else if (err.message.includes('Access denied')) {
+          errorMessage =
+            'Access denied. The website may be blocking automated requests. Try a different URL.';
+        } else if (err.message.includes('Connection refused')) {
+          errorMessage =
+            'Unable to connect to the website. The server may be down or blocking requests.';
+        } else if (err.message.includes('Invalid URL')) {
+          errorMessage = 'Invalid URL format. Please check the URL and try again.';
+        }
+
+        setError(errorMessage);
       } else {
-        setError(err instanceof Error ? err.message : 'Failed to fetch preview data');
+        setError('Failed to fetch preview data. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -396,12 +442,45 @@ function AEOSummaryContent() {
             </div>
           </div>
 
-          {/* JSON-LD Analysis Section */}
-          <div className="mt-16 max-w-4xl mx-auto">
+          {/* Optimization Score & Performance Graph */}
+          <div className="mt-16 mb-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-center mb-8"
+            >
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
+                Optimization Score & Performance Graph
+              </h2>
+              <p className="text-base lg:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed max-w-prose">
+                See how your website performs across key optimization metrics
+              </p>
+            </motion.div>
+
+            <div className="max-w-4xl mx-auto">
+              <div className="hover:scale-105 transition-transform duration-300">
+                <OptimizationScore
+                  scoreData={computePreviewScore(
+                    data.techSignals,
+                    data.seoSnippets,
+                    data.businessInfo
+                  )}
+                  timeseriesData={generateMockTimeseries(
+                    computePreviewScore(data.techSignals, data.seoSnippets, data.businessInfo)
+                      .totalScore
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* JSON-LD Analysis Section */}
+          <div className="mb-16 max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
               className="text-center mb-8"
             >
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
@@ -418,11 +497,11 @@ function AEOSummaryContent() {
           </div>
 
           {/* AI Engine Analysis Preview Section */}
-          <div className="mt-16 max-w-6xl mx-auto">
+          <div className="mb-16 max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
               className="text-center mb-8"
             >
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
@@ -574,59 +653,26 @@ function AEOSummaryContent() {
                 </div>
               )}
             </div>
-          </div>
 
-          <div className="text-center mt-8">
-            <p className="text-gray-600 mb-6 leading-relaxed max-w-prose mx-auto">
-              Want to see exactly what's missing and get a step-by-step action plan to improve your
-              visibility?
-            </p>
-            <motion.button
-              onClick={() => {
-                document.querySelector('.pricing-section')?.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'center',
-                });
-              }}
-              className="inline-flex items-center px-8 py-4 bg-[#F97316] hover:bg-[#EA580C] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Lock className="h-5 w-5 mr-2" />
-              <span className="font-bold">Unlock Your Full Action Plan →</span>
-            </motion.button>
-          </div>
-        </div>
-
-        {/* Optimization Score & Performance Graph */}
-        <div className="mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-center mb-8"
-          >
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
-              Optimization Score & Performance Graph
-            </h2>
-            <p className="text-base lg:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed max-w-prose">
-              See how your website performs across key optimization metrics
-            </p>
-          </motion.div>
-
-          <div className="max-w-4xl mx-auto">
-            <div className="hover:scale-105 transition-transform duration-300">
-              <OptimizationScore
-                scoreData={computePreviewScore(
-                  data.techSignals,
-                  data.seoSnippets,
-                  data.businessInfo
-                )}
-                timeseriesData={generateMockTimeseries(
-                  computePreviewScore(data.techSignals, data.seoSnippets, data.businessInfo)
-                    .totalScore
-                )}
-              />
+            <div className="text-center mt-8">
+              <p className="text-gray-600 mb-6 leading-relaxed max-w-prose mx-auto">
+                Want to see exactly what's missing and get a step-by-step action plan to improve
+                your visibility?
+              </p>
+              <motion.button
+                onClick={() => {
+                  document.querySelector('.pricing-section')?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                  });
+                }}
+                className="inline-flex items-center px-8 py-4 bg-[#F97316] hover:bg-[#EA580C] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Lock className="h-5 w-5 mr-2" />
+                <span className="font-bold">Unlock Your Full Action Plan →</span>
+              </motion.button>
             </div>
           </div>
         </div>

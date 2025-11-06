@@ -1,12 +1,12 @@
 'use client';
 
 // components/MapCard.tsx
-// Smart Maps: Google Maps with OpenStreetMap fallback
-'use client';
+// Smart Maps: Google Maps with OpenStreetMap fallback with non-blocking location resolution
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import LeafletBusinessMap from '@/app/components/map/LeafletBusinessMap';
 import GoogleBusinessMap from '@/app/components/map/GoogleBusinessMap';
+import { useLocationResolution } from '@/hooks/useLocationResolution';
 
 type Props = {
   address?: string;
@@ -27,6 +27,9 @@ export default function MapCard({ address, lat, lng, businessName, className }: 
     coordinates: 'success' | 'error';
   }>({ google: 'pending', coordinates: 'success' });
 
+  // Use non-blocking location resolution
+  const { coordinates, isLoading: isResolvingLocation } = useLocationResolution(address, lat, lng);
+
   useEffect(() => {
     // Check Google Maps availability on component mount
     checkGoogleMapsAvailability();
@@ -34,16 +37,17 @@ export default function MapCard({ address, lat, lng, businessName, className }: 
 
   const checkGoogleMapsAvailability = async () => {
     try {
-      const response = await fetch('/api/maps-token');
-      const data = await response.json();
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      const isValid =
+        apiKey && apiKey !== 'YOUR_KEY_HERE' && !apiKey.includes('your-') && apiKey.length > 20;
 
-      setIsGoogleMapsAvailable(data.success);
-      if (!data.success) {
+      setIsGoogleMapsAvailable(isValid);
+      if (!isValid) {
         setMapProvider('openstreetmap');
       }
       setTestResults((prev) => ({
         ...prev,
-        google: data.success ? 'success' : 'error',
+        google: isValid ? 'success' : 'error',
       }));
     } catch (error) {
       console.error('Maps availability check failed:', error);
@@ -59,18 +63,20 @@ export default function MapCard({ address, lat, lng, businessName, className }: 
 
     // Test Google Maps API
     try {
-      const response = await fetch('/api/maps-token');
-      const data = await response.json();
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      const isValid =
+        apiKey && apiKey !== 'YOUR_KEY_HERE' && !apiKey.includes('your-') && apiKey.length > 20;
+
       setTestResults((prev) => ({
         ...prev,
-        google: data.success ? 'success' : 'error',
+        google: isValid ? 'success' : 'error',
       }));
 
       // Test with known coordinates (Google HQ)
       const testLat = 37.422;
       const testLng = -122.084;
 
-      if (data.success) {
+      if (isValid) {
         console.log(`Map self-test: Google Maps initialized at ${testLat}, ${testLng}`);
       }
     } catch (error) {
@@ -148,6 +154,16 @@ export default function MapCard({ address, lat, lng, businessName, className }: 
           </div>
         </div>
 
+        {/* Location Status */}
+        {address && !coordinates && isResolvingLocation && (
+          <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-2 text-sm text-yellow-700">
+              <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+              <span>Resolving location...</span>
+            </div>
+          </div>
+        )}
+
         {/* Self-Test Button */}
         <div className="flex justify-between items-center mb-4">
           <button
@@ -187,8 +203,8 @@ export default function MapCard({ address, lat, lng, businessName, className }: 
       <div className="h-64">
         {mapProvider === 'google' && isGoogleMapsAvailable ? (
           <GoogleBusinessMap
-            lat={lat}
-            lng={lng}
+            lat={coordinates?.lat ?? lat}
+            lng={coordinates?.lng ?? lng}
             address={address}
             businessName={businessName}
             zoom={14}
@@ -198,8 +214,8 @@ export default function MapCard({ address, lat, lng, businessName, className }: 
           />
         ) : (
           <LeafletBusinessMap
-            lat={lat}
-            lng={lng}
+            lat={coordinates?.lat ?? lat}
+            lng={coordinates?.lng ?? lng}
             address={address}
             businessName={businessName}
             zoom={14}

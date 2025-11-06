@@ -202,7 +202,14 @@ async function fetchOPR(domain: string): Promise<OPRResult> {
     }
 
     const data = await response.json();
-    const validatedData = OPRResponseSchema.parse(data);
+    const validation = OPRResponseSchema.safeParse(data);
+
+    if (!validation.success) {
+      console.warn('OPR response validation failed:', validation.error);
+      throw new Error('Invalid OPR API response format');
+    }
+
+    const validatedData = validation.data;
 
     if (validatedData.status_code !== 200) {
       throw new Error(`OPR API error: ${validatedData.error || 'Unknown error'}`);

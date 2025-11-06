@@ -1,6 +1,14 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import type { App } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
+import type { Storage } from 'firebase-admin/storage';
+
+// Allow builds to proceed without Firebase credentials when explicitly disabled
+const FIREBASE_DISABLED =
+  process.env.FIREBASE_DISABLED === 'true' ||
+  process.env.DISABLE_FIREBASE === 'true' ||
+  process.env.BUILD_WITHOUT_FIREBASE === 'true';
 
 // Firebase configuration interface
 interface FirebaseConfig {
@@ -14,14 +22,24 @@ interface FirebaseConfig {
 // Firebase client class for managing connections and operations
 export class FirebaseClient {
   private static instance: FirebaseClient;
-  private app: any;
+  private app: App | undefined;
   private db: FirebaseFirestore.Firestore | null = null;
-  private storage: any = null;
+  private storage: Storage | null = null;
   private isInitialized = false;
+  private disabled = false;
   private config: FirebaseConfig;
 
   constructor() {
     this.config = this.loadConfig();
+    // Determine disabled mode based on env flag or missing credentials
+    const credsMissing =
+      !this.config.projectId || !this.config.privateKey || !this.config.clientEmail;
+    this.disabled = FIREBASE_DISABLED || credsMissing;
+    if (this.disabled) {
+      console.warn(
+        '⚠️  Firebase is disabled (missing credentials or FIREBASE_DISABLED=true). Using no-op client.'
+      );
+    }
   }
 
   // Singleton pattern for Firebase client
@@ -34,19 +52,14 @@ export class FirebaseClient {
 
   // Load Firebase configuration from environment variables
   private loadConfig(): FirebaseConfig {
-    const projectId = process.env.FIREBASE_PROJECT_ID;
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const projectId = process.env.FIREBASE_PROJECT_ID || '';
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY || '';
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL || '';
 
-    if (!projectId || !privateKey || !clientEmail) {
-      throw new Error(
-        'Missing required Firebase configuration. Please check FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL environment variables.'
-      );
-    }
-
+    // Do not throw here; constructor will mark client as disabled when creds are missing
     return {
       projectId,
-      privateKey: privateKey.replace(/\\n/g, '\n'), // Handle escaped newlines
+      privateKey: privateKey ? privateKey.replace(/\\n/g, '\n') : '', // Handle escaped newlines
       clientEmail,
       databaseURL: process.env.FIREBASE_DATABASE_URL,
       storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
@@ -56,6 +69,15 @@ export class FirebaseClient {
   // Initialize Firebase Admin SDK
   private async initializeFirebase(): Promise<void> {
     if (this.isInitialized) return;
+
+    if (this.disabled) {
+      // Skip real initialization in disabled mode
+      this.isInitialized = true;
+      this.db = null;
+      this.storage = null;
+      console.log('ℹ️  Firebase initialization skipped (disabled mode).');
+      return;
+    }
 
     try {
       // Check if app is already initialized
@@ -100,20 +122,24 @@ export class FirebaseClient {
     }
 
     if (!this.db) {
-      throw new Error('Firestore not available. Check Firebase configuration.');
+      throw new Error(
+        'Firestore not available. Firebase is disabled or misconfigured. Set FIREBASE_* env vars or FIREBASE_DISABLED=false.'
+      );
     }
 
     return this.db;
   }
 
   // Get Storage instance
-  public async getStorage(): Promise<any> {
+  public async getStorage(): Promise<Storage> {
     if (!this.isInitialized) {
       await this.initializeFirebase();
     }
 
     if (!this.storage) {
-      throw new Error('Storage not configured. Set FIREBASE_STORAGE_BUCKET environment variable.');
+      throw new Error(
+        'Storage not configured or Firebase disabled. Set FIREBASE_STORAGE_BUCKET or enable Firebase.'
+      );
     }
 
     return this.storage;

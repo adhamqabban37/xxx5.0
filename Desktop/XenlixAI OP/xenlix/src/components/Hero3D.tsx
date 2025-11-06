@@ -118,7 +118,7 @@ export default function Hero3D() {
                 }}
               >
                 <Image
-                  src="/xenlix-logo.png"
+                  src="/assets/logo.png"
                   alt="XenlixAI logo"
                   width={160}
                   height={160}

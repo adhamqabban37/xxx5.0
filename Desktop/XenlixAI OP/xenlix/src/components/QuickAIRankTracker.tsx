@@ -8,6 +8,8 @@
 import React, { useState } from 'react';
 import { Brain, Target, Search, Loader2, ArrowRight, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
+import { validateUrl } from '@/lib/url-validation';
 
 interface QuickAIRankTrackerProps {
   className?: string;
@@ -21,14 +23,28 @@ export function QuickAIRankTracker({ className = '' }: QuickAIRankTrackerProps) 
   const [isLoading, setIsLoading] = useState(false);
 
   const handleQuickTrack = () => {
-    if (urlInput.trim() && queryInput.trim()) {
-      // Redirect to enhanced dashboard with parameters
-      const params = new URLSearchParams({
-        url: urlInput.trim(),
-        query: queryInput.trim(),
-      });
-      window.location.href = `/dashboard/enhanced?${params.toString()}`;
+    if (!queryInput.trim()) {
+      toast.error('Please enter a search query');
+      return;
     }
+
+    // Comprehensive URL validation
+    const validation = validateUrl(urlInput);
+
+    if (!validation.ok) {
+      toast.error(validation.reason || 'Please enter a valid website URL');
+      return;
+    }
+
+    // Use the fixed URL if one was suggested (e.g., protocol was added)
+    const finalUrl = validation.fixed || urlInput;
+
+    // Redirect to enhanced dashboard with validated parameters
+    const params = new URLSearchParams({
+      url: finalUrl,
+      query: queryInput.trim(),
+    });
+    window.location.href = `/dashboard/enhanced?${params.toString()}`;
   };
 
   return (

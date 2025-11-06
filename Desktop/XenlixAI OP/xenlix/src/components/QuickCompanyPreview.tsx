@@ -8,6 +8,8 @@
 import React, { useState } from 'react';
 import { Building2, Globe, Loader2, ArrowRight, Eye } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
+import { validateUrl } from '@/lib/url-validation';
 
 interface QuickCompanyPreviewProps {
   className?: string;
@@ -18,10 +20,19 @@ export function QuickCompanyPreview({ className = '' }: QuickCompanyPreviewProps
   const [isLoading, setIsLoading] = useState(false);
 
   const handleQuickPreview = () => {
-    if (urlInput.trim()) {
-      // Redirect to enhanced dashboard with URL
-      window.location.href = `/dashboard/enhanced?url=${encodeURIComponent(urlInput.trim())}`;
+    // Comprehensive URL validation
+    const validation = validateUrl(urlInput);
+
+    if (!validation.ok) {
+      toast.error(validation.reason || 'Please enter a valid website URL');
+      return;
     }
+
+    // Use the fixed URL if one was suggested (e.g., protocol was added)
+    const finalUrl = validation.fixed || urlInput;
+
+    // Redirect to enhanced dashboard with validated URL
+    window.location.href = `/dashboard/enhanced?url=${encodeURIComponent(finalUrl)}`;
   };
 
   return (

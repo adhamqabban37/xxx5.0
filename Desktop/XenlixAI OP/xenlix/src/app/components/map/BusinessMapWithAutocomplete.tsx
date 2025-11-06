@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Autocomplete, LoadScript } from '@react-google-maps/api';
+import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
 import { BusinessMap } from './BusinessMap';
 import { Search, MapPin, Copy, Check } from 'lucide-react';
 
@@ -23,7 +23,7 @@ export interface BusinessMapWithAutocompleteProps {
 /**
  * Google Maps API libraries for autocomplete
  */
-const AUTOCOMPLETE_LIBRARIES: 'places'[] = ['places'];
+const AUTOCOMPLETE_LIBRARIES = ['places'] as const;
 
 /**
  * BusinessMap with Places API autocomplete input
@@ -39,6 +39,12 @@ export const BusinessMapWithAutocomplete: React.FC<BusinessMapWithAutocompletePr
   className = '',
   onLocationChange,
 }) => {
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+    libraries: AUTOCOMPLETE_LIBRARIES,
+  });
+
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [address, setAddress] = useState(initialAddress);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(
@@ -131,40 +137,47 @@ export const BusinessMapWithAutocomplete: React.FC<BusinessMapWithAutocompletePr
     );
   }
 
+  if (loadError) {
+    console.error('Google Maps loadError:', loadError);
+    return <div className="text-red-600">Failed to load Google Maps</div>;
+  }
+
+  if (!isLoaded || typeof window === 'undefined') {
+    return <div>Loading map…</div>;
+  }
+
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Address Search Input */}
-      <LoadScript googleMapsApiKey={apiKey!} libraries={AUTOCOMPLETE_LIBRARIES}>
-        <div className="relative">
-          <Autocomplete
-            onLoad={onAutocompleteLoad}
-            onPlaceChanged={onPlaceChanged}
-            options={{
-              types: ['establishment', 'geocode'],
-              componentRestrictions: { country: 'US' }, // Adjust as needed
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Search for an address or business..."
-              className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              defaultValue={address}
-            />
-          </Autocomplete>
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+      <div className="relative">
+        <Autocomplete
+          onLoad={onAutocompleteLoad}
+          onPlaceChanged={onPlaceChanged}
+          options={{
+            types: ['establishment', 'geocode'],
+            componentRestrictions: { country: 'US' }, // Adjust as needed
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Search for an address or business..."
+            className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            defaultValue={address}
+          />
+        </Autocomplete>
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
 
-          {/* Copy Coordinates Button */}
-          {coordinates && (
-            <button
-              onClick={copyCoordinates}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
-              title="Copy coordinates"
-            >
-              {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-            </button>
-          )}
-        </div>
-      </LoadScript>
+        {/* Copy Coordinates Button */}
+        {coordinates && (
+          <button
+            onClick={copyCoordinates}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+            title="Copy coordinates"
+          >
+            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+          </button>
+        )}
+      </div>
 
       {/* Map Component */}
       <BusinessMap

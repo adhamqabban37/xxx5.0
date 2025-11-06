@@ -141,8 +141,9 @@ export default function DiagnosticsPanel({ className = '' }: DiagnosticsPanelPro
       // 3. Google Maps API Check
       try {
         const mapsStartTime = Date.now();
-        const mapsResponse = await fetch('/api/maps-token');
-        const mapsData = await mapsResponse.json();
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+        const isValid =
+          apiKey && apiKey !== 'YOUR_KEY_HERE' && !apiKey.includes('your-') && apiKey.length > 20;
         const mapsDuration = Date.now() - mapsStartTime;
 
         setHealthChecks((prev) =>
@@ -150,10 +151,10 @@ export default function DiagnosticsPanel({ className = '' }: DiagnosticsPanelPro
             check.name === 'Google Maps API'
               ? {
                   ...check,
-                  status: mapsData.success ? 'success' : 'warning',
-                  message: mapsData.success
+                  status: isValid ? 'success' : 'warning',
+                  message: isValid
                     ? `Google Maps available (${mapsDuration}ms)`
-                    : `Fallback to OpenStreetMap: ${mapsData.error}`,
+                    : `Fallback to OpenStreetMap: Invalid or missing API key`,
                   duration: mapsDuration,
                 }
               : check

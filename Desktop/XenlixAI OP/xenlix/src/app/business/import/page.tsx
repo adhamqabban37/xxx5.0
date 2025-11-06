@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
-import BusinessProfileImporter from '../../(components)/BusinessProfileImporter';
-import { NormalizedBusinessProfile } from '@/lib/business-profile-parser';
+import BusinessImportClient from './BusinessImportClient';
 
 export const metadata: Metadata = {
   title: 'Import Business Data | AI Profile Optimizer | XenlixAI',
@@ -20,12 +19,7 @@ export default function BusinessImportPage() {
           </p>
         </div>
 
-        <BusinessProfileImporter
-          onProfileImported={(profile: NormalizedBusinessProfile) => {
-            console.log('Profile imported:', profile);
-            // In a real app, you would save this to your state management or database
-          }}
-        />
+        <BusinessImportClient />
 
         {/* Feature Overview */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -113,21 +107,21 @@ export default function BusinessImportPage() {
               <br />
               <span className="text-white">{'{'}</span>
               <br />
-              <span className="text-white"> "jsonData": {'{'}</span>
+              <span className="text-white"> &quot;jsonData&quot;: {'{'}</span>
               <br />
-              <span className="text-white"> "name": "Your Business",</span>
+              <span className="text-white"> &quot;name&quot;: &quot;Your Business&quot;,</span>
               <br />
-              <span className="text-white"> "industry": "Restaurant",</span>
+              <span className="text-white"> &quot;industry&quot;: &quot;Restaurant&quot;,</span>
               <br />
-              <span className="text-white"> "city": "San Francisco"</span>
+              <span className="text-white"> &quot;city&quot;: &quot;San Francisco&quot;</span>
               <br />
               <span className="text-white"> ...</span>
               <br />
               <span className="text-white"> {'}'},</span>
               <br />
-              <span className="text-white"> "source": "manual-import",</span>
+              <span className="text-white"> &quot;source&quot;: &quot;manual-import&quot;,</span>
               <br />
-              <span className="text-white"> "mergeWithExisting": false</span>
+              <span className="text-white"> &quot;mergeWithExisting&quot;: false</span>
               <br />
               <span className="text-white">{'}'}</span>
             </code>

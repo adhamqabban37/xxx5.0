@@ -26,7 +26,7 @@ export async function generateMetadata({
 }
 
 interface AnalyticsPageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps) {
@@ -38,7 +38,8 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
   }
 
   // Extract and normalize the URL from search params
-  const rawUrl = typeof searchParams.url === 'string' ? searchParams.url : '';
+  const resolvedSearchParams = await searchParams;
+  const rawUrl = typeof resolvedSearchParams.url === 'string' ? resolvedSearchParams.url : '';
   const siteUrl = normalizeUrl(rawUrl);
 
   return (

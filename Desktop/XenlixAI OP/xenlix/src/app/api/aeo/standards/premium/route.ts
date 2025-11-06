@@ -245,8 +245,42 @@ export async function POST(request: NextRequest) {
       next_scan_available: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
     };
 
+    // Store raw JSON analytics for premium users
+    let rawJsonId = null;
+    try {
+      const rawJsonResponse = await fetch(`${request.url.split('/api/')[0]}/api/aeo/raw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: request.headers.get('authorization') || '',
+          'x-api-key': request.headers.get('x-api-key') || '',
+          'x-premium-access': 'true',
+        },
+        body: JSON.stringify({
+          payload: premiumResponse,
+          url: body.url,
+          businessName: body.businessName,
+          businessType: body.businessType,
+        }),
+      });
+
+      if (rawJsonResponse.ok) {
+        const rawJsonResult = await rawJsonResponse.json();
+        rawJsonId = rawJsonResult.id;
+      }
+    } catch (error) {
+      console.warn('Failed to store raw JSON analytics:', error);
+      // Continue without failing the main response
+    }
+
+    // Add raw JSON ID to response if available
+    const finalResponse = {
+      ...premiumResponse,
+      ...(rawJsonId ? { raw_json_id: rawJsonId } : {}),
+    };
+
     // Add headers for premium tier
-    const response = NextResponse.json(premiumResponse);
+    const response = NextResponse.json(finalResponse);
     response.headers.set('Cache-Control', 'private, max-age=600'); // 10 minutes cache
     response.headers.set('X-Tier', 'premium');
     response.headers.set('X-User-ID', accessCheck.userId || '');

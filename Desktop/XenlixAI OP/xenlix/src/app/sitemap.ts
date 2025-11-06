@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next';
+export const revalidate = 60;
 
-// Import our canonical normalization
-import { normalizeCanonicalUrl } from '@/components/CanonicalNormalization';
+// Import server-safe canonical normalization
+import { normalizeCanonicalUrlServer } from '@/lib/url-server';
 
 // Get city database for dynamic routes
 import { getCityDatabase } from '@/lib/sitemap-generator';
@@ -15,104 +16,104 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Core pages with canonical URLs
   const corePages = [
     {
-      url: normalizeCanonicalUrl('/', null),
+      url: normalizeCanonicalUrlServer('/'),
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 1,
     },
     {
-      url: normalizeCanonicalUrl('/signup', null),
+      url: normalizeCanonicalUrlServer('/signup'),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
     {
-      url: normalizeCanonicalUrl('/contact', null),
+      url: normalizeCanonicalUrlServer('/contact'),
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     },
     {
-      url: normalizeCanonicalUrl('/plans', null),
+      url: normalizeCanonicalUrlServer('/plans'),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
     {
-      url: normalizeCanonicalUrl('/vs-competitors', null),
+      url: normalizeCanonicalUrlServer('/vs-competitors'),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     },
     {
-      url: normalizeCanonicalUrl('/case-studies', null),
+      url: normalizeCanonicalUrlServer('/case-studies'),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
     {
-      url: normalizeCanonicalUrl('/seo-analyzer', null),
+      url: normalizeCanonicalUrlServer('/seo-analyzer'),
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 0.9,
     },
     {
-      url: normalizeCanonicalUrl('/schema-generator', null),
+      url: normalizeCanonicalUrlServer('/schema-generator'),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     },
     {
-      url: normalizeCanonicalUrl('/ai-seo-automation', null),
+      url: normalizeCanonicalUrlServer('/ai-seo-automation'),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
     {
-      url: normalizeCanonicalUrl('/ai-website-builder', null),
+      url: normalizeCanonicalUrlServer('/ai-website-builder'),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     },
     {
-      url: normalizeCanonicalUrl('/tools/json-ld', null),
+      url: normalizeCanonicalUrlServer('/tools/json-ld'),
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.6,
     },
     {
-      url: normalizeCanonicalUrl('/calculators/pricing', null),
+      url: normalizeCanonicalUrlServer('/calculators/pricing'),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     },
     {
-      url: normalizeCanonicalUrl('/calculators/roi', null),
+      url: normalizeCanonicalUrlServer('/calculators/roi'),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     },
     {
-      url: normalizeCanonicalUrl('/aeo-scan', null),
+      url: normalizeCanonicalUrlServer('/aeo-scan'),
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 0.9,
     },
     {
-      url: normalizeCanonicalUrl('/ads', null),
+      url: normalizeCanonicalUrlServer('/ads'),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
     {
-      url: normalizeCanonicalUrl('/business/import', null),
+      url: normalizeCanonicalUrlServer('/business/import'),
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.6,
     },
     // Special Dallas page
     {
-      url: normalizeCanonicalUrl('/dallas', null),
+      url: normalizeCanonicalUrlServer('/dallas'),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,
@@ -125,7 +126,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const cityDatabase = await getCityDatabase();
     const cityUrls = Object.keys(cityDatabase).map((citySlug) => ({
-      url: normalizeCanonicalUrl(`/${citySlug}`, null),
+      url: normalizeCanonicalUrlServer(`/${citySlug}`),
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
@@ -147,7 +148,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
 
     const caseStudyUrls = caseStudyPages.map((slug) => ({
-      url: normalizeCanonicalUrl(`/case-studies/${slug}`, null),
+      url: normalizeCanonicalUrlServer(`/case-studies/${slug}`),
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.6,
