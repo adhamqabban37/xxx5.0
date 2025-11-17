@@ -1,10 +1,20 @@
 /**
  * Enhanced Redis Cache Client with Health Checks and Fallback
  * Provides robust caching with memory fallback and detailed metrics
+ *
+ * UPDATED: Now uses shared Redis client from redis-client.ts
+ * - Eliminates redundant Redis connections
+ * - Consistent error handling and retry strategy
+ * - Proper connection lifecycle management
  */
 
-import Redis from 'ioredis';
+import {
+  getRedisClient,
+  checkRedisHealth as checkRedisClientHealth,
+  getRedisStatus,
+} from './redis-client';
 import { getEnvironmentConfig } from './env-config';
+import { isRedisDisabled } from './config';
 
 interface CacheMetrics {
   hits: number;
@@ -24,11 +34,9 @@ interface CacheEntry {
 }
 
 class EnhancedRedisCache {
-  private redis: Redis | null = null;
   private memoryCache: Map<string, CacheEntry> = new Map();
   private metrics: CacheMetrics;
   private config: ReturnType<typeof getEnvironmentConfig>;
-  private isConnected = false;
   private lastConnectionCheck = 0;
   private readonly CONNECTION_CHECK_INTERVAL = 30000; // 30 seconds
 
@@ -44,92 +52,57 @@ class EnhancedRedisCache {
       redisConnected: false,
     };
 
-    this.initializeRedis();
+    // Use shared Redis client - no need to initialize here
+    this.updateConnectionStatus();
   }
 
-  private async initializeRedis() {
-    // Only initialize Redis in runtime environment, not during build
-    if (typeof process === 'undefined' || !process.env.NODE_ENV || typeof window !== 'undefined') {
-      console.log('Skipping Redis initialization during build phase');
-      return;
-    }
+  private updateConnectionStatus() {
+    const status = getRedisStatus();
+    this.metrics.redisConnected = status.connected;
+  }
 
-    try {
-      const redisConfig = this.config.redis;
-
-      this.redis = new Redis({
-        host: redisConfig.host,
-        port: redisConfig.port,
-        password: redisConfig.password || undefined,
-        maxRetriesPerRequest: redisConfig.maxRetries,
-        connectTimeout: 10000,
-        lazyConnect: true,
-        enableOfflineQueue: false,
-      });
-
-      // Handle connection events
-      this.redis.on('connect', () => {
-        console.log('✅ Redis connected successfully');
-        this.isConnected = true;
-        this.metrics.redisConnected = true;
-      });
-
-      this.redis.on('error', (error) => {
-        console.error('❌ Redis connection error:', error.message);
-        this.isConnected = false;
-        this.metrics.redisConnected = false;
-        this.metrics.errors++;
-      });
-
-      this.redis.on('close', () => {
-        console.log('⚠️  Redis connection closed');
-        this.isConnected = false;
-        this.metrics.redisConnected = false;
-      });
-
-      // Test initial connection
-      await this.checkRedisHealth();
-    } catch (error) {
-      console.error('Failed to initialize Redis:', error);
-      this.isConnected = false;
-      this.metrics.redisConnected = false;
-    }
+  /**
+   * Get Redis client (shared singleton)
+   */
+  private getRedis() {
+    const redis = getRedisClient();
+    this.updateConnectionStatus();
+    return redis;
   }
 
   /**
    * Health check for Redis connectivity
    */
   async checkRedisHealth(): Promise<boolean> {
-    // Skip Redis health check during build phase
-    if (typeof process === 'undefined' || !process.env.NODE_ENV || typeof window !== 'undefined') {
-      return false;
-    }
-
     const now = Date.now();
 
     // Skip if we checked recently
     if (now - this.lastConnectionCheck < this.CONNECTION_CHECK_INTERVAL) {
-      return this.isConnected;
+      const status = getRedisStatus();
+      return status.connected;
     }
 
     this.lastConnectionCheck = now;
     this.metrics.lastHealthCheck = new Date();
 
     try {
-      if (this.redis) {
-        const startTime = Date.now();
-        await this.redis.ping();
-        const responseTime = Date.now() - startTime;
+      const result = await checkRedisClientHealth();
+      this.metrics.redisConnected = result.healthy;
 
-        this.isConnected = true;
-        this.metrics.redisConnected = true;
-        this.updateResponseTime(responseTime);
-
-        console.log(`✅ Redis health check passed (${responseTime}ms)`);
-        return true;
+      if (result.latency) {
+        this.updateResponseTime(result.latency);
       }
+
+      return result.healthy;
     } catch (error) {
-      console.error('❌ Redis health check failed:', error);
+      // Gracefully handle failures
+      const isDev = this.config.app.nodeEnv === 'development' || this.config.app.nodeEnv === 'test';
+      if (!isDev && this.metrics.errors < 3) {
+        console.warn(
+          '⚠️  Redis health check failed (using memory fallback):',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      }
       this.isConnected = false;
       this.metrics.redisConnected = false;
       this.metrics.errors++;
@@ -146,17 +119,27 @@ class EnhancedRedisCache {
     this.metrics.totalRequests++;
 
     try {
-      // Try Redis first if connected
-      if (this.isConnected && this.redis) {
+      const redis = this.getRedis();
+
+      // Try Redis first if available
+      if (redis && redis.status === 'ready') {
         try {
-          const data = await this.redis.get(key);
+          const data = await redis.get(key);
           if (data !== null) {
             this.metrics.hits++;
             this.updateResponseTime(Date.now() - startTime);
             return JSON.parse(data) as T;
           }
         } catch (error) {
-          console.error('Redis get error:', error);
+          // Silent fallback to memory cache in dev mode
+          const isDev =
+            this.config.app.nodeEnv === 'development' || this.config.app.nodeEnv === 'test';
+          if (!isDev && this.metrics.errors < 3) {
+            console.warn(
+              'Redis get error (using memory fallback):',
+              error instanceof Error ? error.message : 'Unknown error'
+            );
+          }
           this.metrics.errors++;
           // Fall through to memory cache
         }
@@ -196,14 +179,24 @@ class EnhancedRedisCache {
     const ttl = ttlSeconds || this.config.redis.cacheTtl;
 
     try {
-      // Try Redis first if connected
-      if (this.isConnected && this.redis) {
+      const redis = this.getRedis();
+
+      // Try Redis first if available
+      if (redis && redis.status === 'ready') {
         try {
-          await this.redis.setex(key, ttl, JSON.stringify(value));
+          await redis.setex(key, ttl, JSON.stringify(value));
           this.updateResponseTime(Date.now() - startTime);
           return true;
         } catch (error) {
-          console.error('Redis set error:', error);
+          // Silent fallback to memory cache
+          const isDev =
+            this.config.app.nodeEnv === 'development' || this.config.app.nodeEnv === 'test';
+          if (!isDev && this.metrics.errors < 3) {
+            console.warn(
+              'Redis set error (using memory fallback):',
+              error instanceof Error ? error.message : 'Unknown error'
+            );
+          }
           this.metrics.errors++;
           // Fall through to memory cache
         }
@@ -238,14 +231,15 @@ class EnhancedRedisCache {
   async del(key: string): Promise<boolean> {
     try {
       let deleted = false;
+      const redis = this.getRedis();
 
-      // Delete from Redis if connected
-      if (this.isConnected && this.redis) {
+      // Delete from Redis if available
+      if (redis && redis.status === 'ready') {
         try {
-          const result = await this.redis.del(key);
+          const result = await redis.del(key);
           deleted = result > 0;
         } catch (error) {
-          console.error('Redis del error:', error);
+          // Silent error handling
           this.metrics.errors++;
         }
       }
@@ -272,13 +266,14 @@ class EnhancedRedisCache {
     const hitRate =
       this.metrics.totalRequests > 0 ? (this.metrics.hits / this.metrics.totalRequests) * 100 : 0;
 
-    const cacheMode = this.isConnected ? 'redis' : 'memory';
+    const status = getRedisStatus();
+    const cacheMode = status.connected ? 'redis' : 'memory';
 
     return {
       ...this.metrics,
       hitRate: Math.round(hitRate * 100) / 100,
       memoryCacheSize: this.memoryCache.size,
-      cacheMode: this.memoryCache.size > 0 && this.isConnected ? 'hybrid' : cacheMode,
+      cacheMode: this.memoryCache.size > 0 && status.connected ? 'hybrid' : cacheMode,
     };
   }
 
@@ -287,8 +282,9 @@ class EnhancedRedisCache {
    */
   async clear(): Promise<void> {
     try {
-      if (this.isConnected && this.redis) {
-        await this.redis.flushall();
+      const redis = this.getRedis();
+      if (redis && redis.status === 'ready') {
+        await redis.flushall();
       }
       this.memoryCache.clear();
     } catch (error) {
@@ -327,13 +323,12 @@ class EnhancedRedisCache {
 
   /**
    * Close Redis connection gracefully
+   * Note: This doesn't disconnect the shared Redis client, just clears local state
    */
   async disconnect(): Promise<void> {
-    if (this.redis) {
-      await this.redis.quit();
-      this.redis = null;
-    }
-    this.isConnected = false;
+    // Clear memory cache
+    this.memoryCache.clear();
+    this.metrics.redisConnected = false;
   }
 }
 
